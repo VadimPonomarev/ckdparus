@@ -1,134 +1,214 @@
 'use client';
 
-import {
-  Box,
-  HStack,
-  Menu,
-  Portal,
-  Text,
-  Spinner,
-  Center,
-} from '@chakra-ui/react';
+import { Box, HStack, Text } from '@chakra-ui/react';
 import { LuChevronRight } from 'react-icons/lu';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Типы
-interface Team {
-  id: string;
+interface TeamItem {
   name: string;
   slug: string;
-  category: string | null;
-  subcategory: string | null;
+  href: string;
 }
 
-interface SubMenuItem {
+interface CategoryItem {
   title: string;
-  items?: Team[];
-  href?: string;
+  teams: TeamItem[];
 }
 
-interface MenuData {
+interface MenuItem {
   title: string;
-  items: SubMenuItem[];
   href?: string;
+  children?: MenuItem[];
 }
 
 interface NavItem {
   title: string;
   href?: string;
-  menu?: SubMenuItem[];
+  children?: MenuItem[];
 }
 
-// Категории меню
-const COLLECTIVE_CATEGORIES = [
-  { title: 'Хореографические', filter: ['Хореография'] },
-  { title: 'Вокальные', filter: ['Вокал'] },
-  { title: 'Инструментальные', filter: ['Инструментальные'] },
-  { title: 'Театральные', filter: ['Театр'] },
-  { title: 'Клубы по интересам', filter: ['Клубы'] },
+// Полные статические данные для всех коллективов
+const STATIC_COLLECTIVES: CategoryItem[] = [
+  {
+    title: 'Хореографические коллективы',
+    teams: [
+      {
+        name: 'Образцовый хореографический ансамбль «Луиза»',
+        slug: 'luiza',
+        href: '/teams/luiza',
+      },
+      {
+        name: 'Образцовая шоу-группа «Дефиле»',
+        slug: 'defile',
+        href: '/teams/defile',
+      },
+      {
+        name: 'Хореографическая студия «Ириски»',
+        slug: 'iriska',
+        href: '/teams/iriska',
+      },
+      {
+        name: 'Заслуженный коллектив народного творчества, образцовый хореографический ансамбль «Славяночка»',
+        slug: 'slavyanochka',
+        href: '/teams/slavyanochka',
+      },
+      {
+        name: 'Хореографическая студия «Арлекино»',
+        slug: 'arlequino',
+        href: '/teams/arlequino',
+      },
+      {
+        name: 'Хореографический коллектив «Забавушки»',
+        slug: 'zabavushki',
+        href: '/teams/zabavushki',
+      },
+    ],
+  },
+  {
+    title: 'Вокальные коллективы',
+    teams: [
+      {
+        name: 'Фольклорный ансамбль «Зёрнышки»',
+        slug: 'zernyshki',
+        href: '/teams/zernyshki',
+      },
+      {
+        name: 'Вокальный ансамбль «Веретёнце»',
+        slug: 'veretenze',
+        href: '/teams/veretenze',
+      },
+      {
+        name: 'Вокальный ансамбль «Звонцы»',
+        slug: 'zvontsy',
+        href: '/teams/zvontsy',
+      },
+      {
+        name: 'Народный ансамбль русской песни «Прялица»',
+        slug: 'pralitsa',
+        href: '/teams/pralitsa',
+      },
+      {
+        name: 'Народная вокальная студия «Ассорти»',
+        slug: 'assorti',
+        href: '/teams/assorti',
+      },
+      {
+        name: 'Народная вокальная студия',
+        slug: 'vocal-studio',
+        href: '/teams/vocal-studio',
+      },
+      {
+        name: 'Народный хор ветеранов «Вдохновение»',
+        slug: 'vdohnovenie',
+        href: '/teams/vdohnovenie',
+      },
+    ],
+  },
+  {
+    title: 'Инструментальные коллективы',
+    teams: [
+      {
+        name: 'Народный коллектив «Оркестр русских народных инструментов имени Юрия Владимировича Никулина»',
+        slug: 'orchestra-nikulin',
+        href: '/teams/orchestra-nikulin',
+      },
+    ],
+  },
+  {
+    title: 'Театральные коллективы',
+    teams: [
+      {
+        name: 'Народный коллектив самодеятельного художественного творчества молодежный театр «Молодая гвардия»',
+        slug: 'molodaya-gvardiya',
+        href: '/teams/molodaya-gvardiya',
+      },
+      {
+        name: 'Театральная студия «Имаго»',
+        slug: 'imago',
+        href: '/teams/imago',
+      },
+    ],
+  },
+  {
+    title: 'Клубы по интересам',
+    teams: [
+      {
+        name: 'Объединение турникменов «STREET WARRIORS»',
+        slug: 'street-warriors',
+        href: '/teams/street-warriors',
+      },
+      {
+        name: 'Медиацентр «Первые на связи!»',
+        slug: 'pervye-na-svyazi',
+        href: '/teams/pervye-na-svyazi',
+      },
+      {
+        name: 'Фотостудия «Фотосинтез»',
+        slug: 'fotosintez',
+        href: '/teams/fotosintez',
+      },
+      {
+        name: 'Волонтёры культуры',
+        slug: 'volontery-kultury',
+        href: '/teams/volontery-kultury',
+      },
+    ],
+  },
 ];
 
-// Константы для остального меню (документы, безопасность, контакты)
-const MENU_ITEMS: Record<string, MenuData> = {
+// Статические данные для меню коллективов
+const STATIC_TEAMS_MENU = {
+  title: 'Коллективы и Объединения',
+  href: '/teams',
+  children: STATIC_COLLECTIVES.map(category => ({
+    title: category.title,
+    children: category.teams.map(team => ({
+      title: team.name,
+      href: team.href,
+    })),
+  })),
+};
+
+// Статические данные для остальных меню
+const STATIC_MENUS = {
   documents: {
     title: 'Документы',
     href: '/documents',
-    items: [
+    children: [
       {
         title: 'Общая информация об учреждении',
-        items: [
-          {
-            id: 'doc_history',
-            name: 'История',
-            slug: 'history',
-            category: 'Документ',
-            subcategory: null,
-          },
-          {
-            id: 'doc_hall_plan',
-            name: 'План зрительного зала',
-            slug: 'hall-plan',
-            category: 'Документ',
-            subcategory: null,
-          },
+        children: [
+          { title: 'История', href: '/documents/history' },
+          { title: 'План зрительного зала', href: '/documents/hall-plan' },
         ],
       },
       {
         title: 'Бухгалтерия',
-        items: [
+        children: [
+          { title: 'Баланс', href: '/documents/balance' },
           {
-            id: 'doc_balance',
-            name: 'Баланс',
-            slug: 'balance',
-            category: 'Документ',
-            subcategory: null,
+            title: 'Финансово-Хозяйственная деятельность',
+            href: '/documents/finance',
           },
-          {
-            id: 'doc_finance',
-            name: 'Финансово-Хозяйственная деятельность',
-            slug: 'finance',
-            category: 'Документ',
-            subcategory: null,
-          },
-          {
-            id: 'doc_municipal_task',
-            name: 'Муниципальное задание',
-            slug: 'municipal-task',
-            category: 'Документ',
-            subcategory: null,
-          },
-          {
-            id: 'doc_paid_services',
-            name: 'Оказание платных услуг',
-            slug: 'paid-services',
-            category: 'Документ',
-            subcategory: null,
-          },
+          { title: 'Муниципальное задание', href: '/documents/municipal-task' },
+          { title: 'Оказание платных услуг', href: '/documents/paid-services' },
         ],
       },
-      {
-        title: 'Устав',
-        href: '/documents/statute',
-      },
+      { title: 'Устав', href: '/documents/statute' },
       {
         title: 'Положение о клубных формированиях',
         href: '/documents/regulations',
       },
-      {
-        title: 'Расписание клубных формирований',
-        href: '/documents/schedule',
-      },
+      { title: 'Расписание клубных формирований', href: '/documents/schedule' },
     ],
   },
   security: {
     title: 'Безопасность',
     href: '/security',
-    items: [
-      {
-        title: 'Антитерро',
-        href: '/security/antiterror',
-      },
+    children: [
+      { title: 'Антитерро', href: '/security/antiterror' },
       {
         title: 'Профилактика антисоциальных явлений',
         href: '/security/prevention',
@@ -138,97 +218,38 @@ const MENU_ITEMS: Record<string, MenuData> = {
   contact: {
     title: 'Контакты',
     href: '/about',
-    items: [
-      {
-        title: 'Сотрудники',
-        href: '/employees',
-      },
-      {
-        title: 'О нас',
-        href: '/about',
-      },
+    children: [
+      { title: 'Сотрудники', href: '/employees' },
+      { title: 'О нас', href: '/about' },
     ],
   },
 };
 
-// Компонент для загрузки коллективов из API
-const useTeamsFromAPI = () => {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Главная константа меню
+const NAV_ITEMS: NavItem[] = [
+  {
+    title: 'Главная',
+    href: '/',
+  },
+  STATIC_TEAMS_MENU as NavItem,
+  STATIC_MENUS.documents as NavItem,
+  STATIC_MENUS.security as NavItem,
+  STATIC_MENUS.contact as NavItem,
+];
 
-  useEffect(() => {
-    async function fetchTeams() {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/teams');
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки коллективов');
-        }
-        const data = await response.json();
-        setTeams(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
-        console.error('Ошибка загрузки коллективов:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTeams();
-  }, []);
-
-  return { teams, loading, error };
-};
-
-// Группируем коллективы по категориям
-const groupTeamsByCategories = (teams: Team[]) => {
-  const grouped: SubMenuItem[] = COLLECTIVE_CATEGORIES.map(category => ({
-    title: category.title,
-    items: teams.filter(
-      team => team.category && category.filter.includes(team.category)
-    ),
-  }));
-
-  // Добавляем "Другие" для коллективов, которые не попали в категории
-  const otherTeams = teams.filter(
-    team =>
-      !team.category ||
-      !COLLECTIVE_CATEGORIES.some(cat =>
-        cat.filter.includes(team.category || '')
-      )
-  );
-
-  if (otherTeams.length > 0) {
-    grouped.push({
-      title: 'Другие',
-      items: otherTeams,
-    });
-  }
-
-  return grouped;
-};
-
-// Компонент для пунктов меню с анимацией
-interface AnimatedTextProps {
+// Компонент для пунктов меню
+const MenuLink: React.FC<{
   children: React.ReactNode;
   href?: string;
-  onClick?: () => void;
-  [key: string]: any;
-}
-
-const AnimatedText: React.FC<AnimatedTextProps> = ({
-  children,
-  href,
-  onClick,
-  ...props
-}) => {
+  onClick?: (e: React.MouseEvent) => void;
+  isActive?: boolean;
+}> = ({ children, href, onClick, isActive = false }) => {
   const router = useRouter();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onClick) {
-      onClick();
+      onClick(e);
     } else if (href) {
       router.push(href);
     }
@@ -241,222 +262,59 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({
       fontSize="xl"
       cursor="pointer"
       transition="all 0.2s ease-in-out"
+      color={isActive ? 'blue.600' : 'gray.700'}
       _hover={{
         textDecoration: 'none',
         color: 'blue.600',
       }}
       onClick={handleClick}
-      {...props}
     >
       {children}
     </Text>
   );
 };
 
-// Используем кастомный компонент для пунктов меню вместо Menu.Item
-const CustomMenuItem = ({
-  children,
-  onClick,
-  ...props
-}: {
+// Компонент для пунктов выпадающего меню
+const DropdownItem: React.FC<{
   children: React.ReactNode;
+  href?: string;
   onClick?: (e: React.MouseEvent) => void;
-  [key: string]: any;
-}) => {
+  hasChildren?: boolean;
+}> = ({ children, href, onClick, hasChildren = false }) => {
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onClick) {
+      onClick(e);
+    } else if (href) {
+      router.push(href);
+    }
+  };
+
   return (
     <Box
-      px={5}
+      px={4}
       py={2}
-      cursor="pointer"
-      whiteSpace="normal"
-      maxW="400px"
-      _hover={{ bg: 'blue.50' }}
-      onClick={onClick}
-      {...props}
+      cursor={href ? 'pointer' : 'default'}
+      display="flex"
+      alignItems="center"
+      justifyContent="space-between"
+      _hover={{ bg: href ? 'blue.50' : 'transparent' }}
+      onClick={handleClick}
     >
-      {children}
+      <Text fontSize="md" fontWeight={hasChildren ? 'medium' : 'normal'}>
+        {children}
+      </Text>
+      {hasChildren && <LuChevronRight />}
     </Box>
   );
 };
 
-// Компонент для вложенного меню
-interface SubMenuProps {
-  title: string;
-  items?: Team[];
-  href?: string;
-}
-
-const SubMenu: React.FC<SubMenuProps> = ({ title, items, href }) => {
-  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
-  const router = useRouter();
-  let closeTimeout: NodeJS.Timeout;
-
-  const handleMouseEnter = () => {
-    clearTimeout(closeTimeout);
-    setIsSubmenuOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    closeTimeout = setTimeout(() => {
-      setIsSubmenuOpen(false);
-    }, 150);
-  };
-
-  const handleItemClick = (e: React.MouseEvent, team?: Team) => {
-    e.preventDefault();
-    if (href) {
-      router.push(href);
-    } else if (team) {
-      router.push(`/teams/${team.id}`);
-    }
-  };
-
-  // Если есть ссылка, делаем кликабельным
-  if (href) {
-    return (
-      <CustomMenuItem onClick={e => handleItemClick(e)}>{title}</CustomMenuItem>
-    );
-  }
-
-  // Если нет подпунктов, отображаем как обычный пункт меню
-  if (!items || items.length === 0) {
-    return <CustomMenuItem>{title}</CustomMenuItem>;
-  }
-
-  // Если есть подпункты, отображаем как подменю
-  return (
-    <Menu.Root
-      open={isSubmenuOpen}
-      onOpenChange={e => setIsSubmenuOpen(e.open)}
-      positioning={{ placement: 'right-start', gutter: 2 }}
-    >
-      <Menu.TriggerItem
-        px={5}
-        py={2}
-        cursor="pointer"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        _hover={{ bg: 'blue.50' }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {title} <LuChevronRight />
-      </Menu.TriggerItem>
-      <Portal>
-        <Menu.Positioner>
-          <Menu.Content
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            {items.map((team, index) => (
-              <CustomMenuItem
-                key={team.id}
-                onClick={e => handleItemClick(e, team)}
-              >
-                {team.name}
-              </CustomMenuItem>
-            ))}
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
-  );
-};
-
-// Компонент для главного меню
-interface MainMenuProps {
-  title: string;
-  items: SubMenuItem[];
-  href?: string;
-}
-
-const MainMenu: React.FC<MainMenuProps> = ({ title, items, href }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
-  let closeTimeout: NodeJS.Timeout;
-
-  const handleMouseEnter = () => {
-    clearTimeout(closeTimeout);
-    setIsMenuOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    closeTimeout = setTimeout(() => {
-      setIsMenuOpen(false);
-    }, 150);
-  };
-
-  const handleContentMouseEnter = () => {
-    clearTimeout(closeTimeout);
-    setIsMenuOpen(true);
-  };
-
-  const handleContentMouseLeave = () => {
-    closeTimeout = setTimeout(() => {
-      setIsMenuOpen(false);
-    }, 150);
-  };
-
-  const handleTitleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (href) {
-      router.push(href);
-      setIsMenuOpen(false);
-    }
-  };
-
-  return (
-    <div
-      style={{ position: 'relative' }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Menu.Root open={isMenuOpen} onOpenChange={e => setIsMenuOpen(e.open)}>
-        <Menu.Trigger asChild>
-          <Text
-            px={5}
-            fontSize="xl"
-            cursor="pointer"
-            transition="all 0.2s ease-in-out"
-            _hover={{
-              textDecoration: 'none',
-              color: 'blue.600',
-            }}
-            onClick={handleTitleClick}
-          >
-            {title}
-          </Text>
-        </Menu.Trigger>
-        {isMenuOpen && (
-          <Portal>
-            <Menu.Positioner>
-              <Menu.Content
-                onMouseEnter={handleContentMouseEnter}
-                onMouseLeave={handleContentMouseLeave}
-              >
-                {items.map((submenu, index) => (
-                  <SubMenu
-                    key={index}
-                    title={submenu.title}
-                    items={submenu.items}
-                    href={submenu.href}
-                  />
-                ))}
-              </Menu.Content>
-            </Menu.Positioner>
-          </Portal>
-        )}
-      </Menu.Root>
-    </div>
-  );
-};
-
-// Упрощенный компонент меню коллективов
+// Компонент для меню коллективов
 const CollectivesMenu: React.FC = () => {
-  const { teams, loading, error } = useTeamsFromAPI();
-  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   let closeTimeout: NodeJS.Timeout;
 
   const handleMouseEnter = () => {
@@ -467,137 +325,202 @@ const CollectivesMenu: React.FC = () => {
   const handleMouseLeave = () => {
     closeTimeout = setTimeout(() => {
       setIsMenuOpen(false);
+      setActiveSubmenu(null);
     }, 150);
   };
 
-  const handleContentMouseEnter = () => {
+  const handleSubmenuEnter = (title: string) => {
+    clearTimeout(closeTimeout);
+    setActiveSubmenu(title);
+  };
+
+  const handleSubmenuLeave = () => {
+    closeTimeout = setTimeout(() => {
+      setActiveSubmenu(null);
+    }, 100);
+  };
+
+  return (
+    <Box
+      position="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <MenuLink href={STATIC_TEAMS_MENU.href} isActive={isMenuOpen}>
+        {STATIC_TEAMS_MENU.title}
+      </MenuLink>
+
+      {isMenuOpen && STATIC_TEAMS_MENU.children && (
+        <Box
+          position="absolute"
+          left={0}
+          top="100%"
+          mt={2}
+          width="320px"
+          bg="white"
+          borderRadius="md"
+          boxShadow="xl"
+          borderWidth="1px"
+          borderColor="gray.200"
+          zIndex={50}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {STATIC_TEAMS_MENU.children.map((category, index) => {
+            // Пропускаем категории без коллективов
+            if (!category.children || category.children.length === 0) {
+              return null;
+            }
+
+            return (
+              <Box
+                key={index}
+                position="relative"
+                onMouseEnter={() => handleSubmenuEnter(category.title)}
+                onMouseLeave={handleSubmenuLeave}
+              >
+                <DropdownItem hasChildren={true}>{category.title}</DropdownItem>
+
+                {activeSubmenu === category.title && category.children && (
+                  <Box
+                    position="absolute"
+                    left="100%"
+                    top={0}
+                    ml={1}
+                    width="350px"
+                    maxH="400px"
+                    overflowY="auto"
+                    bg="white"
+                    borderRadius="md"
+                    boxShadow="xl"
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    zIndex={50}
+                  >
+                    {category.children.map((team, teamIndex) => (
+                      <DropdownItem key={teamIndex} href={team.href}>
+                        {team.title}
+                      </DropdownItem>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+// Компонент для меню документов/безопасности/контактов
+const DropdownMenu: React.FC<{
+  title: string;
+  href?: string;
+  children?: MenuItem[];
+}> = ({ title, href, children }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  let closeTimeout: NodeJS.Timeout;
+
+  const handleMouseEnter = () => {
     clearTimeout(closeTimeout);
     setIsMenuOpen(true);
   };
 
-  const handleContentMouseLeave = () => {
+  const handleMouseLeave = () => {
     closeTimeout = setTimeout(() => {
       setIsMenuOpen(false);
+      setActiveSubmenu(null);
     }, 150);
   };
 
-  const handleTitleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    router.push('/teams');
-    setIsMenuOpen(false);
+  const handleSubmenuEnter = (title: string) => {
+    clearTimeout(closeTimeout);
+    setActiveSubmenu(title);
   };
 
-  const handleTeamClick = (e: React.MouseEvent, teamId: string) => {
-    e.preventDefault();
-    router.push(`/teams/${teamId}`);
-    setIsMenuOpen(false);
+  const handleSubmenuLeave = () => {
+    closeTimeout = setTimeout(() => {
+      setActiveSubmenu(null);
+    }, 100);
   };
-
-  const groupedItems = teams.length > 0 ? groupTeamsByCategories(teams) : [];
 
   return (
-    <div
-      style={{ position: 'relative' }}
+    <Box
+      position="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <Menu.Root open={isMenuOpen} onOpenChange={e => setIsMenuOpen(e.open)}>
-        <Menu.Trigger asChild>
-          <Text
-            px={5}
-            fontSize="xl"
-            cursor="pointer"
-            transition="all 0.2s ease-in-out"
-            _hover={{
-              textDecoration: 'none',
-              color: 'blue.600',
-            }}
-            onClick={handleTitleClick}
-          >
-            {loading ? 'Коллективы...' : 'Коллективы и Объединения'}
-          </Text>
-        </Menu.Trigger>
-        {isMenuOpen && teams.length > 0 && !loading && !error && (
-          <Portal>
-            <Menu.Positioner>
-              <Menu.Content
-                onMouseEnter={handleContentMouseEnter}
-                onMouseLeave={handleContentMouseLeave}
-              >
-                {groupedItems.map((submenu, index) => {
-                  if (!submenu.items || submenu.items.length === 0) {
-                    return null;
-                  }
+      <MenuLink href={href} isActive={isMenuOpen}>
+        {title}
+      </MenuLink>
 
-                  return (
-                    <Menu.Root
-                      key={index}
-                      positioning={{ placement: 'right-start', gutter: 2 }}
+      {isMenuOpen && children && (
+        <Box
+          position="absolute"
+          left={0}
+          top="100%"
+          mt={2}
+          width="300px"
+          bg="white"
+          borderRadius="md"
+          boxShadow="xl"
+          borderWidth="1px"
+          borderColor="gray.200"
+          zIndex={50}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {children.map((item, index) => {
+            if (item.children) {
+              return (
+                <Box
+                  key={index}
+                  position="relative"
+                  onMouseEnter={() => handleSubmenuEnter(item.title)}
+                  onMouseLeave={handleSubmenuLeave}
+                >
+                  <DropdownItem hasChildren={true}>{item.title}</DropdownItem>
+
+                  {activeSubmenu === item.title && item.children && (
+                    <Box
+                      position="absolute"
+                      left="100%"
+                      top={0}
+                      ml={1}
+                      width="300px"
+                      bg="white"
+                      borderRadius="md"
+                      boxShadow="xl"
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      zIndex={50}
                     >
-                      <Menu.TriggerItem
-                        px={5}
-                        py={2}
-                        cursor="pointer"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        _hover={{ bg: 'blue.50' }}
-                      >
-                        {submenu.title} <LuChevronRight />
-                      </Menu.TriggerItem>
-                      <Portal>
-                        <Menu.Positioner>
-                          <Menu.Content>
-                            {submenu.items.map(team => (
-                              <CustomMenuItem
-                                key={team.id}
-                                onClick={e => handleTeamClick(e, team.id)}
-                              >
-                                {team.name}
-                              </CustomMenuItem>
-                            ))}
-                          </Menu.Content>
-                        </Menu.Positioner>
-                      </Portal>
-                    </Menu.Root>
-                  );
-                })}
-              </Menu.Content>
-            </Menu.Positioner>
-          </Portal>
-        )}
-      </Menu.Root>
-    </div>
+                      {item.children.map((child, childIndex) => (
+                        <DropdownItem key={childIndex} href={child.href}>
+                          {child.title}
+                        </DropdownItem>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              );
+            }
+
+            return (
+              <DropdownItem key={index} href={item.href}>
+                {item.title}
+              </DropdownItem>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
   );
 };
 
 const HeaderMenu: React.FC = () => {
-  const NAV_ITEMS: NavItem[] = [
-    {
-      title: 'Главная',
-      href: '/',
-    },
-    {
-      title: 'Коллективы и Объединения',
-      href: '/teams',
-    },
-    {
-      title: MENU_ITEMS.documents.title,
-      menu: MENU_ITEMS.documents.items,
-      href: MENU_ITEMS.documents.href,
-    },
-    {
-      title: MENU_ITEMS.security.title,
-      menu: MENU_ITEMS.security.items,
-      href: MENU_ITEMS.security.href,
-    },
-    {
-      title: MENU_ITEMS.contact.title,
-      menu: MENU_ITEMS.contact.items,
-      href: MENU_ITEMS.contact.href,
-    },
-  ];
-
   return (
     <Box
       p={5}
@@ -615,21 +538,21 @@ const HeaderMenu: React.FC = () => {
             return <CollectivesMenu key={index} />;
           }
 
-          if (item.menu) {
+          if (item.children) {
             return (
-              <MainMenu
+              <DropdownMenu
                 key={index}
                 title={item.title}
-                items={item.menu}
                 href={item.href}
+                children={item.children}
               />
             );
           }
 
           return (
-            <AnimatedText key={index} href={item.href}>
+            <MenuLink key={index} href={item.href}>
               {item.title}
-            </AnimatedText>
+            </MenuLink>
           );
         })}
       </HStack>
