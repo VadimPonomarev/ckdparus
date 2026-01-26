@@ -13,7 +13,7 @@ async function createTeam() {
 
     // Создаем коллектив "Луиза" с явным ID
     const teamData = {
-      id: 'team_luiza_' + Date.now(), // Уникальный ID
+      id: 'luiza', // Уникальный ID
       name: 'Образцовый хореографический ансамбль «Луиза»',
       slug: 'luiza',
       foundationDate: '1990 г.',
