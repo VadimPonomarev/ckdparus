@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  location    String?
+  price       Int?
+  imageUrl    String?  @map("image_url")
+  category    String?
+  isActive    Boolean  @default(true) @map("is_active")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  views       Int      @default(0)
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("events")
+}
+
+model News {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String?
+  imageUrl    String?  @map("image_url")
+  isPublished Boolean  @default(true) @map("is_published")
+  views       Int      @default(0)
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("news")
+}
+
+model Team {
+  id                  String   @id @default(cuid())
+  name                String   // Название коллектива
+  slug                String   @unique // URL-friendly название
+  
+  // Основные характеристики
+  description         String?  // Краткое описание
+  foundationDate      String?  @map("foundation_date") // Дата основания
+  titleAwardDate      String?  @map("title_award_date") // Дата присвоения звания
+  lastConfirmation    String?  @map("last_confirmation") // Дата последнего подтверждения
+  confirmationOrder   String?  @map("confirmation_order") // Номер приказа подтверждения
+  
+  // Руководство
+  leaderName          String?  @map("leader_name") // ФИО основного руководителя
+  leaderNameSecondary String?  @map("leader_name_secondary") // ФИО второго руководителя
+  
+  // Участники
+  participantsAge     String?  @map("participants_age") // Возраст участников
+  participantsCount   String?  @map("participants_count") // Количество участников
+  participantsGender  String?  @map("participants_gender") // Пол участников
+  
+  // Контент
+  content             String?  // Подробная характеристика
+  achievements        String?  // Достижения
+  repertoire          String?  // Репертуар
+  schedule            String?  // Расписание занятий
+  
+  // Медиа
+  imageUrl            String?  @map("image_url") // URL картинки
+  videoUrl            String?  @map("video_url") // URL видео
+  gallery             String?  @map("gallery") // Галерея изображений (JSON)
+  
+  // Категория и статус
+  category            String?  // Категория (танцы, вокал и т.д.)
+  subcategory         String?  // Подкатегория (народные, современные и т.д.)
+  status              String?  @default("active") // Статус (active, inactive, archived)
+  isActive            Boolean  @default(true) @map("is_active")
+  isFeatured          Boolean  @default(false) @map("is_featured") // Рекомендуемый коллектив
+  
+  // Контакты
+  contactPhone        String?  @map("contact_phone") // Контактный телефон
+  contactEmail        String?  @map("contact_email") // Контактный email
+  
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  
+  @@map("teams")
+}
