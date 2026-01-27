@@ -3,20 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
-    "build": "prisma generate && next build",
+    "dev": "next dev",
+    "build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma migrate deploy && prisma generate && next build",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:push": "prisma db push",
-    "db:seed": "scripts/add-all-collectives-full.js"
+    "vercel-build": "prisma migrate deploy && prisma generate && next build"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma",
-    "seed": "scripts/add-all-collectives-full.js"
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.31.0",
