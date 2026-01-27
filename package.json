@@ -7,7 +7,11 @@
     "build": "prisma db push --accept-data-loss && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:teams": "node scripts/JS\\ seed-teams.js",
+    "seed:collectives": "node scripts/JS\\ add-all-collectives-full.js",
+    "seed:all": "npm run seed:collectives && npm run seed:teams",
+    "reset:db": "prisma db push --accept-data-loss && npm run seed:all"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
