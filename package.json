@@ -3,20 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
+    "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "prisma migrate deploy && next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",
-    "vercel-build": "prisma migrate deploy && prisma generate && next build",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:push": "prisma db push",
-    "db:seed": "ts-node scripts/seed-production.ts"
+    "postinstall": "prisma generate"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma",
-    "seed": "ts-node scripts/seed-production.ts"
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.31.0",
