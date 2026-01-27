@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed:teams": "node scripts/JS\\ seed-teams.js",
-    "seed:collectives": "node scripts/JS\\ add-all-collectives-full.js",
+    "seed:teams": "node scripts/seed-teams.js",
+    "seed:collectives": "node scripts/add-all-collectives-full.js",
     "seed:all": "npm run seed:collectives && npm run seed:teams",
     "reset:db": "prisma db push --accept-data-loss && npm run seed:all"
   },
