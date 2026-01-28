@@ -9,7 +9,7 @@ const HallPlan: React.FC = () => {
       <Separator />
       <Center>
         <Image
-          src="plan_zala.jpg"
+          src="/images/plan_zala.jpg"
           alt="План зрительского зала"
           objectFit="contain"
           boxShadow="xl"

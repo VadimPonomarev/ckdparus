@@ -29,7 +29,7 @@ export default function Epmployess() {
             </Heading>
             <HStack gap={20}>
               <Image
-                src="photo_director.jpg"
+                src="/images/photo_director.jpg"
                 alt="Симон Лариса Геннадьевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -56,7 +56,7 @@ export default function Epmployess() {
             </Heading>
             <HStack gap={20}>
               <Image
-                src="photo_zam_directora.jpg"
+                src="/images/photo_zam_directora.jpg"
                 alt="Костикова Татьяна Николаевна"
                 objectFit="cover"
                 borderRadius="20px"
@@ -81,7 +81,7 @@ export default function Epmployess() {
             </Heading>
             <HStack gap={20}>
               <Image
-                src="photo_zam_directora_ahch.jpg"
+                src="/images/photo_zam_directora_ahch.jpg"
                 alt="Корныхина Светлана Владимировна"
                 objectFit="fill"
                 borderRadius="20px"
@@ -106,7 +106,7 @@ export default function Epmployess() {
             </Heading>
             <HStack gap={20}>
               <Image
-                src="hud_ruk.jpg"
+                src="/images/hud_ruk.jpg"
                 alt="Сорокина Анастасия Андреевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -132,7 +132,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="samarokovskay.jpg"
+                src="/images/samarokovskay.jpg"
                 alt="Самороковская Анна Викторовна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -165,7 +165,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="petrova.jpg"
+                src="/images/petrova.jpg"
                 alt="Петрова Ирина Валерьевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -197,7 +197,7 @@ export default function Epmployess() {
           <Box alignItems="center" display="flex">
             <HStack gap={20}>
               <Image
-                src="hud_ruk.jpg"
+                src="/images/hud_ruk.jpg"
                 alt="Сорокина Анастасия Андреевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -225,7 +225,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="salaeva.jpg"
+                src="/images/salaeva.jpg"
                 alt="Салаева Ирина Сергеевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -256,7 +256,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="kuzmina.jpg"
+                src="/images/kuzmina.jpg"
                 alt="Кузьмина Светлана Андреевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -289,7 +289,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="mizurin.jpg"
+                src="/images/mizurin.jpg"
                 alt="Мурзин Юрий Игоревич"
                 objectFit="contain"
                 borderRadius="20px"
@@ -323,7 +323,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="shleikova.jpg"
+                src="/images/shleikova.jpg"
                 alt="Шлейкова Оксана Викторовна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -351,7 +351,7 @@ export default function Epmployess() {
           <Box alignItems="center" display="flex">
             <HStack gap={20}>
               <Image
-                src="hernyakova.jpg"
+                src="/images/hernyakova.jpg"
                 alt="Чернякова Луиза Степановна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -379,7 +379,7 @@ export default function Epmployess() {
           <Box>
             <HStack gap={20}>
               <Image
-                src="photo_zam_directora.jpg"
+                src="/images/photo_zam_directora.jpg"
                 alt="Костикова Татьяна Николаевна"
                 objectFit="contain"
                 borderRadius="20px"
@@ -409,7 +409,7 @@ export default function Epmployess() {
           <Box alignItems="center" display="flex">
             <HStack gap={20}>
               <Image
-                src="galdikas.jpg"
+                src="/images/galdikas.jpg"
                 alt="Галдикайте Александра Валерьевна"
                 objectFit="contain"
                 borderRadius="20px"

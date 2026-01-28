@@ -15,7 +15,7 @@ const POSTER_DATA = Array.from({ length: 8 }, (_, i) => ({
   id: i + 1,
   title: `Мероприятие ${i + 1}`,
   date: '19 января 2026',
-  image: 'HeaderPicture.jpg',
+  image: '/images/HeaderPicture.jpg',
 }));
 
 const Poster = () => {

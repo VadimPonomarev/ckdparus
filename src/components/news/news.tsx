@@ -14,7 +14,7 @@ const NEWS_DATA = Array.from({ length: 8 }, (_, i) => ({
   id: i + 1,
   title: `Новость ${i + 1}: Важное событие в культурной жизни города`,
   date: `${i + 1} января 2026`,
-  image: 'HeaderPicture.jpg',
+  image: '/images/HeaderPicture.jpg',
   description: `Краткое описание новости ${i + 1}. Это значимое событие в культурной жизни нашего города, которое заслуживает внимания.`,
 }));
 

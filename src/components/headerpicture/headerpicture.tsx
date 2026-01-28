@@ -4,7 +4,7 @@ const Headerpicture = () => {
   return (
     <HStack width="100%" height="200px" justify="space-around">
       <Image
-        src="HeaderPicture.jpg"
+        src="/images/HeaderPicture.jpg"
         alt="Header"
         objectFit="contain"
         borderRadius="20px"
@@ -12,16 +12,15 @@ const Headerpicture = () => {
         height="100%"
       />
       <Center w="100%" px="20px">
-        <Text fontSize="2xl" fontWeight="bold">
+        <Text fontSize="2xl" fontWeight="bold" textAlign="center">
           Официальный сайт Центра культуры и досуга "Парус" города Советск
         </Text>
       </Center>
       <Image
-        src="logo.jpg"
+        src="/images/logo.jpg"
         alt="Header"
         objectFit="contain"
         borderRadius="50%"
-        // width="100%"
         height="100%"
       />
     </HStack>
