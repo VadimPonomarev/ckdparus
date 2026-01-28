@@ -268,11 +268,6 @@ export default function History() {
           w="250px"
         />
       </HStack>
-      <Separator />
-      <Text fontSize="2xl" fontWeight="bold">
-        Центр культуры и досуга “Парус” располагается в г.Советск на улице
-        Победы, дом 34А
-      </Text>
     </Stack>
   );
 }
