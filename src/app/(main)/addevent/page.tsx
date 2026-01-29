@@ -45,7 +45,7 @@ const EventSchema = Yup.object().shape({
     .min(5, 'Название слишком короткое')
     .max(100, 'Название слишком длинное')
     .required('Обязательное поле'),
-  description: Yup.string()
+  briefdescription: Yup.string()
     .min(10, 'Описание слишком короткое')
     .max(500, 'Описание слишком длинное')
     .required('Обязательное поле'),
@@ -70,7 +70,7 @@ const EventSchema = Yup.object().shape({
 // Типы для формы
 interface EventFormValues {
   title: string;
-  description: string;
+  briefdescription: string;
   fulldescription: string;
   date: string;
   time: string;
@@ -101,7 +101,7 @@ export default function AddEventPage() {
 
       const eventData = {
         title: values.title,
-        description: values.description,
+        briefdescription: values.briefdescription,
         fulldescription: values.fulldescription || null,
         date: dateTime.toISOString(),
         location: values.location,
@@ -137,7 +137,7 @@ export default function AddEventPage() {
 
   const initialValues: EventFormValues = {
     title: '',
-    description: '',
+    briefdescription: '',
     fulldescription: '',
     date: '',
     time: '19:00',
@@ -194,27 +194,31 @@ export default function AddEventPage() {
                             {/* Краткое описание */}
                             <Field.Root
                               invalid={
-                                !!(errors.description && touched.description)
+                                !!(
+                                  errors.briefdescription &&
+                                  touched.briefdescription
+                                )
                               }
                             >
                               <Field.Label>Краткое описание</Field.Label>
                               <Textarea
-                                name="description"
+                                name="briefdescription"
                                 placeholder="Краткое описание события (до 500 символов)"
                                 rows={3}
-                                value={values.description}
+                                value={values.briefdescription}
                                 onChange={e =>
                                   setFieldValue('description', e.target.value)
                                 }
                               />
-                              {errors.description && touched.description && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>
-                                    {errors.description}
-                                  </Alert.Title>
-                                </Alert.Root>
-                              )}
+                              {errors.briefdescription &&
+                                touched.briefdescription && (
+                                  <Alert.Root status="error" mt="2">
+                                    <Alert.Indicator />
+                                    <Alert.Title>
+                                      {errors.briefdescription}
+                                    </Alert.Title>
+                                  </Alert.Root>
+                                )}
                             </Field.Root>
 
                             {/* Полное описание */}

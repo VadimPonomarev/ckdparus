@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // Типы для запроса на создание события
 interface CreateEventRequest {
   title: string;
-  description: string;
+  briefdescription: string;
   fulldescription?: string | null;
   date: string;
   location: string;
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.title?.trim())
       validationErrors.push('Название события обязательно');
-    if (!body.description?.trim())
+    if (!body.briefdescription?.trim())
       validationErrors.push('Описание события обязательно');
     if (!body.date) validationErrors.push('Дата события обязательна');
     if (!body.location?.trim())
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const event = await prisma.event.create({
       data: {
         title: body.title.trim(),
-        description: body.description.trim(),
+        briefdescription: body.briefdescription.trim(),
         fulldescription: body.fulldescription?.trim() || null,
         date: eventDate,
         location: body.location.trim(),
