@@ -174,11 +174,12 @@ const Poster: React.FC<PosterProps> = ({
         <SimpleGrid columns={[1, 2, 3, 5]} width="100%">
           {filteredEvents.map(event => (
             <PosterCard
+              id={event.id}
               key={event.id}
               title={event.title}
               date={event.date}
               imageUrl={event.imageUrl}
-              description={event.briefdescription}
+              briefdescription={event.briefdescription}
               location={event.location}
               price={event.price}
               category={event.category}
@@ -228,10 +229,11 @@ const Poster: React.FC<PosterProps> = ({
             {visibleItems.map(event => (
               <Box key={event.id} flex="1" minW="200px">
                 <PosterCard
+                  id={event.id}
                   title={event.title}
                   date={event.date}
                   imageUrl={event.imageUrl}
-                  description={event.briefdescription}
+                  briefdescription={event.briefdescription}
                   location={event.location}
                   price={event.price}
                   category={event.category}
