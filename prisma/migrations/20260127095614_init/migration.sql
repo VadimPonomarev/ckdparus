@@ -2,7 +2,8 @@
 CREATE TABLE "events" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "description" TEXT,
+    "briefdescription" TEXT,
+    "fulldescription" TEXT,
     "date" TIMESTAMP(3) NOT NULL,
     "location" TEXT,
     "price" INTEGER,

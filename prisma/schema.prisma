@@ -10,7 +10,8 @@ datasource db {
 model Event {
   id          String   @id @default(cuid())
   title       String
-  description String?
+  briefdescription String?
+  fulldescription String?
   date        DateTime
   location    String?
   price       Int?
