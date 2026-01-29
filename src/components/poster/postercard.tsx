@@ -44,7 +44,6 @@ const PosterCard: React.FC<PosterCardProps> = ({
       boxShadow="base"
       border="1px solid"
       borderColor="gray.200"
-      bg="white"
       _hover={{
         boxShadow: '2xl',
         borderColor: 'blue.300',

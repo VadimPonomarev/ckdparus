@@ -58,7 +58,7 @@ const Poster: React.FC<PosterProps> = ({
 
         // Параметры запроса
         const params = new URLSearchParams();
-        if (showFeaturedOnly) params.append('featured', 'true');
+        if (showFeaturedOnly) params.append('featured', 'false');
         if (limit) params.append('limit', limit.toString());
         if (futureOnly) params.append('future', 'false');
 
