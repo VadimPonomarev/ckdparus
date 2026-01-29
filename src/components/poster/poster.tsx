@@ -60,7 +60,7 @@ const Poster: React.FC<PosterProps> = ({
         const params = new URLSearchParams();
         if (showFeaturedOnly) params.append('featured', 'true');
         if (limit) params.append('limit', limit.toString());
-        if (futureOnly) params.append('future', 'true');
+        if (futureOnly) params.append('future', 'false');
 
         const response = await fetch(`/api/events?${params}`);
 
