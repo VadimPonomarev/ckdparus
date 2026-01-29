@@ -39,10 +39,10 @@ interface PosterProps {
 
 const Poster: React.FC<PosterProps> = ({
   showTitle = true,
-  showFeaturedOnly = true, // По умолчанию показываем избранные
+  showFeaturedOnly = true,
   maxVisibleItems = 5,
   limit = 10,
-  futureOnly = true, // По умолчанию только будущие события
+  futureOnly = true,
 }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,23 +50,17 @@ const Poster: React.FC<PosterProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Получаем данные
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-
-        // Параметры запроса
         const params = new URLSearchParams();
         if (showFeaturedOnly) params.append('featured', 'false');
         if (limit) params.append('limit', limit.toString());
         if (futureOnly) params.append('future', 'false');
 
         const response = await fetch(`/api/events?${params}`);
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки мероприятий');
-        }
+        if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
         const data = await response.json();
         setEvents(data);
@@ -81,9 +75,7 @@ const Poster: React.FC<PosterProps> = ({
     fetchEvents();
   }, [showFeaturedOnly, limit, futureOnly]);
 
-  // Фильтрация событий (на случай если нужна дополнительная фильтрация на клиенте)
   const filteredEvents = events;
-
   const totalItems = filteredEvents.length;
   const showSlider = totalItems > maxVisibleItems;
 
@@ -104,7 +96,6 @@ const Poster: React.FC<PosterProps> = ({
     currentIndex + maxVisibleItems
   );
 
-  // Лоадер
   if (loading) {
     return (
       <Stack width="100%">
@@ -114,7 +105,9 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-        <SimpleGrid columns={[1, 2, 3, 5]} mt={4}>
+        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} mt={4}>
+          {' '}
+          {/* Исправлено: spacing → gap */}
           {[...Array(maxVisibleItems)].map((_, i) => (
             <Skeleton key={i} height="350px" borderRadius="md" />
           ))}
@@ -123,7 +116,6 @@ const Poster: React.FC<PosterProps> = ({
     );
   }
 
-  // Ошибка
   if (error) {
     return (
       <Stack width="100%">
@@ -135,12 +127,11 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-        <Text mt={4}>{error}</Text>
+        <Text>{error}</Text>
       </Stack>
     );
   }
 
-  // Если нет событий
   if (filteredEvents.length === 0) {
     return (
       <Stack width="100%">
@@ -159,7 +150,6 @@ const Poster: React.FC<PosterProps> = ({
     );
   }
 
-  // Если не нужно показывать слайдер (мало событий)
   if (!showSlider) {
     return (
       <Stack width="100%">
@@ -171,7 +161,9 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-        <SimpleGrid columns={[1, 2, 3, 5]} width="100%">
+        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} width="100%">
+          {' '}
+          {/* Исправлено: spacing → gap */}
           {filteredEvents.map(event => (
             <PosterCard
               id={event.id}
@@ -203,7 +195,6 @@ const Poster: React.FC<PosterProps> = ({
       )}
 
       <HStack width="100%" justify="space-between" align="center">
-        {/* Кнопка назад */}
         <IconButton
           aria-label="Предыдущие мероприятия"
           onClick={handlePrev}
@@ -217,34 +208,34 @@ const Poster: React.FC<PosterProps> = ({
           <FaChevronLeft />
         </IconButton>
 
-        {/* Контейнер для слайдера */}
+        {/* Используем Box с display: flex и gap */}
         <Box
           ref={sliderRef}
           width="100%"
           overflow="hidden"
           position="relative"
           flex="1"
+          display="flex"
+          gap="16px" // Добавляем расстояние между карточками
+          justifyContent="space-between"
         >
-          <HStack width="100%" justify="space-between">
-            {visibleItems.map(event => (
-              <Box key={event.id} flex="1" minW="200px">
-                <PosterCard
-                  id={event.id}
-                  title={event.title}
-                  date={event.date}
-                  imageUrl={event.imageUrl}
-                  briefdescription={event.briefdescription}
-                  location={event.location}
-                  price={event.price}
-                  category={event.category}
-                  linkUrl={`/events/${event.id}`}
-                />
-              </Box>
-            ))}
-          </HStack>
+          {visibleItems.map(event => (
+            <Box key={event.id} flex="1" minW="200px">
+              <PosterCard
+                id={event.id}
+                title={event.title}
+                date={event.date}
+                imageUrl={event.imageUrl}
+                briefdescription={event.briefdescription}
+                location={event.location}
+                price={event.price}
+                category={event.category}
+                linkUrl={`/events/${event.id}`}
+              />
+            </Box>
+          ))}
         </Box>
 
-        {/* Кнопка вперед */}
         <IconButton
           aria-label="Следующие мероприятия"
           onClick={handleNext}
@@ -261,9 +252,10 @@ const Poster: React.FC<PosterProps> = ({
         </IconButton>
       </HStack>
 
-      {/* Индикатор прогресса */}
       {totalItems > maxVisibleItems && (
-        <HStack justify="center" mt={4}>
+        <HStack justify="center" mt={4} gap={2}>
+          {' '}
+          {/* Добавлен gap */}
           {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
             (_, index) => (
               <Box
