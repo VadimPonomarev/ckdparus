@@ -237,7 +237,7 @@ const NAV_ITEMS: NavItem[] = [
   STATIC_MENUS.contact as NavItem,
   {
     title: 'Добавление события (Афиши)',
-    href: '/',
+    href: '/addevent',
   },
 ];
 

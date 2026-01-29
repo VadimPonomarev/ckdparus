@@ -1,4 +1,3 @@
-// app/admin/events/add/page.tsx
 'use client';
 
 import { useState } from 'react';
