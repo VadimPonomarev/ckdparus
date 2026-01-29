@@ -235,6 +235,10 @@ const NAV_ITEMS: NavItem[] = [
   STATIC_MENUS.documents as NavItem,
   STATIC_MENUS.security as NavItem,
   STATIC_MENUS.contact as NavItem,
+  {
+    title: 'Добавление события (Афиши)',
+    href: '/',
+  },
 ];
 
 // Компонент для пунктов меню
