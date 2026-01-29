@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   HStack,
   Separator,
@@ -6,24 +6,85 @@ import {
   Text,
   IconButton,
   Box,
+  SimpleGrid,
+  Center,
+  Skeleton,
+  Alert,
 } from '@chakra-ui/react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import PosterCard from './postercard';
 
-// Генерируем тестовые данные
-const POSTER_DATA = Array.from({ length: 8 }, (_, i) => ({
-  id: i + 1,
-  title: `Мероприятие ${i + 1}`,
-  date: '19 января 2026',
-  image: '/images/HeaderPicture.jpg',
-}));
+// Тип события из Prisma
+interface Event {
+  id: string;
+  title: string;
+  briefdescription?: string;
+  fulldescription?: string;
+  date: Date;
+  location?: string;
+  price?: number;
+  imageUrl?: string;
+  category?: string;
+  isActive: boolean;
+  isFeatured: boolean;
+}
 
-const Poster = () => {
+interface PosterProps {
+  showTitle?: boolean;
+  showFeaturedOnly?: boolean;
+  maxVisibleItems?: number;
+  limit?: number;
+  futureOnly?: boolean;
+}
+
+const Poster: React.FC<PosterProps> = ({
+  showTitle = true,
+  showFeaturedOnly = true, // По умолчанию показываем избранные
+  maxVisibleItems = 5,
+  limit = 10,
+  futureOnly = true, // По умолчанию только будущие события
+}) => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  const totalItems = POSTER_DATA.length;
-  const maxVisibleItems = 5;
+  // Получаем данные
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+
+        // Параметры запроса
+        const params = new URLSearchParams();
+        if (showFeaturedOnly) params.append('featured', 'true');
+        if (limit) params.append('limit', limit.toString());
+        if (futureOnly) params.append('future', 'true');
+
+        const response = await fetch(`/api/events?${params}`);
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки мероприятий');
+        }
+
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [showFeaturedOnly, limit, futureOnly]);
+
+  // Фильтрация событий (на случай если нужна дополнительная фильтрация на клиенте)
+  const filteredEvents = events;
+
+  const totalItems = filteredEvents.length;
   const showSlider = totalItems > maxVisibleItems;
 
   const handleNext = () => {
@@ -38,39 +99,107 @@ const Poster = () => {
     }
   };
 
-  const visibleItems = POSTER_DATA.slice(
+  const visibleItems = filteredEvents.slice(
     currentIndex,
     currentIndex + maxVisibleItems
   );
 
-  // Если не нужно показывать слайдер
+  // Лоадер
+  if (loading) {
+    return (
+      <Stack width="100%">
+        {showTitle && (
+          <>
+            <Skeleton height="40px" width="150px" mb={2} />
+            <Separator />
+          </>
+        )}
+        <SimpleGrid columns={[1, 2, 3, 5]} mt={4}>
+          {[...Array(maxVisibleItems)].map((_, i) => (
+            <Skeleton key={i} height="350px" borderRadius="md" />
+          ))}
+        </SimpleGrid>
+      </Stack>
+    );
+  }
+
+  // Ошибка
+  if (error) {
+    return (
+      <Stack width="100%">
+        {showTitle && (
+          <>
+            <Text fontSize="2xl" fontWeight="bold">
+              Афиша
+            </Text>
+            <Separator />
+          </>
+        )}
+        <Text mt={4}>{error}</Text>
+      </Stack>
+    );
+  }
+
+  // Если нет событий
+  if (filteredEvents.length === 0) {
+    return (
+      <Stack width="100%">
+        {showTitle && (
+          <>
+            <Text fontSize="2xl" fontWeight="bold">
+              Афиша
+            </Text>
+            <Separator />
+          </>
+        )}
+        <Center p={10}>
+          <Text color="gray.500">Нет мероприятий</Text>
+        </Center>
+      </Stack>
+    );
+  }
+
+  // Если не нужно показывать слайдер (мало событий)
   if (!showSlider) {
     return (
       <Stack width="100%">
-        <Text fontSize="2xl" fontWeight="bold">
-          Афиша
-        </Text>
-        <Separator />
-        <HStack width="100%" justify="space-between">
-          {POSTER_DATA.map(item => (
+        {showTitle && (
+          <>
+            <Text fontSize="2xl" fontWeight="bold">
+              Афиша
+            </Text>
+            <Separator />
+          </>
+        )}
+        <SimpleGrid columns={[1, 2, 3, 5]} width="100%">
+          {filteredEvents.map(event => (
             <PosterCard
-              key={item.id}
-              title={item.title}
-              date={item.date}
-              image={item.image}
+              key={event.id}
+              title={event.title}
+              date={event.date}
+              imageUrl={event.imageUrl}
+              description={event.briefdescription}
+              location={event.location}
+              price={event.price}
+              category={event.category}
+              linkUrl={`/events/${event.id}`}
             />
           ))}
-        </HStack>
+        </SimpleGrid>
       </Stack>
     );
   }
 
   return (
     <Stack width="100%" position="relative">
-      <Text fontSize="2xl" fontWeight="bold">
-        Афиша
-      </Text>
-      <Separator bgColor="whiteAlpha.500" />
+      {showTitle && (
+        <>
+          <Text fontSize="2xl" fontWeight="bold">
+            Афиша
+          </Text>
+          <Separator bgColor="whiteAlpha.500" />
+        </>
+      )}
 
       <HStack width="100%" justify="space-between" align="center">
         {/* Кнопка назад */}
@@ -95,13 +224,18 @@ const Poster = () => {
           position="relative"
           flex="1"
         >
-          <HStack width="100%" justify="space-between" p={5}>
-            {visibleItems.map(item => (
-              <Box key={item.id}>
+          <HStack width="100%" justify="space-between">
+            {visibleItems.map(event => (
+              <Box key={event.id} flex="1" minW="200px">
                 <PosterCard
-                  title={item.title}
-                  date={item.date}
-                  image={item.image}
+                  title={event.title}
+                  date={event.date}
+                  imageUrl={event.imageUrl}
+                  description={event.briefdescription}
+                  location={event.location}
+                  price={event.price}
+                  category={event.category}
+                  linkUrl={`/events/${event.id}`}
                 />
               </Box>
             ))}
@@ -126,26 +260,28 @@ const Poster = () => {
       </HStack>
 
       {/* Индикатор прогресса */}
-      <HStack justify="center">
-        {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
-          (_, index) => (
-            <Box
-              key={index}
-              width="8px"
-              height="8px"
-              borderRadius="full"
-              bg={index === currentIndex ? 'blue.500' : 'gray.300'}
-              cursor="pointer"
-              onClick={() => setCurrentIndex(index)}
-              _hover={{
-                bg: index === currentIndex ? 'blue.600' : 'gray.400',
-                transform: 'scale(1.2)',
-              }}
-              transition="all 0.2s ease"
-            />
-          )
-        )}
-      </HStack>
+      {totalItems > maxVisibleItems && (
+        <HStack justify="center" mt={4}>
+          {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
+            (_, index) => (
+              <Box
+                key={index}
+                width="8px"
+                height="8px"
+                borderRadius="full"
+                bg={index === currentIndex ? 'blue.500' : 'gray.300'}
+                cursor="pointer"
+                onClick={() => setCurrentIndex(index)}
+                _hover={{
+                  bg: index === currentIndex ? 'blue.600' : 'gray.400',
+                  transform: 'scale(1.2)',
+                }}
+                transition="all 0.2s ease"
+              />
+            )
+          )}
+        </HStack>
+      )}
     </Stack>
   );
 };

@@ -1,78 +1,154 @@
-import {
-  Center,
-  HStack,
-  Image,
-  Link,
-  Stack,
-  Text,
-  ImageProps,
-} from '@chakra-ui/react';
+import { Center, Image, Link, Stack, Text, Box, Badge } from '@chakra-ui/react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 // Типы для пропсов
 interface PosterCardProps {
+  id: string;
   title: string;
-  date: string;
-  image: string;
+  date: Date;
+  imageUrl?: string;
   alt?: string;
-  description?: string;
+  briefdescription?: string;
+  location?: string;
+  price?: number;
+  category?: string;
   linkUrl?: string;
   linkText?: string;
-  imageProps?: ImageProps;
-  className?: string;
 }
 
 const PosterCard: React.FC<PosterCardProps> = ({
+  id,
   title,
   date,
-  image,
+  imageUrl,
   alt = title,
-  description = 'Краткое описание мероприятия',
-  linkUrl = '#',
+  briefdescription,
+  location,
+  price,
+  category,
+  linkUrl = `/events/${id}`,
   linkText = 'Подробнее',
-  imageProps,
 }) => {
+  // Форматирование даты
+  const formattedDate = format(new Date(date), 'dd MMMM yyyy', { locale: ru });
+  const formattedTime = format(new Date(date), 'HH:mm', { locale: ru });
+
+  // Определяем изображение (по умолчанию или из БД)
+  const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
+
   return (
     <Center
-      p={5}
-      borderRadius="10px"
-      boxShadow="sm"
-      borderColor="gray.100"
+      p={4}
+      borderRadius="lg"
+      boxShadow="base"
+      border="1px solid"
+      borderColor="gray.200"
+      bg="white"
       _hover={{
         boxShadow: '2xl',
-        transition: 'box-shadow 0.3s ease-in-out',
+        borderColor: 'blue.300',
+        transform: 'translateY(-4px)',
+        transition: 'all 0.3s ease-in-out',
       }}
+      transition="all 0.3s ease"
+      h="100%"
+      position="relative"
     >
-      <Stack w={200}>
-        <Text fontSize={20} fontWeight="semibold">
+      <Stack w="100%" h="100%">
+        {/* Категория */}
+        {category && (
+          <Badge
+            colorScheme="blue"
+            alignSelf="flex-start"
+            borderRadius="full"
+            px={3}
+            py={1}
+          >
+            {category}
+          </Badge>
+        )}
+
+        {/* Заголовок */}
+        <Text fontSize="xl" fontWeight="bold" lineHeight="tight" minH="56px">
           {title}
         </Text>
-        <Text fontSize={16} color="gray.500">
-          {date}
-        </Text>
 
+        {/* Дата и время */}
+        <Box>
+          <Text
+            fontSize="sm"
+            color="gray.600"
+            display="flex"
+            alignItems="center"
+          >
+            📅 {formattedDate}
+          </Text>
+          <Text
+            fontSize="sm"
+            color="gray.600"
+            display="flex"
+            alignItems="center"
+          >
+            🕒 {formattedTime}
+          </Text>
+        </Box>
+
+        {/* Изображение */}
         <Center>
           <Image
-            src={image}
+            src={imageSrc}
             alt={alt}
             w="100%"
-            h="150px"
+            h="180px"
             objectFit="cover"
             borderRadius="md"
-            {...imageProps}
+            loading="lazy"
           />
         </Center>
 
-        <Text fontSize={16} textAlign="justify">
-          {description}
-        </Text>
+        {/* Локация */}
+        {location && (
+          <Text
+            fontSize="sm"
+            color="gray.600"
+            display="flex"
+            alignItems="center"
+          >
+            📍 {location}
+          </Text>
+        )}
+
+        {/* Краткое описание */}
+        {briefdescription && (
+          <Text fontSize="sm" color="gray.700" textAlign="justify" flex="1">
+            {briefdescription}
+          </Text>
+        )}
+
+        {/* Цена */}
+        {price !== undefined && (
+          <Text fontSize="lg" color="green.600" fontWeight="bold">
+            {price === 0 ? 'Бесплатно' : `${price} ₽`}
+          </Text>
+        )}
+
+        {/* Ссылка */}
         <Link
           href={linkUrl}
-          fontSize={16}
+          fontSize="md"
           color="blue.500"
-          textDecoration="underline"
-          _hover={{ color: 'blue.600', textDecoration: 'none' }}
+          fontWeight="semibold"
+          textDecoration="none"
+          _hover={{
+            color: 'blue.600',
+            textDecoration: 'underline',
+          }}
+          alignSelf="flex-start"
+          mt="auto"
+          pt={2}
         >
-          {linkText}
+          {linkText} →
         </Link>
       </Stack>
     </Center>
