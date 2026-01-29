@@ -4,37 +4,23 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-interface RouteParams {
-  params: {
+// Исправленный тип для параметров
+interface RouteContext {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const { id } = params;
+    // Дожидаемся параметров (они асинхронные в Next.js 14+)
+    const { id } = await context.params;
 
     // Находим событие
     const event = await prisma.event.findUnique({
       where: {
         id,
         isActive: true,
-      },
-      select: {
-        id: true,
-        title: true,
-        briefdescription: true,
-        fulldescription: true,
-        date: true,
-        location: true,
-        price: true,
-        imageUrl: true,
-        category: true,
-        isActive: true,
-        isFeatured: true,
-        views: true,
-        createdAt: true,
-        updatedAt: true,
       },
     });
 
