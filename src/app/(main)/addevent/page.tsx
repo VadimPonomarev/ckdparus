@@ -207,7 +207,10 @@ export default function AddEventPage() {
                                 rows={3}
                                 value={values.briefdescription}
                                 onChange={e =>
-                                  setFieldValue('description', e.target.value)
+                                  setFieldValue(
+                                    'briefdescription',
+                                    e.target.value
+                                  )
                                 }
                               />
                               {errors.briefdescription &&
