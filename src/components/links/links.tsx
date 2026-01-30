@@ -1,4 +1,13 @@
-import { HStack, Image, Link, Separator, Stack, Text } from '@chakra-ui/react';
+import {
+  Grid,
+  GridItem,
+  HStack,
+  Image,
+  Link,
+  Separator,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
 
 const Links = () => {
   return (
@@ -7,7 +16,7 @@ const Links = () => {
         Полезные ссылки
       </Text>
       <Separator />
-      <HStack width="100%" pt={10} justify="space-between">
+      <Grid templateColumns="repeat(7, 1fr)" gap={5}>
         <Link href="https://culture.gov.ru">
           <Image
             src="/images/min_kulturi.jpg"
@@ -23,6 +32,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
+
         <Link href="https://culture-tourism.gov39.ru">
           <Image
             src="/images/min_cultur_kal_obl.png"
@@ -38,6 +48,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
+
         <Link href="https://www.culture.ru">
           <Image
             src="/images/kultura_rf.png"
@@ -68,7 +79,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
-        <Link href="https://odnt.ru">
+        <Link href="https://odnt.ru" justifyContent="center">
           <Image
             src="/images/oblastnoi_dom.jpg"
             alt="Областной дом народного творчества Калининградской области"
@@ -83,8 +94,6 @@ const Links = () => {
             h="150px"
           />
         </Link>
-      </HStack>
-      <HStack width="100%" py={10} justify="space-between">
         <Link href="https://www.culture.ru/pushkinskaya-karta">
           <Image
             src="/images/pushlin_card.jpg"
@@ -115,6 +124,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
+
         <Link href="https://may9.ru/">
           <Image
             src="/images/pobeda_80.jpg"
@@ -130,7 +140,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
-        <Link href="https://gov39.ru/">
+        <Link href="https://gov39.ru/" justifyContent="center">
           <Image
             src="/images/ravitelstvo.jpg"
             alt="Правительство Калининградской области"
@@ -160,9 +170,8 @@ const Links = () => {
             h="150px"
           />
         </Link>
-      </HStack>
-      <HStack width="100%" py={10} justify="space-between">
-        <Link href="https://39советск.рф">
+
+        <Link href="https://39советск.рф" justifyContent="center">
           <Image
             src="/images/sovetsk.jpg"
             alt="Советский городской округ"
@@ -222,7 +231,7 @@ const Links = () => {
             h="150px"
           />
         </Link>
-      </HStack>
+      </Grid>
     </Stack>
   );
 };
