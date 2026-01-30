@@ -1,4 +1,4 @@
-import { Box, HStack, Icon, Stack, Text } from '@chakra-ui/react';
+import { Box, HStack, Icon, Link, Stack, Text } from '@chakra-ui/react';
 import { FaVk } from 'react-icons/fa6';
 
 const Preheader = () => {
@@ -21,11 +21,16 @@ const Preheader = () => {
             В КОНТАКТЕ
           </Text>
         </HStack>
-        <Stack>
+        <Stack fontSize="18px" fontWeight="bold">
           <HStack justifyContent="end">
-            <Text color="blue.600" textAlign="end">
+            <Link
+              color="blue.600"
+              textAlign="end"
+              cursor="pointer"
+              href="tel:+79019632063"
+            >
               +7 901 963 20 63
-            </Text>
+            </Link>
           </HStack>
           <Text>Режим работы: 8:00-21:00</Text>
         </Stack>
