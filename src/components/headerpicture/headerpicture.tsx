@@ -16,13 +16,13 @@ const Headerpicture = () => {
           Официальный сайт Центра культуры и досуга "Парус" города Советск
         </Text>
       </Center>
-      <Image
+      {/* <Image
         src="/images/logo.jpg"
         alt="Header"
         objectFit="contain"
         borderRadius="50%"
         height="100%"
-      />
+      /> */}
     </HStack>
   );
 };
