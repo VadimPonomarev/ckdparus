@@ -22,8 +22,9 @@ import {
   createListCollection,
   For,
 } from '@chakra-ui/react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 // Создаем коллекцию категорий
 const categoriesCollection = createListCollection({
@@ -39,77 +40,102 @@ const categoriesCollection = createListCollection({
   ],
 });
 
-// Схема валидации
-const EventSchema = Yup.object().shape({
-  title: Yup.string()
+// Схема валидации с использованием Zod - БЕЗ .default() для boolean полей
+const EventSchema = z.object({
+  title: z
+    .string()
     .min(5, 'Название слишком короткое')
     .max(100, 'Название слишком длинное')
-    .required('Обязательное поле'),
-  briefdescription: Yup.string()
+    .nonempty('Обязательное поле'),
+  briefdescription: z
+    .string()
     .min(10, 'Описание слишком короткое')
     .max(500, 'Описание слишком длинное')
-    .required('Обязательное поле'),
-  fulldescription: Yup.string()
+    .nonempty('Обязательное поле'),
+  fulldescription: z
+    .string()
     .min(20, 'Полное описание слишком короткое')
-    .max(5000, 'Полное описание слишком длинное'),
-  date: Yup.date()
-    .min(new Date(), 'Дата должна быть в будущем')
-    .required('Обязательное поле'),
-  time: Yup.string().required('Обязательное поле'),
-  location: Yup.string()
+    .max(5000, 'Полное описание слишком длинное')
+    .optional()
+    .or(z.literal('')),
+  date: z
+    .string()
+    .nonempty('Обязательное поле')
+    .refine(
+      date => new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0)),
+      'Дата должна быть в будущем'
+    ),
+  time: z.string().nonempty('Обязательное поле'),
+  location: z
+    .string()
     .min(5, 'Место слишком короткое')
     .max(200, 'Место слишком длинное')
-    .required('Обязательное поле'),
-  price: Yup.number()
-    .min(0, 'Цена не может быть отрицательной')
-    .required('Обязательное поле'),
-  category: Yup.string().required('Обязательное поле'),
-  imageUrl: Yup.string().url('Введите корректный URL').nullable(),
+    .nonempty('Обязательное поле'),
+  price: z
+    .number({ error: 'Цена должна быть числом' })
+    .min(0, 'Цена не может быть отрицательной'),
+  category: z.string().nonempty('Обязательное поле'),
+  imageUrl: z
+    .string()
+    .url('Введите корректный URL')
+    .optional()
+    .or(z.literal('')),
+  isFeatured: z.boolean(), // Убрали .default(false)
+  isActive: z.boolean(), // Убрали .default(true)
 });
 
 // Типы для формы
-interface EventFormValues {
-  title: string;
-  briefdescription: string;
-  fulldescription: string;
-  date: string;
-  time: string;
-  location: string;
-  price: number;
-  imageUrl: string;
-  category: string;
-  isFeatured: boolean;
-  isActive: boolean;
-}
-
-// Интерфейс для Select
-interface SelectValueChangeDetails {
-  value: string[];
-}
+type EventFormValues = z.infer<typeof EventSchema>;
 
 export default function AddEventPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (values: EventFormValues, { resetForm }: any) => {
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<EventFormValues>({
+    resolver: zodResolver(EventSchema),
+    defaultValues: {
+      title: '',
+      briefdescription: '',
+      fulldescription: '',
+      date: '',
+      time: '19:00',
+      location: '',
+      price: 0,
+      imageUrl: '',
+      category: '',
+      isFeatured: false,
+      isActive: true,
+    },
+    mode: 'onBlur',
+  });
+
+  // Для предпросмотра даты
+  const watchDate = watch('date');
+  const watchTime = watch('time');
+
+  const onSubmit: SubmitHandler<EventFormValues> = async data => {
     try {
       setIsSubmitting(true);
 
-      const dateTime = new Date(
-        `${values.date.split('T')[0]}T${values.time}:00`
-      );
+      const dateTime = new Date(`${data.date}T${data.time}:00`);
 
       const eventData = {
-        title: values.title,
-        briefdescription: values.briefdescription,
-        fulldescription: values.fulldescription || null,
+        title: data.title,
+        briefdescription: data.briefdescription,
+        fulldescription: data.fulldescription || null,
         date: dateTime.toISOString(),
-        location: values.location,
-        price: values.price,
-        imageUrl: values.imageUrl || null,
-        category: values.category,
-        isFeatured: values.isFeatured,
-        isActive: values.isActive,
+        location: data.location,
+        price: data.price,
+        imageUrl: data.imageUrl || null,
+        category: data.category,
+        isFeatured: data.isFeatured,
+        isActive: data.isActive,
       };
 
       const response = await fetch('/api/events', {
@@ -125,8 +151,8 @@ export default function AddEventPage() {
       }
 
       alert('Событие успешно создано!');
-      resetForm();
-      router.push('/admin/events');
+      reset();
+      router.push('/');
     } catch (error) {
       console.error('Error creating event:', error);
       alert('Ошибка при создании события. Попробуйте еще раз.');
@@ -135,220 +161,183 @@ export default function AddEventPage() {
     }
   };
 
-  const initialValues: EventFormValues = {
-    title: '',
-    briefdescription: '',
-    fulldescription: '',
-    date: '',
-    time: '19:00',
-    location: '',
-    price: 0,
-    imageUrl: '',
-    category: '',
-    isFeatured: false,
-    isActive: true,
-  };
-
   return (
     <Container maxW="container.xl" py={8}>
       <Card.Root>
-        <Card.Body>
+        <Card.Body p={10}>
           <Stack gap="6">
             <Heading size="xl">Добавить новое событие</Heading>
 
-            <Formik
-              initialValues={initialValues}
-              validationSchema={EventSchema}
-              onSubmit={handleSubmit}
-            >
-              {({ values, setFieldValue, handleChange, errors, touched }) => (
-                <Form>
-                  <Fieldset.Root>
-                    <Stack gap="6">
-                      {/* Основная информация */}
-                      <Stack direction={{ base: 'column', md: 'row' }} gap="6">
-                        {/* Левая колонка */}
-                        <Box flex="2">
-                          <Fieldset.Content>
-                            {/* Название */}
-                            <Field.Root
-                              invalid={!!(errors.title && touched.title)}
-                            >
-                              <Field.Label>Название события</Field.Label>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <Fieldset.Root>
+                <Stack gap="6">
+                  {/* Основная информация */}
+                  <Stack direction={{ base: 'column', md: 'row' }} gap="6">
+                    {/* Левая колонка */}
+                    <Box flex="2">
+                      <Fieldset.Content>
+                        {/* Название */}
+                        <Field.Root invalid={!!errors.title}>
+                          <Field.Label>Название события</Field.Label>
+                          <Controller
+                            name="title"
+                            control={control}
+                            render={({ field }) => (
                               <Input
-                                name="title"
+                                {...field}
                                 placeholder="Введите название события"
-                                value={values.title}
-                                onChange={e =>
-                                  setFieldValue('title', e.target.value)
-                                }
+                                onBlur={field.onBlur}
                               />
-                              {errors.title && touched.title && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{errors.title}</Alert.Title>
-                                </Alert.Root>
-                              )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.title && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>{errors.title.message}</Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* Краткое описание */}
-                            <Field.Root
-                              invalid={
-                                !!(
-                                  errors.briefdescription &&
-                                  touched.briefdescription
-                                )
-                              }
-                            >
-                              <Field.Label>Краткое описание</Field.Label>
+                        {/* Краткое описание */}
+                        <Field.Root invalid={!!errors.briefdescription}>
+                          <Field.Label>Краткое описание</Field.Label>
+                          <Controller
+                            name="briefdescription"
+                            control={control}
+                            render={({ field }) => (
                               <Textarea
-                                name="briefdescription"
+                                {...field}
                                 placeholder="Краткое описание события (до 500 символов)"
                                 rows={3}
-                                value={values.briefdescription}
-                                onChange={e =>
-                                  setFieldValue(
-                                    'briefdescription',
-                                    e.target.value
-                                  )
-                                }
+                                onBlur={field.onBlur}
                               />
-                              {errors.briefdescription &&
-                                touched.briefdescription && (
-                                  <Alert.Root status="error" mt="2">
-                                    <Alert.Indicator />
-                                    <Alert.Title>
-                                      {errors.briefdescription}
-                                    </Alert.Title>
-                                  </Alert.Root>
-                                )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.briefdescription && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.briefdescription.message}
+                              </Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* Полное описание */}
-                            <Field.Root
-                              invalid={
-                                !!(
-                                  errors.fulldescription &&
-                                  touched.fulldescription
-                                )
-                              }
-                            >
-                              <Field.Label>
-                                Полное описание (необязательно)
-                              </Field.Label>
+                        {/* Полное описание */}
+                        <Field.Root invalid={!!errors.fulldescription}>
+                          <Field.Label>
+                            Полное описание (необязательно)
+                          </Field.Label>
+                          <Controller
+                            name="fulldescription"
+                            control={control}
+                            render={({ field }) => (
                               <Textarea
-                                name="fulldescription"
+                                {...field}
                                 placeholder="Подробное описание события (до 5000 символов)"
                                 rows={4}
-                                value={values.fulldescription}
-                                onChange={e =>
-                                  setFieldValue(
-                                    'fulldescription',
-                                    e.target.value
-                                  )
-                                }
+                                onBlur={field.onBlur}
                               />
-                              {errors.fulldescription &&
-                                touched.fulldescription && (
-                                  <Alert.Root status="error" mt="2">
-                                    <Alert.Indicator />
-                                    <Alert.Title>
-                                      {errors.fulldescription}
-                                    </Alert.Title>
-                                  </Alert.Root>
-                                )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.fulldescription && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.fulldescription.message}
+                              </Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* Дата и время */}
-                            <HStack gap="4">
-                              <Field.Root
-                                flex="2"
-                                invalid={!!(errors.date && touched.date)}
-                              >
-                                <Field.Label>Дата</Field.Label>
+                        {/* Дата и время */}
+                        <HStack gap="4">
+                          <Field.Root flex="2" invalid={!!errors.date}>
+                            <Field.Label>Дата</Field.Label>
+                            <Controller
+                              name="date"
+                              control={control}
+                              render={({ field }) => (
                                 <Input
-                                  name="date"
+                                  {...field}
                                   type="date"
                                   min={new Date().toISOString().split('T')[0]}
-                                  value={values.date}
-                                  onChange={e =>
-                                    setFieldValue('date', e.target.value)
-                                  }
+                                  onBlur={field.onBlur}
                                 />
-                                {errors.date && touched.date && (
-                                  <Alert.Root status="error" mt="2">
-                                    <Alert.Indicator />
-                                    <Alert.Title>{errors.date}</Alert.Title>
-                                  </Alert.Root>
-                                )}
-                              </Field.Root>
-
-                              <Field.Root
-                                flex="1"
-                                invalid={!!(errors.time && touched.time)}
-                              >
-                                <Field.Label>Время</Field.Label>
-                                <Input
-                                  name="time"
-                                  type="time"
-                                  value={values.time}
-                                  onChange={e =>
-                                    setFieldValue('time', e.target.value)
-                                  }
-                                />
-                                {errors.time && touched.time && (
-                                  <Alert.Root status="error" mt="2">
-                                    <Alert.Indicator />
-                                    <Alert.Title>{errors.time}</Alert.Title>
-                                  </Alert.Root>
-                                )}
-                              </Field.Root>
-                            </HStack>
-
-                            {/* Место проведения */}
-                            <Field.Root
-                              invalid={!!(errors.location && touched.location)}
-                            >
-                              <Field.Label>Место проведения</Field.Label>
-                              <Input
-                                name="location"
-                                placeholder="Например: Большой концертный зал"
-                                value={values.location}
-                                onChange={e =>
-                                  setFieldValue('location', e.target.value)
-                                }
-                              />
-                              {errors.location && touched.location && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{errors.location}</Alert.Title>
-                                </Alert.Root>
                               )}
-                            </Field.Root>
-                          </Fieldset.Content>
-                        </Box>
+                            />
+                            {errors.date && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>{errors.date.message}</Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
 
-                        {/* Правая колонка */}
-                        <Box flex="1">
-                          <Fieldset.Content>
-                            {/* Цена */}
-                            <Field.Root
-                              invalid={!!(errors.price && touched.price)}
-                            >
-                              <Field.Label>Цена (₽)</Field.Label>
+                          <Field.Root flex="1" invalid={!!errors.time}>
+                            <Field.Label>Время</Field.Label>
+                            <Controller
+                              name="time"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  type="time"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.time && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>{errors.time.message}</Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+                        </HStack>
+
+                        {/* Место проведения */}
+                        <Field.Root invalid={!!errors.location}>
+                          <Field.Label>Место проведения</Field.Label>
+                          <Controller
+                            name="location"
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                placeholder="Например: Большой концертный зал"
+                                onBlur={field.onBlur}
+                              />
+                            )}
+                          />
+                          {errors.location && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.location.message}
+                              </Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
+                      </Fieldset.Content>
+                    </Box>
+
+                    {/* Правая колонка */}
+                    <Box flex="1">
+                      <Fieldset.Content>
+                        {/* Цена */}
+                        <Field.Root invalid={!!errors.price}>
+                          <Field.Label>Цена (₽)</Field.Label>
+                          <Controller
+                            name="price"
+                            control={control}
+                            render={({ field }) => (
                               <NumberInput.Root
-                                value={values.price.toString()}
-                                onChange={details => {
-                                  // NumberInput передает details, а не строку
-                                  if (
-                                    details &&
-                                    typeof details === 'object' &&
-                                    'value' in details
-                                  ) {
-                                    const numValue =
-                                      parseInt(details.value as string) || 0;
-                                    setFieldValue('price', numValue);
-                                  }
+                                value={field.value.toString()}
+                                onValueChange={details => {
+                                  const numValue =
+                                    parseInt(details.value as string) || 0;
+                                  field.onChange(numValue);
                                 }}
                                 min={0}
                                 width="full"
@@ -356,33 +345,32 @@ export default function AddEventPage() {
                                 <NumberInput.Control />
                                 <NumberInput.Input />
                               </NumberInput.Root>
-                              {errors.price && touched.price && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{errors.price}</Alert.Title>
-                                </Alert.Root>
-                              )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.price && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>{errors.price.message}</Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* Категория */}
-                            <Field.Root
-                              invalid={!!(errors.category && touched.category)}
-                            >
-                              <Field.Label>Категория</Field.Label>
+                        {/* Категория */}
+                        <Field.Root invalid={!!errors.category}>
+                          <Field.Label>Категория</Field.Label>
+                          <Controller
+                            name="category"
+                            control={control}
+                            render={({ field }) => (
                               <Select.Root
                                 collection={categoriesCollection}
-                                value={[values.category]}
-                                onValueChange={(
-                                  details: SelectValueChangeDetails
-                                ) =>
-                                  setFieldValue(
-                                    'category',
-                                    details.value[0] || ''
-                                  )
+                                value={[field.value]}
+                                onValueChange={details =>
+                                  field.onChange(details.value[0] || '')
                                 }
                                 width="full"
                               >
-                                <Select.HiddenSelect name="category" />
+                                <Select.HiddenSelect />
                                 <Select.Control>
                                   <Select.Trigger>
                                     <Select.ValueText placeholder="Выберите категорию" />
@@ -409,131 +397,146 @@ export default function AddEventPage() {
                                   </Select.Positioner>
                                 </Portal>
                               </Select.Root>
-                              {errors.category && touched.category && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{errors.category}</Alert.Title>
-                                </Alert.Root>
-                              )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.category && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.category.message}
+                              </Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* URL изображения */}
-                            <Field.Root
-                              invalid={!!(errors.imageUrl && touched.imageUrl)}
-                            >
-                              <Field.Label>
-                                URL изображения (необязательно)
-                              </Field.Label>
+                        {/* URL изображения */}
+                        <Field.Root invalid={!!errors.imageUrl}>
+                          <Field.Label>
+                            URL изображения (необязательно)
+                          </Field.Label>
+                          <Controller
+                            name="imageUrl"
+                            control={control}
+                            render={({ field }) => (
                               <Input
-                                name="imageUrl"
+                                {...field}
                                 placeholder="https://example.com/image.jpg"
                                 type="url"
-                                value={values.imageUrl}
-                                onChange={e =>
-                                  setFieldValue('imageUrl', e.target.value)
-                                }
+                                onBlur={field.onBlur}
                               />
-                              {errors.imageUrl && touched.imageUrl && (
-                                <Alert.Root status="error" mt="2">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{errors.imageUrl}</Alert.Title>
-                                </Alert.Root>
-                              )}
-                            </Field.Root>
+                            )}
+                          />
+                          {errors.imageUrl && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.imageUrl.message}
+                              </Alert.Title>
+                            </Alert.Root>
+                          )}
+                        </Field.Root>
 
-                            {/* Чекбоксы */}
-                            <Stack gap="4">
+                        {/* Чекбоксы */}
+                        <Stack gap="4">
+                          <Controller
+                            name="isFeatured"
+                            control={control}
+                            render={({ field }) => (
                               <Checkbox.Root
-                                checked={values.isFeatured}
-                                onCheckedChange={checked => {
-                                  // checked может быть boolean или "indeterminate"
-                                  if (typeof checked === 'boolean') {
-                                    setFieldValue('isFeatured', checked);
-                                  }
-                                }}
+                                checked={field.value}
+                                onCheckedChange={({ checked }) =>
+                                  field.onChange(checked)
+                                }
+                                cursor="pointer"
                               >
-                                <Checkbox.HiddenInput name="isFeatured" />
-                                <Checkbox.Control />
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control cursor="pointer" />
                                 <Checkbox.Label>
                                   Избранное событие
                                 </Checkbox.Label>
                               </Checkbox.Root>
-                              <Box fontSize="sm" color="gray.500" ml="7">
-                                Показывать на главной странице
-                              </Box>
+                            )}
+                          />
+                          <Box fontSize="sm" color="gray.500" ml="7">
+                            Показывать на главной странице
+                          </Box>
 
+                          <Controller
+                            name="isActive"
+                            control={control}
+                            render={({ field }) => (
                               <Checkbox.Root
-                                checked={values.isActive}
-                                onCheckedChange={checked => {
-                                  // checked может быть boolean или "indeterminate"
-                                  if (typeof checked === 'boolean') {
-                                    setFieldValue('isActive', checked);
-                                  }
-                                }}
+                                checked={field.value}
+                                onCheckedChange={({ checked }) =>
+                                  field.onChange(checked)
+                                }
+                                cursor="pointer"
                               >
-                                <Checkbox.HiddenInput name="isActive" />
-                                <Checkbox.Control />
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control cursor="pointer" />
                                 <Checkbox.Label>
                                   Активное событие
                                 </Checkbox.Label>
                               </Checkbox.Root>
-                              <Box fontSize="sm" color="gray.500" ml="7">
-                                Показывать на сайте
+                            )}
+                          />
+                          <Box fontSize="sm" color="gray.500" ml="7">
+                            Показывать на сайте
+                          </Box>
+                        </Stack>
+
+                        {/* Предпросмотр даты */}
+                        <Card.Root variant="outline" mt="4">
+                          <Card.Body>
+                            <Heading size="sm" mb="3">
+                              Предпросмотр даты
+                            </Heading>
+                            {watchDate && watchTime ? (
+                              <Box>
+                                {new Date(
+                                  `${watchDate}T${watchTime}`
+                                ).toLocaleString('ru-RU', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </Box>
-                            </Stack>
+                            ) : (
+                              <Box color="gray.500">
+                                Укажите дату и время для предпросмотра
+                              </Box>
+                            )}
+                          </Card.Body>
+                        </Card.Root>
+                      </Fieldset.Content>
+                    </Box>
+                  </Stack>
 
-                            {/* Предпросмотр даты */}
-                            <Card.Root variant="outline" mt="4">
-                              <Card.Body>
-                                <Heading size="sm" mb="3">
-                                  Предпросмотр даты
-                                </Heading>
-                                {values.date && values.time ? (
-                                  <Box>
-                                    {new Date(
-                                      `${values.date}T${values.time}`
-                                    ).toLocaleString('ru-RU', {
-                                      weekday: 'long',
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                                  </Box>
-                                ) : (
-                                  <Box color="gray.500">
-                                    Укажите дату и время для предпросмотра
-                                  </Box>
-                                )}
-                              </Card.Body>
-                            </Card.Root>
-                          </Fieldset.Content>
-                        </Box>
-                      </Stack>
-
-                      {/* Кнопки */}
-                      <Card.Footer justifyContent="flex-end" gap="3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => router.push('/admin/events')}
-                        >
-                          Отмена
-                        </Button>
-                        <Button
-                          type="submit"
-                          colorPalette="blue"
-                          loading={isSubmitting}
-                        >
-                          {isSubmitting ? 'Создание...' : 'Создать событие'}
-                        </Button>
-                      </Card.Footer>
-                    </Stack>
-                  </Fieldset.Root>
-                </Form>
-              )}
-            </Formik>
+                  {/* Кнопки */}
+                  <Card.Footer justifyContent="flex-end" gap="3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.push('/admin/events')}
+                      px={5}
+                    >
+                      Отмена
+                    </Button>
+                    <Button
+                      type="submit"
+                      colorPalette="blue"
+                      loading={isSubmitting}
+                      px={5}
+                    >
+                      {isSubmitting ? 'Создание...' : 'Создать событие'}
+                    </Button>
+                  </Card.Footer>
+                </Stack>
+              </Fieldset.Root>
+            </form>
           </Stack>
         </Card.Body>
       </Card.Root>
