@@ -17,6 +17,38 @@ interface PosterCardProps {
   linkText?: string;
 }
 
+// Функция для получения цветовой схемы по категории
+const getCategoryColorScheme = (category: string): string => {
+  const categoryMap: Record<string, string> = {
+    концерт: 'teal.500',
+    выставка: 'green.500',
+    спектакль: 'red.500',
+    фестиваль: 'orange.500',
+    'мастер-класс': 'blue.500',
+    лекция: 'purple.500',
+    конкурс: 'pink.500',
+    другое: 'gray.500',
+  };
+
+  return categoryMap[category.toLowerCase()] || 'gray';
+};
+
+// Функция для получения русского названия категории
+const getCategoryLabel = (categoryValue: string): string => {
+  const categoryLabels: Record<string, string> = {
+    концерт: 'Концерт',
+    выставка: 'Выставка',
+    спектакль: 'Спектакль',
+    фестиваль: 'Фестиваль',
+    'мастер-класс': 'Мастер-класс',
+    лекция: 'Лекция',
+    конкурс: 'Конкурс',
+    другое: 'Другое',
+  };
+
+  return categoryLabels[categoryValue.toLowerCase()] || categoryValue;
+};
+
 const PosterCard: React.FC<PosterCardProps> = ({
   id,
   title,
@@ -58,13 +90,17 @@ const PosterCard: React.FC<PosterCardProps> = ({
         {/* Категория */}
         {category && (
           <Badge
-            colorScheme="blue"
+            colorScheme={getCategoryColorScheme(category)}
             alignSelf="flex-start"
             borderRadius="full"
             px={3}
             py={1}
+            textTransform="capitalize"
+            fontSize="sm"
+            bgColor={getCategoryColorScheme(category)}
+            color="blackAlpha.800"
           >
-            {category}
+            {getCategoryLabel(category)}
           </Badge>
         )}
 

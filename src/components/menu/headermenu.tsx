@@ -266,7 +266,7 @@ const MenuLink: React.FC<{
       fontSize="xl"
       cursor="pointer"
       transition="all 0.2s ease-in-out"
-      color={isActive ? 'blue.600' : 'gray.700'}
+      color={isActive ? 'blue.600' : 'black.700'}
       _hover={{
         textDecoration: 'none',
         color: 'blue.600',
