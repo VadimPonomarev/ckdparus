@@ -171,7 +171,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
   return (
     <>
-      <Container maxW="container.xl" py={8}>
+      <Container py={8}>
         <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
           {/* Левая колонка - основная информация */}
           <GridItem>
@@ -375,6 +375,8 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
               p={6}
               border="1px solid"
               borderColor="gray.200"
+              display="flex"
+              justifyContent="center"
             >
               <Stack>
                 {/* Цена */}
