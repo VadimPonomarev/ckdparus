@@ -239,6 +239,10 @@ const NAV_ITEMS: NavItem[] = [
     title: 'Добавление события (Афиши)',
     href: '/addevent',
   },
+  {
+    title: 'Добавление новости',
+    href: '/addnews',
+  },
 ];
 
 // Компонент для пунктов меню
