@@ -136,7 +136,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   const readingTime = Math.max(1, Math.ceil(content.length / 1200));
 
   return (
-    <Container maxW="container.xl" py={8}>
+    <Box>
       <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
         {/* Левая колонка - основная информация */}
         <GridItem>
@@ -525,7 +525,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           Поделиться новостью
         </Button>
       </Flex>
-    </Container>
+    </Box>
   );
 };
 
