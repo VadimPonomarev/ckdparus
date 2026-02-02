@@ -184,6 +184,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     fontSize="md"
                     px={4}
                     py={2}
+                    bgColor={getCategoryColorScheme(category)}
                     borderRadius="full"
                   >
                     {getCategoryLabel(category)}
