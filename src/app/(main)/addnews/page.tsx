@@ -101,7 +101,7 @@ export default function AddNewsPage() {
 
       alert('Новость успешно создана!');
       reset();
-      router.push('/admin/news');
+      router.push('/');
     } catch (error) {
       console.error('Error creating news:', error);
       alert('Ошибка при создании новости. Попробуйте еще раз.');
