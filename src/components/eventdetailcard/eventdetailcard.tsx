@@ -53,22 +53,23 @@ interface EventDetailCardProps {
   onBookmark?: () => void;
 }
 
-// Функции для работы с категориями (используем те же, что и в PosterCard)
+// Функция для получения цветовой схемы по категории
 const getCategoryColorScheme = (category: string): string => {
   const categoryMap: Record<string, string> = {
-    концерт: 'purple',
-    выставка: 'green',
-    спектакль: 'red',
-    фестиваль: 'orange',
-    'мастер-класс': 'blue',
-    лекция: 'teal',
-    конкурс: 'pink',
-    другое: 'gray',
+    концерт: 'teal.500',
+    выставка: 'green.500',
+    спектакль: 'red.500',
+    фестиваль: 'orange.500',
+    'мастер-класс': 'blue.500',
+    лекция: 'purple.500',
+    конкурс: 'pink.500',
+    другое: 'gray.500',
   };
 
   return categoryMap[category.toLowerCase()] || 'gray';
 };
 
+// Функция для получения русского названия категории
 const getCategoryLabel = (categoryValue: string): string => {
   const categoryLabels: Record<string, string> = {
     концерт: 'Концерт',
