@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 // GET - получение конкретной новости
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     // Находим новость
     const news = await prisma.news.findUnique({
@@ -42,10 +42,10 @@ export async function GET(
 // PUT - обновление новости
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const body = await request.json();
 
     const updatedNews = await prisma.news.update({
@@ -72,10 +72,10 @@ export async function PUT(
 // DELETE - удаление новости
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     await prisma.news.delete({
       where: { id },
