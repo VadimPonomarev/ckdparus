@@ -171,7 +171,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
   return (
     <>
-      <Container py={8}>
+      <Box>
         <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
           {/* Левая колонка - основная информация */}
           <GridItem>
@@ -523,7 +523,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
             </Box>
           </GridItem>
         </Grid>
-      </Container>
+      </Box>
     </>
   );
 };
