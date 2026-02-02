@@ -7,6 +7,7 @@ import Headerpicture from '@/components/headerpicture/headerpicture';
 import HeaderMenu from '@/components/menu/headermenu';
 import Links from '@/components/links/links';
 import Development from '@/components/development/development';
+import Footer from '@/components/footer/footer';
 
 export default function MainLayout({
   children,
@@ -31,7 +32,7 @@ export default function MainLayout({
       gradientTo="white"
       minH="100vh"
     >
-      <Box minH="100vh" mx={20}>
+      <Box minH="100vh" mx={20} pb={10}>
         <Preheader />
         <Stack gap={10}>
           <Headerpicture />
@@ -54,9 +55,9 @@ export default function MainLayout({
           {children}
 
           <Links />
-          <Development />
         </Stack>
       </Box>
+      <Footer />
     </Box>
   );
 }

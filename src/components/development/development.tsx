@@ -1,10 +1,28 @@
-import { HStack, Text } from '@chakra-ui/react';
+import { Box, HStack, Link, Stack, Text } from '@chakra-ui/react';
 
 const Development = () => {
   return (
-    <HStack width="100%" justify="end" pb={10}>
-      <Text>Development ( Vadim Ponomarev )</Text>
+    <HStack width="100%" justify="space-between" pb={10} px={20} color="blackAlpha.500">
+      <Link >
+        <Text _hover={{
+          textDecoration: 'none',
+          color: 'blue.600',
+        }}>Политика обработки персональных данных</Text>
+      </Link>
+      <Link href="mailto:vadim_i4@mail.ru">Место для вашей рекламмы </Link>
+      <Stack>
+        <Link href='/'>
+          <Text>Development ( Vadim Ponomarev )</Text>
+        </Link>
+        <Link href="mailto:vadim_i4@mail.ru">
+          <Text _hover={{
+            textDecoration: 'none',
+            color: 'blue.600',
+          }}>Vadim_i4@mail.ru</Text>
+        </Link>
+      </Stack>
     </HStack>
+
   );
 };
 
