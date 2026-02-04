@@ -378,26 +378,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 </Heading>
                 <Flex gap={3} justifyContent="center">
                   <Button
-                    aria-label="Поделиться в Facebook"
-                    onClick={() => handleShare('facebook')}
-                    variant="ghost"
-                    colorPalette="blue"
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaFacebook} boxSize="20px" />
-                  </Button>
-                  <Button
-                    aria-label="Поделиться в Twitter"
-                    onClick={() => handleShare('twitter')}
-                    variant="ghost"
-                    colorPalette="twitter"
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaTwitter} boxSize="20px" />
-                  </Button>
-                  <Button
                     aria-label="Поделиться ВКонтакте"
                     onClick={() => handleShare('vk')}
                     variant="ghost"

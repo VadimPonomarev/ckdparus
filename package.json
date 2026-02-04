@@ -17,6 +17,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.2.2",
+    "@pbe/react-yandex-maps": "^1.2.5",
     "@prisma/client": "^5.22.0",
     "@types/pg": "^8.16.0",
     "axios": "^1.13.2",

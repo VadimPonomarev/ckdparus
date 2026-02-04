@@ -3,6 +3,7 @@
 import Poster from '@/components/poster/poster';
 import News from '@/components/news/news';
 import HallPlan from '@/components/hallplan/hallplan';
+import YandexMap from '@/components/yandexmap/YandexMap';
 
 export default function HomePage() {
   return (
@@ -10,6 +11,7 @@ export default function HomePage() {
       <Poster />
       <News />
       <HallPlan />
+      <YandexMap />
     </>
   );
 }
