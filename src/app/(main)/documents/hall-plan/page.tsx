@@ -10,7 +10,7 @@ export default function History() {
       <Center>
         <Stack>
           <Image
-            src="/images/plan_zala.jpg"
+            src="/images/plan_zala.png"
             alt="План зала"
             objectFit="contain"
             borderRadius="20px"
