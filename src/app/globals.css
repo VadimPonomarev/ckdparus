@@ -32,6 +32,71 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
+}
+
+/* Версия для слабовидящих */
+.accessibility-active {
+  /* Базовая стилизация */
+}
+
+.accessibility-active a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+}
+
+.accessibility-active :focus {
+  outline: 3px solid red !important;
+  outline-offset: 2px !important;
+}
+
+/* Цветовые темы */
+.theme-black-white {
+  background-color: white !important;
+  color: black !important;
+}
+
+.theme-black-white a {
+  color: black !important;
+  border-bottom: 2px solid black !important;
+}
+
+.theme-blue-yellow {
+  background-color: yellow !important;
+  color: blue !important;
+}
+
+.theme-blue-yellow a {
+  color: blue !important;
+  border-bottom: 2px solid blue !important;
+}
+
+.theme-brown-beige {
+  background-color: #f5f5dc !important;
+  color: #8b4513 !important;
+}
+
+.theme-brown-beige a {
+  color: #8b4513 !important;
+  border-bottom: 2px solid #8b4513 !important;
+}
+
+.theme-green-brown {
+  background-color: #d2b48c !important;
+  color: #006400 !important;
+}
+
+.theme-green-brown a {
+  color: #006400 !important;
+  border-bottom: 2px solid #006400 !important;
+}
+
+/* Шрифты */
+.font-arial {
+  font-family: Arial, sans-serif !important;
+}
+
+.font-times {
+  font-family: 'Times New Roman', Times, serif !important;
 }

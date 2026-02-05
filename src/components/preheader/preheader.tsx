@@ -1,6 +1,6 @@
 import { Box, HStack, Icon, Image, Link, Stack, Text } from '@chakra-ui/react';
 import { FaVk } from 'react-icons/fa6';
-import Links from '../links/links';
+import AccessibilityButton from '@/components/accessibility/AccessibilityButton';
 
 const Preheader = () => {
   return (
@@ -19,7 +19,11 @@ const Preheader = () => {
           </HStack>
           <Text>Режим работы: 8:00-21:00</Text>
         </Stack>
-        <HStack gap={20}>
+
+        <HStack gap={5}>
+          {/* Кнопка для слабовидящих */}
+          <AccessibilityButton />
+
           <Link href="https://max.ru/id3911001237_gos" target="_blank">
             <HStack
               cursor="pointer"
@@ -38,6 +42,7 @@ const Preheader = () => {
               />
             </HStack>
           </Link>
+
           <Link href="https://vk.ru/ckd_parus_sovetsk" target="_blank">
             <HStack
               cursor="pointer"
