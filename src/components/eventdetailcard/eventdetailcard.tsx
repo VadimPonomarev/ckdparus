@@ -64,7 +64,7 @@ const getCategoryColorScheme = (category: string): string => {
     'мастер-класс': 'blue.500',
     лекция: 'purple.500',
     конкурс: 'pink.500',
-    другое: 'gray.500',
+    другое: 'cyan.500',
   };
 
   return categoryMap[category.toLowerCase()] || 'gray';
@@ -194,7 +194,12 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                 )}
 
                 <Flex gap={3}>
-                  <Button variant="outline" size="sm" onClick={handleShare}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    px={10}
+                  >
                     Поделиться
                   </Button>
                 </Flex>

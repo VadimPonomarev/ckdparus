@@ -27,7 +27,7 @@ const getCategoryColorScheme = (category: string): string => {
     'мастер-класс': 'blue.500',
     лекция: 'purple.500',
     конкурс: 'pink.500',
-    другое: 'gray.500',
+    другое: 'cyan.500',
   };
 
   return categoryMap[category.toLowerCase()] || 'gray';
