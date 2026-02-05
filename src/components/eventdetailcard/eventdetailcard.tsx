@@ -43,6 +43,7 @@ interface EventDetailCardProps {
   organizerContacts?: string;
   maxParticipants?: number;
   currentParticipants?: number;
+  fulldescription?: string;
   tags?: string[];
   socialLinks?: {
     instagram?: string;
@@ -100,6 +101,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
   organizerContacts,
   maxParticipants,
   currentParticipants,
+  fulldescription,
   tags = [],
   socialLinks,
   onRegister,
@@ -309,7 +311,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   color="gray.700"
                   whiteSpace="pre-line"
                 >
-                  {description}
+                  {fulldescription}
                 </Text>
               </Box>
 
