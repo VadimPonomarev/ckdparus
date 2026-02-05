@@ -115,7 +115,11 @@ const GalleryPage = () => {
           </Text>
         </Box>
 
-        <Button variant="outline" onClick={() => router.push('/gallery')}>
+        <Button
+          variant="outline"
+          onClick={() => router.push('/gallery')}
+          px={10}
+        >
           К галереям
         </Button>
       </Flex>
