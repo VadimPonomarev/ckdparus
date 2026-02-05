@@ -136,7 +136,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
             alt={alt}
             w="100%"
             h="180px"
-            objectFit="cover"
+            objectFit="contain"
             borderRadius="md"
             loading="lazy"
           />

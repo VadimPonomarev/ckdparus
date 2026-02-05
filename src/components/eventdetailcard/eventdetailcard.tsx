@@ -215,7 +215,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   alt={alt}
                   w="100%"
                   h={{ base: '300px', md: '500px' }}
-                  objectFit="cover"
+                  objectFit="contain"
                   loading="eager"
                 />
               </Box>
