@@ -12,7 +12,7 @@ import {
 
 export default function Page() {
   return (
-    <Container maxW="container.xl">
+    <Box>
       <VStack>
         <Box textAlign="center">
           <Text fontSize="3xl" fontWeight="bold" color="blue.700">
@@ -167,6 +167,6 @@ export default function Page() {
           </Box>
         </HStack>
       </VStack>
-    </Container>
+    </Box>
   );
 }

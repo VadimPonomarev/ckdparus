@@ -90,3 +90,32 @@ model Team {
   
   @@map("teams")
 }
+
+model Gallery {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  slug        String   @unique
+  coverImage  String?  @map("cover_image")
+  
+  images      GalleryImage[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("galleries")
+}
+
+model GalleryImage {
+  id          String   @id @default(cuid())
+  galleryId   String   @map("gallery_id")
+  url         String
+  alt         String?
+  order       Int      @default(0)
+  caption     String?
+  
+  gallery     Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("gallery_images")
+}

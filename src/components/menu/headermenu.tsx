@@ -236,6 +236,10 @@ const NAV_ITEMS: NavItem[] = [
   STATIC_MENUS.security as NavItem,
   STATIC_MENUS.contact as NavItem,
   {
+    title: 'Галерея',
+    href: '/gallery',
+  },
+  {
     title: 'Добавление события (Афиши)',
     href: '/addevent',
   },
