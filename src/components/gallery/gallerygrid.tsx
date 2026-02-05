@@ -12,6 +12,8 @@ import {
   Center,
   Flex,
   Badge,
+  Separator,
+  Stack,
 } from '@chakra-ui/react';
 import { FaImages, FaArrowRight } from 'react-icons/fa';
 import { Icon } from '@chakra-ui/react';
@@ -104,10 +106,11 @@ const GalleryGrid = () => {
   }
 
   return (
-    <Box p={4}>
-      <Heading as="h1" size="xl" mb={8} textAlign="center">
+    <Stack gap={10}>
+      <Text fontSize="2xl" fontWeight="bold">
         Фотогалерея
-      </Heading>
+      </Text>
+      <Separator />
 
       <Grid
         templateColumns={{
@@ -147,7 +150,7 @@ const GalleryGrid = () => {
               boxShadow="lg"
             >
               {/* Контейнер изображения */}
-              <Box position="relative" h="250px" overflow="hidden">
+              <Box position="relative" overflow="hidden">
                 <Image
                   src={coverImage}
                   alt={gallery.title}
@@ -191,7 +194,7 @@ const GalleryGrid = () => {
                   </Badge>
 
                   {/* Контент */}
-                  <Box color="white">
+                  <Box color="white" pb={20}>
                     <Heading as="h3" size="md" mb={2}>
                       {gallery.title}
                     </Heading>
@@ -223,7 +226,7 @@ const GalleryGrid = () => {
           );
         })}
       </Grid>
-    </Box>
+    </Stack>
   );
 };
 

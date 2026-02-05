@@ -89,7 +89,7 @@ const GalleryPage = () => {
           <Text color="gray.500">
             {error || 'Запрошенная галерея не существует'}
           </Text>
-          <Button onClick={() => router.push('/gallery')} mt={4}>
+          <Button onClick={() => router.push('/gallery')} mt={4} px={10}>
             Вернуться к галереям
           </Button>
         </Center>
@@ -100,30 +100,28 @@ const GalleryPage = () => {
   return (
     <Box>
       {/* Заголовок */}
-      <Container maxW="container.xl" py={8}>
-        <Flex justifyContent="space-between" alignItems="center" mb={6}>
-          <Box>
-            <Heading as="h1" size="2xl" mb={2}>
-              {gallery.title}
-            </Heading>
-            {gallery.description && (
-              <Text color="fg.muted" fontSize="lg">
-                {gallery.description}
-              </Text>
-            )}
-            <Text fontSize="sm" color="fg.subtle" mt={2}>
-              {gallery.images.length} фотографий
+      <Flex justifyContent="space-between" alignItems="center" mb={6}>
+        <Box>
+          <Heading as="h1" size="2xl" mb={2}>
+            {gallery.title}
+          </Heading>
+          {gallery.description && (
+            <Text color="fg.muted" fontSize="lg">
+              {gallery.description}
             </Text>
-          </Box>
+          )}
+          <Text fontSize="sm" color="fg.subtle" mt={2}>
+            {gallery.images.length} фотографий
+          </Text>
+        </Box>
 
-          <Button variant="outline" onClick={() => router.push('/gallery')}>
-            К галереям
-          </Button>
-        </Flex>
+        <Button variant="outline" onClick={() => router.push('/gallery')}>
+          К галереям
+        </Button>
+      </Flex>
 
-        {/* Слайдер */}
-        <GallerySlider images={gallery.images} />
-      </Container>
+      {/* Слайдер */}
+      <GallerySlider images={gallery.images} />
     </Box>
   );
 };
