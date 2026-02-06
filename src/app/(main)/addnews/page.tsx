@@ -25,6 +25,7 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import dynamic from 'next/dynamic';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Схема валидации с использованием Zod
 const NewsSchema = z.object({
@@ -111,206 +112,210 @@ export default function AddNewsPage() {
   };
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <Card.Root>
-        <Card.Body p={10}>
-          <Stack gap="6">
-            <Heading size="xl">Добавить новую новость</Heading>
+    <ProtectedRoute requiredRole="ADMIN">
+      <Box>
+        <Card.Root>
+          <Card.Body p={10}>
+            <Stack gap="6">
+              <Heading size="xl">Добавить новую новость</Heading>
 
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <Fieldset.Root>
-                <Stack gap="6">
-                  {/* Основная информация */}
-                  <Stack direction={{ base: 'column', md: 'row' }} gap="6">
-                    {/* Левая колонка */}
-                    <Box flex="2">
-                      <Fieldset.Content>
-                        {/* Заголовок */}
-                        <Field.Root invalid={!!errors.title}>
-                          <Field.Label>Заголовок новости</Field.Label>
+              <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Fieldset.Root>
+                  <Stack gap="6">
+                    {/* Основная информация */}
+                    <Stack direction={{ base: 'column', md: 'row' }} gap="6">
+                      {/* Левая колонка */}
+                      <Box flex="2">
+                        <Fieldset.Content>
+                          {/* Заголовок */}
+                          <Field.Root invalid={!!errors.title}>
+                            <Field.Label>Заголовок новости</Field.Label>
+                            <Controller
+                              name="title"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="Введите заголовок новости"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.title && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.title.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+
+                          {/* Краткое описание */}
+                          <Field.Root invalid={!!errors.excerpt}>
+                            <Field.Label>Краткое описание (анонс)</Field.Label>
+                            <Controller
+                              name="excerpt"
+                              control={control}
+                              render={({ field }) => (
+                                <Textarea
+                                  {...field}
+                                  placeholder="Краткое описание для превью (до 500 символов)"
+                                  rows={3}
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            <Field.HelperText>
+                              Будет отображаться в списке новостей
+                            </Field.HelperText>
+                            {errors.excerpt && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.excerpt.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+
+                          {/* Полное содержание */}
+                          <Field.Root invalid={!!errors.content}>
+                            <Field.Label>Содержание новости</Field.Label>
+                            <Controller
+                              name="content"
+                              control={control}
+                              render={({ field }) => (
+                                <Textarea
+                                  {...field}
+                                  placeholder="Полное содержание новости"
+                                  rows={8}
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            <Field.HelperText>
+                              Можно использовать HTML-разметку
+                            </Field.HelperText>
+                            {errors.content && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.content.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+                        </Fieldset.Content>
+                      </Box>
+
+                      {/* Правая колонка */}
+                      <Box flex="1">
+                        <Fieldset.Content>
+                          {/* URL изображения */}
+                          <Field.Root invalid={!!errors.imageUrl}>
+                            <Field.Label>
+                              URL изображения (необязательно)
+                            </Field.Label>
+                            <Controller
+                              name="imageUrl"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="https://example.com/image.jpg"
+                                  type="url"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.imageUrl && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.imageUrl.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                            <Field.HelperText>
+                              Рекомендуемый размер: 1200×630px
+                            </Field.HelperText>
+                          </Field.Root>
+
+                          {/* Статус публикации */}
                           <Controller
-                            name="title"
+                            name="isPublished"
                             control={control}
                             render={({ field }) => (
-                              <Input
-                                {...field}
-                                placeholder="Введите заголовок новости"
-                                onBlur={field.onBlur}
-                              />
+                              <Checkbox.Root
+                                checked={field.value}
+                                onCheckedChange={({ checked }) =>
+                                  field.onChange(checked)
+                                }
+                                cursor="pointer"
+                                mt={6}
+                              >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control cursor="pointer" />
+                                <Checkbox.Label fontSize="lg">
+                                  Опубликовать сразу
+                                </Checkbox.Label>
+                              </Checkbox.Root>
                             )}
                           />
-                          {errors.title && (
-                            <Alert.Root status="error" mt="2">
-                              <Alert.Indicator />
-                              <Alert.Title>{errors.title.message}</Alert.Title>
-                            </Alert.Root>
-                          )}
-                        </Field.Root>
+                          <Box fontSize="sm" color="gray.500" ml="7">
+                            Если снять галочку, новость сохранится как черновик
+                          </Box>
 
-                        {/* Краткое описание */}
-                        <Field.Root invalid={!!errors.excerpt}>
-                          <Field.Label>Краткое описание (анонс)</Field.Label>
-                          <Controller
-                            name="excerpt"
-                            control={control}
-                            render={({ field }) => (
-                              <Textarea
-                                {...field}
-                                placeholder="Краткое описание для превью (до 500 символов)"
-                                rows={3}
-                                onBlur={field.onBlur}
-                              />
-                            )}
-                          />
-                          <Field.HelperText>
-                            Будет отображаться в списке новостей
-                          </Field.HelperText>
-                          {errors.excerpt && (
-                            <Alert.Root status="error" mt="2">
-                              <Alert.Indicator />
-                              <Alert.Title>
-                                {errors.excerpt.message}
-                              </Alert.Title>
-                            </Alert.Root>
-                          )}
-                        </Field.Root>
-
-                        {/* Полное содержание */}
-                        <Field.Root invalid={!!errors.content}>
-                          <Field.Label>Содержание новости</Field.Label>
-                          <Controller
-                            name="content"
-                            control={control}
-                            render={({ field }) => (
-                              <Textarea
-                                {...field}
-                                placeholder="Полное содержание новости"
-                                rows={8}
-                                onBlur={field.onBlur}
-                              />
-                            )}
-                          />
-                          <Field.HelperText>
-                            Можно использовать HTML-разметку
-                          </Field.HelperText>
-                          {errors.content && (
-                            <Alert.Root status="error" mt="2">
-                              <Alert.Indicator />
-                              <Alert.Title>
-                                {errors.content.message}
-                              </Alert.Title>
-                            </Alert.Root>
-                          )}
-                        </Field.Root>
-                      </Fieldset.Content>
-                    </Box>
-
-                    {/* Правая колонка */}
-                    <Box flex="1">
-                      <Fieldset.Content>
-                        {/* URL изображения */}
-                        <Field.Root invalid={!!errors.imageUrl}>
-                          <Field.Label>
-                            URL изображения (необязательно)
-                          </Field.Label>
-                          <Controller
-                            name="imageUrl"
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                placeholder="https://example.com/image.jpg"
-                                type="url"
-                                onBlur={field.onBlur}
-                              />
-                            )}
-                          />
-                          {errors.imageUrl && (
-                            <Alert.Root status="error" mt="2">
-                              <Alert.Indicator />
-                              <Alert.Title>
-                                {errors.imageUrl.message}
-                              </Alert.Title>
-                            </Alert.Root>
-                          )}
-                          <Field.HelperText>
-                            Рекомендуемый размер: 1200×630px
-                          </Field.HelperText>
-                        </Field.Root>
-
-                        {/* Статус публикации */}
-                        <Controller
-                          name="isPublished"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox.Root
-                              checked={field.value}
-                              onCheckedChange={({ checked }) =>
-                                field.onChange(checked)
-                              }
-                              cursor="pointer"
-                              mt={6}
-                            >
-                              <Checkbox.HiddenInput />
-                              <Checkbox.Control cursor="pointer" />
-                              <Checkbox.Label fontSize="lg">
-                                Опубликовать сразу
-                              </Checkbox.Label>
-                            </Checkbox.Root>
-                          )}
-                        />
-                        <Box fontSize="sm" color="gray.500" ml="7">
-                          Если снять галочку, новость сохранится как черновик
-                        </Box>
-
-                        {/* Предпросмотр */}
-                        <Card.Root variant="outline" mt={8}>
-                          <Card.Body>
-                            <Heading size="sm" mb="3">
-                              Предпросмотр
-                            </Heading>
-                            <Text fontSize="sm" color="gray.500">
-                              Новость будет отображаться в разделе "Новости"
-                            </Text>
-                            <Box mt={2}>
-                              <Text fontSize="xs">
-                                • Автоматически добавится дата публикации
+                          {/* Предпросмотр */}
+                          <Card.Root variant="outline" mt={8}>
+                            <Card.Body>
+                              <Heading size="sm" mb="3">
+                                Предпросмотр
+                              </Heading>
+                              <Text fontSize="sm" color="gray.500">
+                                Новость будет отображаться в разделе "Новости"
                               </Text>
-                              <Text fontSize="xs">
-                                • Счетчик просмотров начнется с 0
-                              </Text>
-                            </Box>
-                          </Card.Body>
-                        </Card.Root>
-                      </Fieldset.Content>
-                    </Box>
+                              <Box mt={2}>
+                                <Text fontSize="xs">
+                                  • Автоматически добавится дата публикации
+                                </Text>
+                                <Text fontSize="xs">
+                                  • Счетчик просмотров начнется с 0
+                                </Text>
+                              </Box>
+                            </Card.Body>
+                          </Card.Root>
+                        </Fieldset.Content>
+                      </Box>
+                    </Stack>
+
+                    {/* Кнопки */}
+                    <Card.Footer justifyContent="flex-end" gap="3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.push('/admin/news')}
+                        px={5}
+                      >
+                        Отмена
+                      </Button>
+                      <Button
+                        type="submit"
+                        colorPalette="blue"
+                        loading={isSubmitting}
+                        px={5}
+                      >
+                        {isSubmitting ? 'Создание...' : 'Создать новость'}
+                      </Button>
+                    </Card.Footer>
                   </Stack>
-
-                  {/* Кнопки */}
-                  <Card.Footer justifyContent="flex-end" gap="3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => router.push('/admin/news')}
-                      px={5}
-                    >
-                      Отмена
-                    </Button>
-                    <Button
-                      type="submit"
-                      colorPalette="blue"
-                      loading={isSubmitting}
-                      px={5}
-                    >
-                      {isSubmitting ? 'Создание...' : 'Создать новость'}
-                    </Button>
-                  </Card.Footer>
-                </Stack>
-              </Fieldset.Root>
-            </form>
-          </Stack>
-        </Card.Body>
-      </Card.Root>
-    </Container>
+                </Fieldset.Root>
+              </form>
+            </Stack>
+          </Card.Body>
+        </Card.Root>
+      </Box>
+    </ProtectedRoute>
   );
 }

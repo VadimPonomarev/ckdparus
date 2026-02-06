@@ -100,7 +100,7 @@ export default function Epmployess() {
               </Box>
             </HStack>
           </Box>
-          <Box>
+          {/* <Box>
             <Heading textAlign="center" py={10} textDecoration="underline">
               Художественный руководитель
             </Heading>
@@ -124,7 +124,7 @@ export default function Epmployess() {
                 </Text>
               </Box>
             </HStack>
-          </Box>
+          </Box> */}
         </HStack>
 
         <Text fontSize="xl">Руководители клубных формирований</Text>
