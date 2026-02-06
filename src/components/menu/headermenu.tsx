@@ -628,22 +628,7 @@ const HeaderMenu: React.FC = () => {
 
         {/* Кнопка входа/выхода как часть основного меню */}
         {isAuthenticated ? (
-          <Menu.Root>
-            <Menu.Trigger asChild>
-              <Box>
-                <MenuLink>Админ</MenuLink>
-              </Box>
-            </Menu.Trigger>
-            <Portal>
-              <Menu.Positioner>
-                <Menu.Content>
-                  <Menu.Item value="logout" onClick={handleLogout}>
-                    Выйти
-                  </Menu.Item>
-                </Menu.Content>
-              </Menu.Positioner>
-            </Portal>
-          </Menu.Root>
+          <MenuLink onClick={handleLogout}>Выйти</MenuLink>
         ) : (
           <MenuLink onClick={() => router.push('/login')}>Вход</MenuLink>
         )}
