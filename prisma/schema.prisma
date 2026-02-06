@@ -7,18 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Admin {
   id          String   @id @default(cuid())
-  email       String   @unique
+  username    String   @unique @default("admin")
   password    String   // Будем хранить хешированный пароль
-  name        String?
-  role        String   @default("USER") // ADMIN, MODERATOR, USER
-  isActive    Boolean  @default(true)
-  
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   
-  @@map("users")
+  @@map("admins")
 }
 
 model Event {

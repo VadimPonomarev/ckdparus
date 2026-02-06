@@ -1,9 +1,21 @@
 'use client';
 
-import { Box, HStack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  HStack,
+  Text,
+  Button,
+  Menu,
+  Portal,
+  Icon,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+} from '@chakra-ui/react';
 import { LuChevronRight } from 'react-icons/lu';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Типы
 interface TeamItem {
@@ -17,16 +29,16 @@ interface CategoryItem {
   teams: TeamItem[];
 }
 
-interface MenuItem {
+interface MenuItemType {
   title: string;
   href?: string;
-  children?: MenuItem[];
+  children?: MenuItemType[];
 }
 
 interface NavItem {
   title: string;
   href?: string;
-  children?: MenuItem[];
+  children?: MenuItemType[];
 }
 
 // Полные статические данные для всех коллективов
@@ -225,30 +237,6 @@ const STATIC_MENUS = {
   },
 };
 
-// Главная константа меню
-const NAV_ITEMS: NavItem[] = [
-  {
-    title: 'Главная',
-    href: '/',
-  },
-  STATIC_TEAMS_MENU as NavItem,
-  STATIC_MENUS.documents as NavItem,
-  STATIC_MENUS.security as NavItem,
-  STATIC_MENUS.contact as NavItem,
-  {
-    title: 'Галерея',
-    href: '/gallery',
-  },
-  {
-    title: 'Добавление события (Афиши)',
-    href: '/addevent',
-  },
-  {
-    title: 'Добавление новости',
-    href: '/addnews',
-  },
-];
-
 // Компонент для пунктов меню
 const MenuLink: React.FC<{
   children: React.ReactNode;
@@ -429,7 +417,7 @@ const CollectivesMenu: React.FC = () => {
 const DropdownMenu: React.FC<{
   title: string;
   href?: string;
-  children?: MenuItem[];
+  children?: MenuItemType[];
 }> = ({ title, href, children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
@@ -533,8 +521,69 @@ const DropdownMenu: React.FC<{
 };
 
 const HeaderMenu: React.FC = () => {
+  const { isAuthenticated, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Общедоступные пункты меню
+  const publicMenuItems: (NavItem | { title: string; href: string })[] = [
+    {
+      title: 'Главная',
+      href: '/',
+    },
+    STATIC_TEAMS_MENU as NavItem,
+    STATIC_MENUS.documents as NavItem,
+    STATIC_MENUS.security as NavItem,
+    STATIC_MENUS.contact as NavItem,
+    {
+      title: 'Галерея',
+      href: '/gallery',
+    },
+    // {
+    //   title: 'Афиша',
+    //   href: '/events',
+    // },
+    // {
+    //   title: 'Новости',
+    //   href: '/news',
+    // },
+  ];
+
+  // Пункты меню для авторизованных пользователей
+  const adminMenuItems = [
+    {
+      title: 'Добавление события (Афиши)',
+      href: '/admin/events/add',
+    },
+    {
+      title: 'Добавление новости',
+      href: '/admin/news/add',
+    },
+  ];
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        p={5}
+        borderRadius="10px"
+        boxShadow="xl"
+        borderColor="gray.100"
+        bg="blue.100"
+      >
+        <HStack justify="center">
+          <Text>Загрузка меню...</Text>
+        </HStack>
+      </Box>
+    );
+  }
+
   return (
     <Box
+      w="100%"
       p={5}
       borderRadius="10px"
       boxShadow="xl"
@@ -544,13 +593,14 @@ const HeaderMenu: React.FC = () => {
         transition: 'box-shadow 0.3s ease-in-out',
       }}
     >
-      <HStack justify="space-around">
-        {NAV_ITEMS.map((item, index) => {
+      {/* Все пункты меню в одном HStack */}
+      <HStack justify="space-between">
+        {publicMenuItems.map((item, index) => {
           if (item.title === 'Коллективы и Объединения') {
             return <CollectivesMenu key={index} />;
           }
 
-          if (item.children) {
+          if ('children' in item && item.children) {
             return (
               <DropdownMenu
                 key={index}
@@ -562,11 +612,41 @@ const HeaderMenu: React.FC = () => {
           }
 
           return (
-            <MenuLink key={index} href={item.href}>
+            <MenuLink key={index} href={'href' in item ? item.href : undefined}>
               {item.title}
             </MenuLink>
           );
         })}
+
+        {/* Показываем админские пункты только если авторизован */}
+        {isAuthenticated &&
+          adminMenuItems.map((item, index) => (
+            <MenuLink key={`admin-${index}`} href={item.href}>
+              {item.title}
+            </MenuLink>
+          ))}
+
+        {/* Кнопка входа/выхода как часть основного меню */}
+        {isAuthenticated ? (
+          <Menu.Root>
+            <Menu.Trigger asChild>
+              <Box>
+                <MenuLink>Админ</MenuLink>
+              </Box>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content>
+                  <Menu.Item value="logout" onClick={handleLogout}>
+                    Выйти
+                  </Menu.Item>
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
+        ) : (
+          <MenuLink onClick={() => router.push('/login')}>Вход</MenuLink>
+        )}
       </HStack>
     </Box>
   );

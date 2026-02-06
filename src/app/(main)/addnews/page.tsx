@@ -24,8 +24,7 @@ import {
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import dynamic from 'next/dynamic';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 // Схема валидации с использованием Zod
 const NewsSchema = z.object({
@@ -112,7 +111,7 @@ export default function AddNewsPage() {
   };
 
   return (
-    <ProtectedRoute requiredRole="ADMIN">
+    <AuthGuard>
       <Box>
         <Card.Root>
           <Card.Body p={10}>
@@ -316,6 +315,6 @@ export default function AddNewsPage() {
           </Card.Body>
         </Card.Root>
       </Box>
-    </ProtectedRoute>
+    </AuthGuard>
   );
 }

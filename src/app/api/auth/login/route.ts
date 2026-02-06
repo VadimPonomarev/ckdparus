@@ -10,41 +10,33 @@ const JWT_SECRET =
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { username, password } = body;
 
-    if (!email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { error: 'Email и пароль обязательны' },
+        { error: 'Имя пользователя и пароль обязательны' },
         { status: 400 }
       );
     }
 
-    // Находим пользователя
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Находим администратора
+    const admin = await prisma.admin.findUnique({
+      where: { username },
     });
 
-    if (!user) {
+    if (!admin) {
       return NextResponse.json(
-        { error: 'Неверный email или пароль' },
+        { error: 'Неверное имя пользователя или пароль' },
         { status: 401 }
       );
     }
 
-    // Проверяем активность
-    if (!user.isActive) {
-      return NextResponse.json(
-        { error: 'Аккаунт деактивирован' },
-        { status: 403 }
-      );
-    }
-
     // Проверяем пароль
-    const passwordValid = await bcrypt.compare(password, user.password);
+    const passwordValid = await bcrypt.compare(password, admin.password);
 
     if (!passwordValid) {
       return NextResponse.json(
-        { error: 'Неверный email или пароль' },
+        { error: 'Неверное имя пользователя или пароль' },
         { status: 401 }
       );
     }
@@ -52,27 +44,16 @@ export async function POST(request: NextRequest) {
     // Создаем JWT токен
     const token = jwt.sign(
       {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+        id: admin.id,
+        username: admin.username,
       },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Возвращаем данные пользователя (без пароля) и токен
-    const userData = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      createdAt: user.createdAt,
-    };
-
     return NextResponse.json({
+      success: true,
       message: 'Вход выполнен успешно',
-      user: userData,
       token,
     });
   } catch (error) {

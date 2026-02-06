@@ -1,3 +1,4 @@
+// scripts/seed-admin.js
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -6,12 +7,12 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Создание администратора...');
 
-  const adminEmail = 'admin@ckdparus.ru';
-  const adminPassword = '5HTm3w8qa2fQ';
+  const adminUsername = 'admin@ckdparus.ru';
+  const adminPassword = '5HTm3w8qa2fQ'; // Поменяйте на свой пароль
 
   // Проверяем, существует ли уже администратор
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail },
+  const existingAdmin = await prisma.admin.findUnique({
+    where: { username: adminUsername },
   });
 
   if (existingAdmin) {
@@ -23,17 +24,15 @@ async function main() {
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   // Создаем администратора
-  const admin = await prisma.user.create({
+  const admin = await prisma.admin.create({
     data: {
-      email: adminEmail,
+      username: adminUsername,
       password: hashedPassword,
-      name: 'Администратор',
-      role: 'ADMIN',
     },
   });
 
   console.log('✅ Администратор создан успешно!');
-  console.log(`📧 Email: ${adminEmail}`);
+  console.log(`👤 Имя пользователя: ${adminUsername}`);
   console.log(`🔑 Пароль: ${adminPassword}`);
   console.log('⚠️ Не забудьте изменить пароль после первого входа!');
 }

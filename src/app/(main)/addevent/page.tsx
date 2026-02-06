@@ -25,7 +25,7 @@ import {
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 // Создаем коллекцию категорий
 const categoriesCollection = createListCollection({
@@ -163,7 +163,7 @@ export default function AddEventPage() {
   };
 
   return (
-    <ProtectedRoute requiredRole="ADMIN">
+    <AuthGuard>
       <Box>
         <Card.Root>
           <Card.Body p={10}>
@@ -551,6 +551,6 @@ export default function AddEventPage() {
           </Card.Body>
         </Card.Root>
       </Box>
-    </ProtectedRoute>
+    </AuthGuard>
   );
 }

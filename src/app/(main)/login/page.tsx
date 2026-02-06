@@ -13,15 +13,14 @@ import {
   Field,
   Input,
   Alert,
-  Link,
 } from '@chakra-ui/react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,7 +30,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await login(email, password);
+    const result = await login(username, password);
 
     if (result.success) {
       router.push('/');
@@ -43,14 +42,32 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  if (isLoading) {
+    return (
+      <Container maxW="md" py={20}>
+        <Card.Root>
+          <Card.Body p={8}>
+            <Stack gap="6" alignItems="center">
+              <Heading size="xl">Загрузка...</Heading>
+            </Stack>
+          </Card.Body>
+        </Card.Root>
+      </Container>
+    );
+  }
+
   return (
     <Container maxW="md" py={20}>
       <Card.Root>
         <Card.Body p={8}>
           <Stack gap="6">
             <Heading size="xl" textAlign="center">
-              Вход в систему
+              Вход для администратора
             </Heading>
+
+            <Text textAlign="center" color="fg.muted">
+              Для доступа к административным функциям сайта
+            </Text>
 
             {error && (
               <Alert.Root status="error">
@@ -62,12 +79,12 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit}>
               <Stack gap="4">
                 <Field.Root>
-                  <Field.Label>Email</Field.Label>
+                  <Field.Label>Имя пользователя</Field.Label>
                   <Input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="Введите ваш email"
+                    type="text"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    placeholder="Введите имя пользователя"
                     required
                   />
                 </Field.Root>
@@ -93,15 +110,6 @@ export default function LoginPage() {
                 </Button>
               </Stack>
             </form>
-
-            {/* <Box textAlign="center">
-              <Text color="fg.muted">
-                Нет аккаунта?{' '}
-                <Link href="/register" colorPalette="blue">
-                  Зарегистрироваться
-                </Link>
-              </Text>
-            </Box> */}
           </Stack>
         </Card.Body>
       </Card.Root>
