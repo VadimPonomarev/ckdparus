@@ -552,11 +552,11 @@ const HeaderMenu: React.FC = () => {
   const adminMenuItems = [
     {
       title: 'Добавление события (Афиши)',
-      href: '/admin/events/add',
+      href: '/addevent',
     },
     {
       title: 'Добавление новости',
-      href: '/admin/news/add',
+      href: '/addnews',
     },
   ];
 
