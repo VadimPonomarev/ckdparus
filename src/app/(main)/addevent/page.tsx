@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Box,
   Button,
+  Card,
   Container,
   Field,
   Fieldset,
@@ -16,11 +17,13 @@ import {
   Heading,
   Alert,
   HStack,
-  Card,
   Select,
   Portal,
   createListCollection,
   For,
+  Image,
+  VisuallyHidden,
+  Text,
 } from '@chakra-ui/react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,7 +44,7 @@ const categoriesCollection = createListCollection({
   ],
 });
 
-// Схема валидации с использованием Zod - БЕЗ .default() для boolean полей
+// Схема валидации с использованием Zod
 const EventSchema = z.object({
   title: z
     .string()
@@ -76,21 +79,24 @@ const EventSchema = z.object({
     .number({ error: 'Цена должна быть числом' })
     .min(0, 'Цена не может быть отрицательной'),
   category: z.string().nonempty('Обязательное поле'),
-  imageUrl: z
-    .string()
-    .url('Введите корректный URL')
-    .optional()
-    .or(z.literal('')),
-  isFeatured: z.boolean(), // Убрали .default(false)
-  isActive: z.boolean(), // Убрали .default(true)
+  // Убрали imageUrl, добавим загрузку файла
+  isFeatured: z.boolean(),
+  isActive: z.boolean(),
 });
 
 // Типы для формы
 type EventFormValues = z.infer<typeof EventSchema>;
 
+// Интерфейс для расширения формы
+interface ExtendedEventFormValues extends EventFormValues {
+  imageFile?: File | null;
+}
+
 export default function AddEventPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
     control,
@@ -108,7 +114,6 @@ export default function AddEventPage() {
       time: '19:00',
       location: '',
       price: 0,
-      imageUrl: '',
       category: '',
       isFeatured: false,
       isActive: true,
@@ -120,11 +125,68 @@ export default function AddEventPage() {
   const watchDate = watch('date');
   const watchTime = watch('time');
 
+  // Обработчик выбора файла
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Проверка типа файла
+      if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите изображение');
+        return;
+      }
+
+      // Проверка размера (максимум 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Файл слишком большой. Максимальный размер: 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // Создание предпросмотра
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Удаление изображения
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+  };
+
   const onSubmit: SubmitHandler<EventFormValues> = async data => {
     try {
       setIsSubmitting(true);
 
       const dateTime = new Date(`${data.date}T${data.time}:00`);
+
+      let imageUrl = null;
+
+      // Если есть файл, загружаем его
+      if (selectedFile) {
+        // Создаем FormData для загрузки файла
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedFile);
+        uploadFormData.append('entityType', 'events');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+          // Не устанавливаем Content-Type, браузер сделает это автоматически для FormData
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || 'Ошибка загрузки изображения');
+        }
+
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.url;
+      }
 
       const eventData = {
         title: data.title,
@@ -133,7 +195,7 @@ export default function AddEventPage() {
         date: dateTime.toISOString(),
         location: data.location,
         price: data.price,
-        imageUrl: data.imageUrl || null,
+        imageUrl: imageUrl,
         category: data.category,
         isFeatured: data.isFeatured,
         isActive: data.isActive,
@@ -148,15 +210,22 @@ export default function AddEventPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при сохранении события');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при сохранении события');
       }
 
       alert('Событие успешно создано!');
       reset();
-      router.push('/');
+      setSelectedFile(null);
+      setImagePreview(null);
+      router.push('/admin/events');
     } catch (error) {
       console.error('Error creating event:', error);
-      alert('Ошибка при создании события. Попробуйте еще раз.');
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Ошибка при создании события. Попробуйте еще раз.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -164,9 +233,9 @@ export default function AddEventPage() {
 
   return (
     <AuthGuard>
-      <Box>
+      <Container maxW="container.xl" py={8}>
         <Card.Root>
-          <Card.Body p={10}>
+          <Card.Body p={{ base: 6, md: 10 }}>
             <Stack gap="6">
               <Heading size="xl">Добавить новое событие</Heading>
 
@@ -174,7 +243,7 @@ export default function AddEventPage() {
                 <Fieldset.Root>
                   <Stack gap="6">
                     {/* Основная информация */}
-                    <Stack direction={{ base: 'column', md: 'row' }} gap="6">
+                    <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
                       {/* Левая колонка */}
                       <Box flex="2">
                         <Fieldset.Content>
@@ -333,6 +402,95 @@ export default function AddEventPage() {
                       {/* Правая колонка */}
                       <Box flex="1">
                         <Fieldset.Content>
+                          {/* Загрузка изображения */}
+                          <Field.Root>
+                            <Field.Label>Изображение события</Field.Label>
+                            <Box
+                              border="1px dashed"
+                              borderColor="gray.300"
+                              borderRadius="md"
+                              p={4}
+                            >
+                              <Stack gap="4" align="center">
+                                {imagePreview ? (
+                                  <>
+                                    <Box position="relative" width="full">
+                                      <Image
+                                        src={imagePreview}
+                                        alt="Предпросмотр изображения"
+                                        objectFit="cover"
+                                        borderRadius="md"
+                                        maxH="200px"
+                                        width="full"
+                                      />
+                                      <Button
+                                        size="xs"
+                                        colorPalette="red"
+                                        variant="outline"
+                                        position="absolute"
+                                        top="2"
+                                        right="2"
+                                        onClick={handleRemoveImage}
+                                      >
+                                        Удалить
+                                      </Button>
+                                    </Box>
+                                    <Text fontSize="sm" color="gray.600">
+                                      Файл: {selectedFile?.name}
+                                    </Text>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Box textAlign="center">
+                                      <Text
+                                        fontSize="sm"
+                                        color="gray.600"
+                                        mb="2"
+                                      >
+                                        Перетащите сюда изображение или
+                                      </Text>
+                                      <Button
+                                        as="span"
+                                        variant="outline"
+                                        cursor="pointer"
+                                        position="relative"
+                                      >
+                                        Выберите файл
+                                        <VisuallyHidden>
+                                          <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            position="absolute"
+                                            inset="0"
+                                            opacity="0"
+                                            cursor="pointer"
+                                          />
+                                        </VisuallyHidden>
+                                      </Button>
+                                    </Box>
+                                    <Text fontSize="xs" color="gray.500">
+                                      Поддерживаемые форматы: JPG, PNG, WebP
+                                      <br />
+                                      Максимальный размер: 5MB
+                                    </Text>
+                                  </>
+                                )}
+                              </Stack>
+                            </Box>
+                            <VisuallyHidden>
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                id="image-upload"
+                              />
+                            </VisuallyHidden>
+                            <Field.HelperText>
+                              Изображение будет отображаться на карточке события
+                            </Field.HelperText>
+                          </Field.Root>
+
                           {/* Цена */}
                           <Field.Root invalid={!!errors.price}>
                             <Field.Label>Цена (₽)</Field.Label>
@@ -414,33 +572,6 @@ export default function AddEventPage() {
                                 <Alert.Indicator />
                                 <Alert.Title>
                                   {errors.category.message}
-                                </Alert.Title>
-                              </Alert.Root>
-                            )}
-                          </Field.Root>
-
-                          {/* URL изображения */}
-                          <Field.Root invalid={!!errors.imageUrl}>
-                            <Field.Label>
-                              URL изображения (необязательно)
-                            </Field.Label>
-                            <Controller
-                              name="imageUrl"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  {...field}
-                                  placeholder="https://example.com/image.jpg"
-                                  type="url"
-                                  onBlur={field.onBlur}
-                                />
-                              )}
-                            />
-                            {errors.imageUrl && (
-                              <Alert.Root status="error" mt="2">
-                                <Alert.Indicator />
-                                <Alert.Title>
-                                  {errors.imageUrl.message}
                                 </Alert.Title>
                               </Alert.Root>
                             )}
@@ -550,7 +681,7 @@ export default function AddEventPage() {
             </Stack>
           </Card.Body>
         </Card.Root>
-      </Box>
+      </Container>
     </AuthGuard>
   );
 }
