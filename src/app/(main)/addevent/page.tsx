@@ -416,7 +416,11 @@ export default function AddEventPage() {
                                           </Text>
                                         </Text>
                                         <FileUpload.Trigger asChild>
-                                          <Button variant="outline" size="sm">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            px={10}
+                                          >
                                             <HiUpload />
                                             Выберите файл
                                           </Button>
@@ -691,7 +695,7 @@ export default function AddEventPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push('/admin/events')}
+                        onClick={() => router.push('/')}
                         px={5}
                       >
                         Отмена
