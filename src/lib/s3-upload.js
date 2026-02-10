@@ -7,6 +7,7 @@ export async function uploadFileToS3(fileBuffer, fileName, contentType) {
     Key: fileName,
     Body: fileBuffer,
     ContentType: contentType,
+    ACL: 'public-read',
   };
 
   const command = new PutObjectCommand(params);
