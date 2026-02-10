@@ -22,12 +22,16 @@ import {
   createListCollection,
   For,
   Image,
-  VisuallyHidden,
+  FileUpload,
+  VStack,
+  Icon,
   Text,
+  useFileUpload,
 } from '@chakra-ui/react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { HiUpload, HiX } from 'react-icons/hi';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 // Создаем коллекцию категорий
@@ -79,7 +83,6 @@ const EventSchema = z.object({
     .number({ error: 'Цена должна быть числом' })
     .min(0, 'Цена не может быть отрицательной'),
   category: z.string().nonempty('Обязательное поле'),
-  // Убрали imageUrl, добавим загрузку файла
   isFeatured: z.boolean(),
   isActive: z.boolean(),
 });
@@ -87,16 +90,16 @@ const EventSchema = z.object({
 // Типы для формы
 type EventFormValues = z.infer<typeof EventSchema>;
 
-// Интерфейс для расширения формы
-interface ExtendedEventFormValues extends EventFormValues {
-  imageFile?: File | null;
-}
-
 export default function AddEventPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const fileUpload = useFileUpload({
+    maxFiles: 1,
+    maxFileSize: 5 * 1024 * 1024, // 5MB
+    accept: 'image/*',
+  });
 
   const {
     control,
@@ -125,37 +128,17 @@ export default function AddEventPage() {
   const watchDate = watch('date');
   const watchTime = watch('time');
 
-  // Обработчик выбора файла
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Проверка типа файла
-      if (!file.type.startsWith('image/')) {
-        alert('Пожалуйста, выберите изображение');
-        return;
-      }
+  // Создание preview URL для первого принятого файла
+  const acceptedFile = fileUpload.acceptedFiles[0];
+  const previewUrl = acceptedFile ? URL.createObjectURL(acceptedFile) : null;
 
-      // Проверка размера (максимум 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Файл слишком большой. Максимальный размер: 5MB');
-        return;
-      }
-
-      setSelectedFile(file);
-
-      // Создание предпросмотра
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // Очистка preview URL при размонтировании
+  const handleRemoveFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
-  };
-
-  // Удаление изображения
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
+    fileUpload.clearFiles();
+    setUploadError(null);
   };
 
   const onSubmit: SubmitHandler<EventFormValues> = async data => {
@@ -167,16 +150,15 @@ export default function AddEventPage() {
       let imageUrl = null;
 
       // Если есть файл, загружаем его
-      if (selectedFile) {
+      if (acceptedFile) {
         // Создаем FormData для загрузки файла
         const uploadFormData = new FormData();
-        uploadFormData.append('file', selectedFile);
+        uploadFormData.append('file', acceptedFile);
         uploadFormData.append('entityType', 'events');
 
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
           body: uploadFormData,
-          // Не устанавливаем Content-Type, браузер сделает это автоматически для FormData
         });
 
         if (!uploadResponse.ok) {
@@ -214,10 +196,15 @@ export default function AddEventPage() {
         throw new Error(errorData.error || 'Ошибка при сохранении события');
       }
 
+      // Освобождаем память от preview URL
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       alert('Событие успешно создано!');
       reset();
-      setSelectedFile(null);
-      setImagePreview(null);
+      fileUpload.clearFiles();
+      setUploadError(null);
       router.push('/admin/events');
     } catch (error) {
       console.error('Error creating event:', error);
@@ -405,87 +392,130 @@ export default function AddEventPage() {
                           {/* Загрузка изображения */}
                           <Field.Root>
                             <Field.Label>Изображение события</Field.Label>
-                            <Box
-                              border="1px dashed"
-                              borderColor="gray.300"
-                              borderRadius="md"
-                              p={4}
-                            >
-                              <Stack gap="4" align="center">
-                                {imagePreview ? (
-                                  <>
-                                    <Box position="relative" width="full">
-                                      <Image
-                                        src={imagePreview}
-                                        alt="Предпросмотр изображения"
-                                        objectFit="cover"
-                                        borderRadius="md"
-                                        maxH="200px"
-                                        width="full"
-                                      />
-                                      <Button
-                                        size="xs"
-                                        colorPalette="red"
-                                        variant="outline"
-                                        position="absolute"
-                                        top="2"
-                                        right="2"
-                                        onClick={handleRemoveImage}
-                                      >
-                                        Удалить
-                                      </Button>
-                                    </Box>
-                                    <Text fontSize="sm" color="gray.600">
-                                      Файл: {selectedFile?.name}
-                                    </Text>
-                                  </>
+                            <VStack gap="4" align="stretch">
+                              <FileUpload.RootProvider value={fileUpload}>
+                                <FileUpload.HiddenInput />
+
+                                <FileUpload.Label>
+                                  Загрузите изображение для события
+                                </FileUpload.Label>
+
+                                {!acceptedFile ? (
+                                  <FileUpload.Dropzone>
+                                    <FileUpload.DropzoneContent>
+                                      <VStack gap="3" py="6">
+                                        <Text textAlign="center">
+                                          Перетащите сюда изображение
+                                          <br />
+                                          <Text
+                                            as="span"
+                                            fontSize="sm"
+                                            color="gray.500"
+                                          >
+                                            или
+                                          </Text>
+                                        </Text>
+                                        <FileUpload.Trigger asChild>
+                                          <Button variant="outline" size="sm">
+                                            <HiUpload />
+                                            Выберите файл
+                                          </Button>
+                                        </FileUpload.Trigger>
+                                        <Text
+                                          fontSize="xs"
+                                          color="gray.500"
+                                          textAlign="center"
+                                        >
+                                          JPG, PNG, WebP до 5MB
+                                        </Text>
+                                      </VStack>
+                                    </FileUpload.DropzoneContent>
+                                  </FileUpload.Dropzone>
                                 ) : (
-                                  <>
-                                    <Box textAlign="center">
-                                      <Text
-                                        fontSize="sm"
-                                        color="gray.600"
-                                        mb="2"
-                                      >
-                                        Перетащите сюда изображение или
-                                      </Text>
-                                      <Button
-                                        as="span"
-                                        variant="outline"
-                                        cursor="pointer"
-                                        position="relative"
-                                      >
-                                        Выберите файл
-                                        <VisuallyHidden>
-                                          <Input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileChange}
-                                            position="absolute"
-                                            inset="0"
-                                            opacity="0"
-                                            cursor="pointer"
-                                          />
-                                        </VisuallyHidden>
-                                      </Button>
-                                    </Box>
-                                    <Text fontSize="xs" color="gray.500">
-                                      Поддерживаемые форматы: JPG, PNG, WebP
-                                      <br />
-                                      Максимальный размер: 5MB
-                                    </Text>
-                                  </>
+                                  <FileUpload.ItemGroup>
+                                    <FileUpload.Item file={acceptedFile}>
+                                      <FileUpload.ItemPreview>
+                                        {acceptedFile.type.startsWith(
+                                          'image/'
+                                        ) &&
+                                          previewUrl && (
+                                            <FileUpload.ItemPreviewImage
+                                              src={previewUrl}
+                                              alt="Предпросмотр"
+                                            />
+                                          )}
+                                      </FileUpload.ItemPreview>
+                                      <FileUpload.ItemContent>
+                                        <FileUpload.ItemName />
+                                        <FileUpload.ItemSizeText />
+                                        <FileUpload.ItemDeleteTrigger
+                                          asChild
+                                          onClick={handleRemoveFile}
+                                        >
+                                          <Button
+                                            size="xs"
+                                            variant="ghost"
+                                            colorPalette="red"
+                                          >
+                                            <HiX />
+                                          </Button>
+                                        </FileUpload.ItemDeleteTrigger>
+                                      </FileUpload.ItemContent>
+                                    </FileUpload.Item>
+                                  </FileUpload.ItemGroup>
                                 )}
-                              </Stack>
-                            </Box>
-                            <VisuallyHidden>
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                id="image-upload"
-                              />
-                            </VisuallyHidden>
+                              </FileUpload.RootProvider>
+
+                              {fileUpload.rejectedFiles.length > 0 && (
+                                <Alert.Root status="error">
+                                  <Alert.Indicator />
+                                  <Alert.Title>
+                                    {fileUpload.rejectedFiles[0].errors
+                                      .map(error =>
+                                        error === 'TOO_LARGE'
+                                          ? 'Файл слишком большой. Максимум 5MB'
+                                          : error === 'INVALID_TYPE'
+                                            ? 'Недопустимый тип файла'
+                                            : 'Ошибка загрузки файла'
+                                      )
+                                      .join(', ')}
+                                  </Alert.Title>
+                                </Alert.Root>
+                              )}
+
+                              {uploadError && (
+                                <Alert.Root status="error">
+                                  <Alert.Indicator />
+                                  <Alert.Title>{uploadError}</Alert.Title>
+                                </Alert.Root>
+                              )}
+
+                              {previewUrl && (
+                                <Box>
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="medium"
+                                    mb="2"
+                                  >
+                                    Предпросмотр:
+                                  </Text>
+                                  <Image
+                                    src={previewUrl}
+                                    alt="Предпросмотр изображения"
+                                    borderRadius="md"
+                                    maxH="200px"
+                                    objectFit="cover"
+                                    width="full"
+                                    onError={e => {
+                                      console.error(
+                                        'Ошибка загрузки предпросмотра'
+                                      );
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </Box>
+                              )}
+                            </VStack>
                             <Field.HelperText>
                               Изображение будет отображаться на карточке события
                             </Field.HelperText>
