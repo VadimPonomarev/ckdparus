@@ -205,7 +205,7 @@ export default function AddEventPage() {
       reset();
       fileUpload.clearFiles();
       setUploadError(null);
-      router.push('/admin/events');
+      // router.push('/');
     } catch (error) {
       console.error('Error creating event:', error);
       alert(
