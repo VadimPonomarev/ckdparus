@@ -201,6 +201,7 @@ export default function TeamPage() {
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
+                        pt={10}
                       >
                         <Box position="relative">
                           <Image
