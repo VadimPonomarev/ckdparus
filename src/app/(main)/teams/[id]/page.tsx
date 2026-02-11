@@ -1,4 +1,3 @@
-// app/teams/[id]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,6 +13,9 @@ import {
   Center,
   Badge,
   SimpleGrid,
+  Dialog,
+  Portal,
+  CloseButton,
 } from '@chakra-ui/react';
 import {
   FaCalendarAlt,
@@ -129,212 +131,285 @@ export default function TeamPage() {
   }
 
   return (
-    <Center maxW="container.xl" py={8}>
-      <VStack align="stretch">
-        {/* Заголовок и категория */}
-        <Box>
-          <HStack justify="space-between" align="start" mb={4}>
-            <Box>
-              <Text fontSize="3xl" fontWeight="bold" color="blue.700">
-                {team.name}
-              </Text>
+    <>
+      <Center maxW="container.xl" py={8}>
+        <VStack align="stretch" w="full">
+          {/* Заголовок и категория */}
+          <Box>
+            <HStack justify="space-between" align="start" mb={4}>
+              <Box>
+                <Text fontSize="3xl" fontWeight="bold" color="blue.700">
+                  {team.name}
+                </Text>
 
-              <HStack mt={2}>
-                {team.category && (
-                  <Text fontSize="md" px={3} py={1}>
-                    {team.category}
-                  </Text>
-                )}
-                {team.subcategory && (
-                  <Text fontSize="md" px={3} py={1}>
-                    {team.subcategory}
-                  </Text>
-                )}
-              </HStack>
-            </Box>
+                <HStack mt={2}>
+                  {team.category && (
+                    <Text fontSize="md" px={3} py={1}>
+                      {team.category}
+                    </Text>
+                  )}
+                  {team.subcategory && (
+                    <Text fontSize="md" px={3} py={1}>
+                      {team.subcategory}
+                    </Text>
+                  )}
+                </HStack>
+              </Box>
 
-            {team.imageUrl && (
-              <Image
-                src={team.imageUrl}
-                alt={team.name}
-                borderRadius="lg"
-                boxSize="200px"
-                objectFit="cover"
-                boxShadow="lg"
-              />
-            )}
-          </HStack>
-        </Box>
+              {team.imageUrl && (
+                <Dialog.Root>
+                  <Dialog.Trigger asChild>
+                    <Box position="relative" cursor="pointer">
+                      <Image
+                        src={team.imageUrl}
+                        alt={team.name}
+                        borderRadius="lg"
+                        boxSize="200px"
+                        objectFit="cover"
+                        boxShadow="lg"
+                        transition="all 0.3s ease"
+                        _hover={{
+                          transform: 'scale(1.05)',
+                          boxShadow: '2xl',
+                        }}
+                        title="Нажмите для увеличения"
+                      />
+                      <Box
+                        position="absolute"
+                        top="0"
+                        left="0"
+                        right="0"
+                        bottom="0"
+                        bg="rgba(0,0,0,0)"
+                        borderRadius="lg"
+                        transition="background-color 0.3s ease"
+                        _hover={{
+                          bg: 'rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
+                  </Dialog.Trigger>
 
-        <SimpleGrid columns={{ base: 1, lg: 2 }}>
-          {/* Левая колонка - Основная информация */}
-          <VStack align="stretch">
-            {/* Блок с основными данными */}
-            <Box p={6} borderRadius="lg">
-              <Text fontSize="xl" fontWeight="bold" color="blue.700" mb={4}>
-                Основная информация
-              </Text>
+                  <Portal>
+                    <Dialog.Backdrop />
+                    <Dialog.Positioner>
+                      <Dialog.Content
+                        maxW="90vw"
+                        maxH="90vh"
+                        bg="transparent"
+                        boxShadow="none"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Box position="relative">
+                          <Image
+                            src={team.imageUrl}
+                            alt={team.name}
+                            maxH="85vh"
+                            maxW="85vw"
+                            objectFit="contain"
+                            borderRadius="lg"
+                            boxShadow="2xl"
+                            bg="white"
+                          />
+                          <Dialog.CloseTrigger asChild>
+                            <CloseButton
+                              position="absolute"
+                              top="-8"
+                              right="-8"
+                              bg="white"
+                              color="gray.800"
+                              borderRadius="full"
+                              size="lg"
+                              _hover={{ bg: 'gray.200' }}
+                              boxShadow="lg"
+                            />
+                          </Dialog.CloseTrigger>
+                        </Box>
+                      </Dialog.Content>
+                    </Dialog.Positioner>
+                  </Portal>
+                </Dialog.Root>
+              )}
+            </HStack>
+          </Box>
 
-              <VStack align="start">
-                {team.foundationDate && (
-                  <Box>
-                    <HStack>
-                      <FaCalendarAlt color="#3182CE" />
-                      <Text fontWeight="bold">Дата основания:</Text>
-                    </HStack>
-                    <Text ml={6}>{team.foundationDate}</Text>
-                  </Box>
-                )}
-
-                {team.titleAwardDate && (
-                  <Box>
-                    <HStack>
-                      <FaAward color="#3182CE" />
-                      <Text fontWeight="bold">Дата присвоения звания:</Text>
-                    </HStack>
-                    <Text ml={6}>{team.titleAwardDate}</Text>
-                  </Box>
-                )}
-
-                {team.lastConfirmation && (
-                  <Box>
-                    <HStack>
-                      <FaStar color="#3182CE" />
-                      <Text fontWeight="bold">Подтверждение звания:</Text>
-                    </HStack>
-                    <Text ml={6}>{team.lastConfirmation}</Text>
-                    {team.confirmationOrder && (
-                      <Text ml={6} fontSize="sm" color="gray.600">
-                        {team.confirmationOrder}
-                      </Text>
-                    )}
-                  </Box>
-                )}
-
-                {team.leaderName && (
-                  <Box>
-                    <HStack>
-                      <FaUserTie color="#3182CE" />
-                      <Text fontWeight="bold">Руководитель коллектива:</Text>
-                    </HStack>
-                    <Text ml={6}>{team.leaderName}</Text>
-                    {team.leaderNameSecondary && (
-                      <Text ml={6}>{team.leaderNameSecondary}</Text>
-                    )}
-                  </Box>
-                )}
-
-                {team.participantsAge && (
-                  <Box>
-                    <HStack>
-                      <FaUsers color="#3182CE" />
-                      <Text fontWeight="bold">Участники:</Text>
-                    </HStack>
-                    <Text ml={6}>{team.participantsAge}</Text>
-                    {team.participantsGender && (
-                      <Text ml={6} fontSize="sm">
-                        Пол: {team.participantsGender}
-                      </Text>
-                    )}
-                    {team.participantsCount && (
-                      <Text ml={6} fontSize="sm">
-                        Количество: {team.participantsCount}
-                      </Text>
-                    )}
-                  </Box>
-                )}
-              </VStack>
-            </Box>
-
-            {/* Контакты */}
-            {(team.contactPhone || team.contactEmail) && (
+          <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
+            {/* Левая колонка - Основная информация */}
+            <VStack align="stretch">
+              {/* Блок с основными данными */}
               <Box p={6} borderRadius="lg">
-                <Text fontSize="xl" fontWeight="bold" color="green.700" mb={4}>
-                  Контакты
+                <Text fontSize="xl" fontWeight="bold" color="blue.700" mb={4}>
+                  Основная информация
                 </Text>
 
                 <VStack align="start">
-                  {team.contactPhone && (
-                    <HStack>
-                      <FaPhone color="#38A169" />
-                      <Text>{team.contactPhone}</Text>
-                    </HStack>
+                  {team.foundationDate && (
+                    <Box>
+                      <HStack>
+                        <FaCalendarAlt color="#3182CE" />
+                        <Text fontWeight="bold">Дата основания:</Text>
+                      </HStack>
+                      <Text ml={6}>{team.foundationDate}</Text>
+                    </Box>
                   )}
 
-                  {team.contactEmail && (
-                    <HStack>
-                      <FaEnvelope color="#38A169" />
-                      <Text>{team.contactEmail}</Text>
-                    </HStack>
+                  {team.titleAwardDate && (
+                    <Box>
+                      <HStack>
+                        <FaAward color="#3182CE" />
+                        <Text fontWeight="bold">Дата присвоения звания:</Text>
+                      </HStack>
+                      <Text ml={6}>{team.titleAwardDate}</Text>
+                    </Box>
+                  )}
+
+                  {team.lastConfirmation && (
+                    <Box>
+                      <HStack>
+                        <FaStar color="#3182CE" />
+                        <Text fontWeight="bold">Подтверждение звания:</Text>
+                      </HStack>
+                      <Text ml={6}>{team.lastConfirmation}</Text>
+                      {team.confirmationOrder && (
+                        <Text ml={6} fontSize="sm" color="gray.600">
+                          {team.confirmationOrder}
+                        </Text>
+                      )}
+                    </Box>
+                  )}
+
+                  {team.leaderName && (
+                    <Box>
+                      <HStack>
+                        <FaUserTie color="#3182CE" />
+                        <Text fontWeight="bold">Руководитель коллектива:</Text>
+                      </HStack>
+                      <Text ml={6}>{team.leaderName}</Text>
+                      {team.leaderNameSecondary && (
+                        <Text ml={6}>{team.leaderNameSecondary}</Text>
+                      )}
+                    </Box>
+                  )}
+
+                  {team.participantsAge && (
+                    <Box>
+                      <HStack>
+                        <FaUsers color="#3182CE" />
+                        <Text fontWeight="bold">Участники:</Text>
+                      </HStack>
+                      <Text ml={6}>{team.participantsAge}</Text>
+                      {team.participantsGender && (
+                        <Text ml={6} fontSize="sm">
+                          Пол: {team.participantsGender}
+                        </Text>
+                      )}
+                      {team.participantsCount && (
+                        <Text ml={6} fontSize="sm">
+                          Количество: {team.participantsCount}
+                        </Text>
+                      )}
+                    </Box>
                   )}
                 </VStack>
               </Box>
-            )}
 
-            {/* Расписание */}
-            {team.schedule && (
-              <Box p={6} borderRadius="lg">
-                <HStack mb={4}>
-                  <FaClock color="#805AD5" />
-                  <Text fontSize="xl" fontWeight="bold" color="purple.700">
-                    Расписание занятий
+              {/* Контакты */}
+              {(team.contactPhone || team.contactEmail) && (
+                <Box p={6} borderRadius="lg">
+                  <Text
+                    fontSize="xl"
+                    fontWeight="bold"
+                    color="green.700"
+                    mb={4}
+                  >
+                    Контакты
                   </Text>
-                </HStack>
 
-                <Box whiteSpace="pre-line" pl={6}>
-                  {team.schedule}
+                  <VStack align="start">
+                    {team.contactPhone && (
+                      <HStack>
+                        <FaPhone color="#38A169" />
+                        <Text>{team.contactPhone}</Text>
+                      </HStack>
+                    )}
+
+                    {team.contactEmail && (
+                      <HStack>
+                        <FaEnvelope color="#38A169" />
+                        <Text>{team.contactEmail}</Text>
+                      </HStack>
+                    )}
+                  </VStack>
                 </Box>
-              </Box>
-            )}
-          </VStack>
+              )}
 
-          {/* Правая колонка - Описание и дополнительная информация */}
-          <VStack align="stretch">
-            {/* Краткая характеристика */}
-            {team.content && (
-              <Box p={6} borderRadius="lg">
-                <Text fontSize="xl" fontWeight="bold" color="blue.700" mb={4}>
-                  Краткая характеристика
-                </Text>
+              {/* Расписание */}
+              {team.schedule && (
+                <Box p={6} borderRadius="lg">
+                  <HStack mb={4}>
+                    <FaClock color="#805AD5" />
+                    <Text fontSize="xl" fontWeight="bold" color="purple.700">
+                      Расписание занятий
+                    </Text>
+                  </HStack>
 
-                <Box whiteSpace="pre-line">{team.content}</Box>
-              </Box>
-            )}
+                  <Box whiteSpace="pre-line" pl={6}>
+                    {team.schedule}
+                  </Box>
+                </Box>
+              )}
+            </VStack>
 
-            {/* Достижения */}
-            {team.achievements && (
-              <Box p={6} borderRadius="lg">
-                <HStack mb={4}>
-                  <FaTrophy color="#D69E2E" />
-                  <Text fontSize="xl" fontWeight="bold" color="yellow.700">
-                    Достижения
+            {/* Правая колонка - Описание и дополнительная информация */}
+            <VStack align="stretch">
+              {/* Краткая характеристика */}
+              {team.content && (
+                <Box p={6} borderRadius="lg">
+                  <Text fontSize="xl" fontWeight="bold" color="blue.700" mb={4}>
+                    Краткая характеристика
                   </Text>
-                </HStack>
 
-                <Box whiteSpace="pre-line" pl={6}>
-                  {team.achievements}
+                  <Box whiteSpace="pre-line">{team.content}</Box>
                 </Box>
-              </Box>
-            )}
+              )}
 
-            {/* Репертуар */}
-            {team.repertoire && (
-              <Box p={6} borderRadius="lg">
-                <HStack mb={4}>
-                  <FaMusic color="#E53E3E" />
-                  <Text fontSize="xl" fontWeight="bold" color="red.700">
-                    Репертуар
-                  </Text>
-                </HStack>
+              {/* Достижения */}
+              {team.achievements && (
+                <Box p={6} borderRadius="lg">
+                  <HStack mb={4}>
+                    <FaTrophy color="#D69E2E" />
+                    <Text fontSize="xl" fontWeight="bold" color="yellow.700">
+                      Достижения
+                    </Text>
+                  </HStack>
 
-                <Box whiteSpace="pre-line" pl={6}>
-                  {team.repertoire}
+                  <Box whiteSpace="pre-line" pl={6}>
+                    {team.achievements}
+                  </Box>
                 </Box>
-              </Box>
-            )}
-          </VStack>
-        </SimpleGrid>
-      </VStack>
-    </Center>
+              )}
+
+              {/* Репертуар */}
+              {team.repertoire && (
+                <Box p={6} borderRadius="lg">
+                  <HStack mb={4}>
+                    <FaMusic color="#E53E3E" />
+                    <Text fontSize="xl" fontWeight="bold" color="red.700">
+                      Репертуар
+                    </Text>
+                  </HStack>
+
+                  <Box whiteSpace="pre-line" pl={6}>
+                    {team.repertoire}
+                  </Box>
+                </Box>
+              )}
+            </VStack>
+          </SimpleGrid>
+        </VStack>
+      </Center>
+    </>
   );
 }

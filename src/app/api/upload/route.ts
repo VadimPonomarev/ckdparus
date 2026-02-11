@@ -10,18 +10,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Файл не найден' }, { status: 400 });
     }
 
-    // Конвертируем File в Buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Генерируем уникальное имя файла
     const timestamp = Date.now();
     const extension = file.name.split('.').pop();
     const fileName = `uploads/${timestamp}-${Math.random()
       .toString(36)
       .substring(7)}.${extension}`;
 
-    // Загружаем в S3
     const fileUrl = await uploadFileToS3(buffer, fileName, file.type);
 
     return NextResponse.json({
@@ -40,9 +36,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Опционально: ограничение размера
 export const config = {
   api: {
-    bodyParser: false, // Для FormData
+    bodyParser: false,
   },
 };
