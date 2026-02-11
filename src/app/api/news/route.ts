@@ -1,3 +1,4 @@
+// app/api/news/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -9,16 +10,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const published = searchParams.get('published');
     const limit = searchParams.get('limit');
-    const featured = searchParams.get('featured');
 
     let where: any = {};
 
     if (published === 'true') {
       where.isPublished = true;
-    }
-
-    if (featured === 'true') {
-      where.isFeatured = true;
     }
 
     const take = limit ? parseInt(limit) : 10;
@@ -43,18 +39,45 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const { title, content, excerpt, imageUrl, images, isPublished } = body;
 
+    // Создаем новость
     const news = await prisma.news.create({
       data: {
-        title: body.title,
-        content: body.content,
-        excerpt: body.excerpt || null,
-        imageUrl: body.imageUrl || null,
-        isPublished: body.isPublished ?? true,
+        title,
+        content,
+        excerpt: excerpt || null,
+        imageUrl: imageUrl || null,
+        isPublished: isPublished ?? true,
       },
     });
 
-    return NextResponse.json(news, { status: 201 });
+    // Если есть изображения, создаем их отдельно
+    if (images && images.length > 0) {
+      await prisma.newsImage.createMany({
+        data: images.map((img: any, index: number) => ({
+          newsId: news.id,
+          url: img.url,
+          alt: img.alt || null,
+          caption: img.caption || null,
+          order: img.order ?? index,
+        })),
+      });
+    }
+
+    // Получаем созданную новость вместе с изображениями
+    const newsWithImages = await prisma.news.findUnique({
+      where: { id: news.id },
+      include: {
+        images: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(newsWithImages, { status: 201 });
   } catch (error) {
     console.error('Error creating news:', error);
     return NextResponse.json(

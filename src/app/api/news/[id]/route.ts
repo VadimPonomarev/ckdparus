@@ -1,3 +1,4 @@
+// app/api/news/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -11,9 +12,16 @@ export async function GET(
   try {
     const { id } = await context.params;
 
-    // Находим новость
+    // Находим новость с изображениями
     const news = await prisma.news.findUnique({
       where: { id },
+      include: {
+        images: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
     });
 
     if (!news) {
@@ -47,19 +55,54 @@ export async function PUT(
   try {
     const { id } = await context.params;
     const body = await request.json();
+    const { title, content, excerpt, imageUrl, images, isPublished } = body;
 
+    // Обновляем новость
     const updatedNews = await prisma.news.update({
       where: { id },
       data: {
-        title: body.title,
-        content: body.content,
-        excerpt: body.excerpt || null,
-        imageUrl: body.imageUrl || null,
-        isPublished: body.isPublished,
+        title,
+        content,
+        excerpt: excerpt || null,
+        imageUrl: imageUrl || null,
+        isPublished: isPublished ?? true,
       },
     });
 
-    return NextResponse.json(updatedNews);
+    // Если переданы изображения, обновляем их
+    if (images && Array.isArray(images)) {
+      // Удаляем старые изображения
+      await prisma.newsImage.deleteMany({
+        where: { newsId: id },
+      });
+
+      // Создаем новые изображения
+      if (images.length > 0) {
+        await prisma.newsImage.createMany({
+          data: images.map((img: any, index: number) => ({
+            newsId: id,
+            url: img.url,
+            alt: img.alt || null,
+            caption: img.caption || null,
+            order: img.order ?? index,
+          })),
+        });
+      }
+    }
+
+    // Получаем обновленную новость с изображениями
+    const newsWithImages = await prisma.news.findUnique({
+      where: { id },
+      include: {
+        images: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(newsWithImages);
   } catch (error) {
     console.error('Error updating news:', error);
     return NextResponse.json(

@@ -42,7 +42,8 @@ model News {
   title       String
   content     String
   excerpt     String?
-  imageUrl    String?  @map("image_url")
+  imageUrl    String?  @map("image_url") // Главное изображение (обложка)
+  images      NewsImage[] // Галерея изображений
   isPublished Boolean  @default(true) @map("is_published")
   views       Int      @default(0)
   
@@ -50,6 +51,21 @@ model News {
   updatedAt   DateTime @updatedAt @map("updated_at")
   
   @@map("news")
+}
+
+model NewsImage {
+  id          String   @id @default(cuid())
+  newsId      String   @map("news_id")
+  url         String
+  alt         String?
+  caption     String?
+  order       Int      @default(0) // Порядок отображения
+  
+  news        News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("news_images")
 }
 
 model Team {

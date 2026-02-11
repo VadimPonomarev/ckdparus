@@ -1,3 +1,4 @@
+// components/news/newsdetailcard.tsx
 import {
   Box,
   Container,
@@ -22,22 +23,31 @@ import {
   FaEdit,
   FaShareAlt,
   FaPrint,
-  FaFacebook,
-  FaTwitter,
-  FaTelegram,
   FaVk,
+  FaTelegram,
   FaCopy,
+  FaImages,
 } from 'react-icons/fa';
 import { useState } from 'react';
 import { toaster } from '@/components/ui/toaster';
+import GallerySlider from '@/components/gallery/galleryslider';
 
 // Типы для пропсов
+interface NewsImage {
+  id: string;
+  url: string;
+  alt?: string;
+  caption?: string;
+  order: number;
+}
+
 interface NewsDetailCardProps {
   id: string;
   title: string;
   content: string;
   excerpt?: string;
   imageUrl?: string;
+  images?: NewsImage[];
   isPublished: boolean;
   views: number;
   createdAt: Date;
@@ -54,6 +64,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   content,
   excerpt,
   imageUrl,
+  images = [],
   isPublished,
   views,
   createdAt,
@@ -65,6 +76,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
 }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
 
   // Форматирование дат
   const formattedDate = format(new Date(createdAt), 'dd MMMM yyyy', {
@@ -98,8 +110,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
     const url = window.location.href;
     const text = `${title} - ${excerpt || content.substring(0, 100)}...`;
     const shareUrls = {
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
       vk: `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(excerpt || '')}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
     };
@@ -132,11 +142,55 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
     window.print();
   };
 
+  const handleOpenGallery = () => {
+    if (images.length > 0) {
+      setShowGallery(true);
+    }
+  };
+
+  const handleCloseGallery = () => {
+    setShowGallery(false);
+  };
+
   // Время чтения (примерный расчет)
   const readingTime = Math.max(1, Math.ceil(content.length / 1200));
 
+  // Преобразуем изображения для галереи
+  const galleryImages = images.map(img => ({
+    id: img.id,
+    url: img.url,
+    alt: img.alt || `Фото к новости "${title}"`,
+    caption: img.caption,
+  }));
+
   return (
     <Box>
+      {/* Модальное окно галереи */}
+      {showGallery && galleryImages.length > 0 && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="black"
+          zIndex={9999}
+          overflow="hidden"
+        >
+          <Button
+            position="absolute"
+            top={4}
+            right={4}
+            zIndex={10000}
+            colorScheme="whiteAlpha"
+            onClick={handleCloseGallery}
+          >
+            ✕
+          </Button>
+          <GallerySlider images={galleryImages} />
+        </Box>
+      )}
+
       <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
         {/* Левая колонка - основная информация */}
         <GridItem>
@@ -182,6 +236,13 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   <Text fontSize="md">{views} просмотров</Text>
                 </Flex>
 
+                {images.length > 0 && (
+                  <Flex alignItems="center" gap={2}>
+                    <Icon as={FaImages} boxSize="14px" />
+                    <Text fontSize="md">{images.length} фото</Text>
+                  </Flex>
+                )}
+
                 <Text fontSize="md">🕑 {readingTime} мин. чтения</Text>
 
                 {updatedAt.getTime() !== createdAt.getTime() && (
@@ -220,6 +281,8 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 boxShadow="lg"
                 position="relative"
                 mb={4}
+                cursor={images.length > 0 ? 'pointer' : 'default'}
+                onClick={handleOpenGallery}
               >
                 <Image
                   src={imageSrc}
@@ -229,7 +292,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   objectFit="cover"
                   loading="eager"
                 />
-                {imageUrl.includes('unsplash') && (
+                {images.length > 0 && (
                   <Box
                     position="absolute"
                     bottom={4}
@@ -240,21 +303,71 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     py={1}
                     borderRadius="md"
                     fontSize="sm"
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
                   >
-                    Источник: Unsplash
+                    <Icon as={FaImages} />
+                    {images.length} фото
                   </Box>
                 )}
               </Box>
             )}
 
-            {/* Содержание - ПРОСТОЙ ВАРИАНТ */}
+            {/* Миниатюры дополнительных изображений */}
+            {images.length > 1 && (
+              <Flex gap={2} mb={6} overflowX="auto" py={2}>
+                {images.slice(0, 5).map((img, index) => (
+                  <Box
+                    key={img.id}
+                    flexShrink={0}
+                    w="100px"
+                    h="80px"
+                    borderRadius="md"
+                    overflow="hidden"
+                    cursor="pointer"
+                    border="2px solid"
+                    borderColor={
+                      img.url === imageUrl ? 'blue.500' : 'transparent'
+                    }
+                    onClick={handleOpenGallery}
+                  >
+                    <Image
+                      src={img.url}
+                      alt={img.alt || `Фото ${index + 1}`}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  </Box>
+                ))}
+                {images.length > 5 && (
+                  <Box
+                    flexShrink={0}
+                    w="100px"
+                    h="80px"
+                    borderRadius="md"
+                    bg="blackAlpha.700"
+                    color="white"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    cursor="pointer"
+                    onClick={handleOpenGallery}
+                  >
+                    +{images.length - 5}
+                  </Box>
+                )}
+              </Flex>
+            )}
+
+            {/* Содержание */}
             <Box
               bg="bg.surface"
               p={{ base: 6, md: 8 }}
               borderRadius="lg"
               boxShadow="sm"
             >
-              {/* Вариант 1: Просто div с базовыми стилями */}
               <div
                 style={{
                   fontSize: '18px',
@@ -332,17 +445,19 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     {isBookmarked ? 'В избранном' : 'В избранное'}
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    colorPalette="blue"
-                    onClick={() => handleShare('vk')}
-                    w="100%"
-                    justifyContent="flex-start"
-                    gap={2}
-                  >
-                    <Icon as={FaShareAlt} />
-                    Поделиться
-                  </Button>
+                  {images.length > 0 && (
+                    <Button
+                      variant="outline"
+                      colorPalette="blue"
+                      onClick={handleOpenGallery}
+                      w="100%"
+                      justifyContent="flex-start"
+                      gap={2}
+                    >
+                      <Icon as={FaImages} />
+                      Открыть галерею ({images.length})
+                    </Button>
+                  )}
 
                   {onEdit && (
                     <Button
@@ -371,10 +486,11 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   </Button>
                 </Stack>
               </Box>
+
               {/* Быстрые ссылки для шаринга */}
               <Box>
                 <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Поделиться в соцсетях
+                  Поделиться
                 </Heading>
                 <Flex gap={3} justifyContent="center">
                   <Button
@@ -397,38 +513,15 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   >
                     <Icon as={FaTelegram} boxSize="20px" />
                   </Button>
-                </Flex>
-              </Box>
-
-              {/* Копирование ссылки */}
-              <Box>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Ссылка на новость
-                </Heading>
-                <Flex gap={2}>
-                  <Box
-                    flex="1"
-                    p={3}
-                    bg="bg.subtle"
-                    borderRadius="md"
-                    border="1px solid"
-                    borderColor="border.subtle"
-                    fontSize="sm"
-                    color="fg.muted"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    whiteSpace="nowrap"
-                  >
-                    {typeof window !== 'undefined' ? window.location.href : ''}
-                  </Box>
                   <Button
+                    aria-label="Копировать ссылку"
                     onClick={handleCopyLink}
-                    variant="outline"
+                    variant="ghost"
                     colorPalette={copied ? 'green' : 'gray'}
                     size="sm"
-                    px={3}
+                    p={2}
                   >
-                    <Icon as={FaCopy} />
+                    <Icon as={FaCopy} boxSize="20px" />
                   </Button>
                 </Flex>
               </Box>
@@ -438,7 +531,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
                   Статистика
                 </Heading>
-                <Stack>
+                <Stack gap={2}>
                   <Flex justifyContent="space-between">
                     <Text color="fg.muted">Просмотры:</Text>
                     <Text fontWeight="semibold">{views}</Text>
@@ -451,21 +544,22 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     <Text color="fg.muted">Время чтения:</Text>
                     <Text fontWeight="medium">{readingTime} мин.</Text>
                   </Flex>
+                  {images.length > 0 && (
+                    <Flex justifyContent="space-between">
+                      <Text color="fg.muted">Фотографий:</Text>
+                      <Text fontWeight="medium">{images.length}</Text>
+                    </Flex>
+                  )}
                 </Stack>
               </Box>
 
-              {/* Похожие новости (заглушка) */}
+              {/* Все новости */}
               <Box>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Похожие новости
-                </Heading>
-                <Text fontSize="sm" color="fg.muted" fontStyle="italic">
-                  Функция в разработке...
-                </Text>
                 <Button
-                  mt={3}
+                  mt={2}
                   colorPalette="blue"
                   size="sm"
+                  w="100%"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
                       window.location.href = '/news';
@@ -500,10 +594,12 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           <Icon as={FaCalendarAlt} />
           Все новости
         </Button>
-        <Button variant="outline" onClick={handleCopyLink} gap={2}>
-          <Icon as={FaShareAlt} />
-          Поделиться новостью
-        </Button>
+        {images.length > 0 && (
+          <Button variant="outline" onClick={handleOpenGallery} gap={2}>
+            <Icon as={FaImages} />
+            Галерея ({images.length})
+          </Button>
+        )}
       </Flex>
     </Box>
   );
