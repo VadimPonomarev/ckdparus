@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -22,15 +22,13 @@ import {
   IconButton,
   Grid,
   GridItem,
-  FileUpload,
-  useFileUpload,
   Badge,
   Flex,
 } from '@chakra-ui/react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { HiUpload, HiX, HiPhotograph } from 'react-icons/hi';
+import { HiX } from 'react-icons/hi';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import AuthGuard from '@/components/auth/AuthGuard';
 
@@ -74,11 +72,8 @@ export default function AddNewsPage() {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [mainImageIndex, setMainImageIndex] = useState<number>(-1);
 
-  const fileUpload = useFileUpload({
-    maxFiles: 10,
-    maxFileSize: 10 * 1024 * 1024, // 10MB
-    accept: 'image/*',
-  });
+  // Создаем ref для file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     control,
@@ -96,30 +91,60 @@ export default function AddNewsPage() {
     mode: 'onBlur',
   });
 
-  // Обработка добавления файлов
-  const handleAddFiles = () => {
-    const newFiles = fileUpload.acceptedFiles;
+  // Обработка выбора файлов через input
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    if (newFiles.length > 0) {
-      const newImages: ImageFile[] = newFiles.map((file, index) => ({
-        id: `${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
-        file,
-        preview: URL.createObjectURL(file),
-        alt: '',
-        caption: '',
-        order: images.length + index,
-      }));
+    const newImages: ImageFile[] = Array.from(files).map((file, index) => ({
+      id: `${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+      file,
+      preview: URL.createObjectURL(file),
+      alt: '',
+      caption: '',
+      order: images.length + index,
+    }));
 
-      setImages([...images, ...newImages]);
+    setImages(prevImages => [...prevImages, ...newImages]);
 
-      // Если это первое изображение, делаем его обложкой
-      if (images.length === 0 && newImages.length > 0) {
-        setMainImageIndex(0);
-      }
-
-      fileUpload.clearFiles();
-      setUploadError(null);
+    // Если это первое изображение, делаем его обложкой
+    if (images.length === 0 && newImages.length > 0) {
+      setMainImageIndex(0);
     }
+
+    setUploadError(null);
+
+    // Сбрасываем input, чтобы можно было выбрать тот же файл снова
+    event.target.value = '';
+  };
+
+  // Обработка drag & drop
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const files = event.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    const newImages: ImageFile[] = Array.from(files).map((file, index) => ({
+      id: `${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+      file,
+      preview: URL.createObjectURL(file),
+      alt: '',
+      caption: '',
+      order: images.length + index,
+    }));
+
+    setImages(prevImages => [...prevImages, ...newImages]);
+
+    if (images.length === 0 && newImages.length > 0) {
+      setMainImageIndex(0);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   // Удаление изображения
@@ -153,14 +178,12 @@ export default function AddNewsPage() {
       newImages[index - 1],
     ];
 
-    // Обновляем порядок
     newImages.forEach((img, idx) => {
       img.order = idx;
     });
 
     setImages(newImages);
 
-    // Корректируем индекс обложки
     if (mainImageIndex === index) {
       setMainImageIndex(index - 1);
     } else if (mainImageIndex === index - 1) {
@@ -178,14 +201,12 @@ export default function AddNewsPage() {
       newImages[index + 1],
     ];
 
-    // Обновляем порядок
     newImages.forEach((img, idx) => {
       img.order = idx;
     });
 
     setImages(newImages);
 
-    // Корректируем индекс обложки
     if (mainImageIndex === index) {
       setMainImageIndex(index + 1);
     } else if (mainImageIndex === index + 1) {
@@ -492,67 +513,64 @@ export default function AddNewsPage() {
                             )}
                           </Flex>
 
-                          <FileUpload.RootProvider value={fileUpload}>
-                            <FileUpload.HiddenInput />
+                          {/* Скрытый input для выбора файлов */}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleFileSelect}
+                            style={{ display: 'none' }}
+                          />
 
-                            <HStack align="stretch">
-                              <FileUpload.Dropzone
-                                onClick={handleAddFiles}
-                                borderWidth={2}
-                                borderStyle="dashed"
-                                borderRadius="lg"
-                                bg="gray.50"
-                                _dark={{ bg: 'gray.800' }}
-                                p={6}
-                                flex="1"
+                          {/* Зона загрузки */}
+                          <Box
+                            borderWidth={2}
+                            borderStyle="dashed"
+                            borderRadius="lg"
+                            bg="gray.50"
+                            _dark={{ bg: 'gray.800' }}
+                            p={8}
+                            textAlign="center"
+                            cursor="pointer"
+                            onClick={() => fileInputRef.current?.click()}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            _hover={{
+                              bg: 'gray.100',
+                              _dark: { bg: 'gray.700' },
+                            }}
+                            transition="all 0.2s"
+                          >
+                            <VStack gap="3">
+                              <Text textAlign="center" fontWeight="medium">
+                                Нажмите для выбора или перетащите сюда
+                                изображения
+                              </Text>
+                              <Text fontSize="sm" color="gray.500">
+                                JPG, PNG, WebP до 10MB. Максимум 10 файлов
+                              </Text>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                px={10}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  fileInputRef.current?.click();
+                                }}
                               >
-                                <FileUpload.DropzoneContent>
-                                  <VStack gap="3">
-                                    <Text
-                                      textAlign="center"
-                                      fontWeight="medium"
-                                    >
-                                      Перетащите сюда изображения
-                                    </Text>
-                                    <Text fontSize="sm" color="gray.500">
-                                      или
-                                    </Text>
-                                    <FileUpload.Trigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        px={10}
-                                      >
-                                        Выберите файлы
-                                      </Button>
-                                    </FileUpload.Trigger>
-                                    <Text fontSize="xs" color="gray.500">
-                                      JPG, PNG, WebP до 10MB. Максимум 10 файлов
-                                    </Text>
-                                  </VStack>
-                                </FileUpload.DropzoneContent>
-                              </FileUpload.Dropzone>
-                            </HStack>
+                                Выберите файлы
+                              </Button>
+                            </VStack>
+                          </Box>
 
-                            {fileUpload.rejectedFiles.length > 0 && (
-                              <Alert.Root status="error" mt={4}>
-                                <Alert.Indicator />
-                                <Alert.Title>
-                                  {fileUpload.rejectedFiles[0].errors
-                                    .map(error =>
-                                      error === 'TOO_LARGE'
-                                        ? 'Файл слишком большой. Максимум 10MB'
-                                        : error === 'INVALID_TYPE'
-                                          ? 'Недопустимый тип файла'
-                                          : error === 'TOO_MANY_FILES'
-                                            ? 'Слишком много файлов. Максимум 10'
-                                            : 'Ошибка загрузки файла'
-                                    )
-                                    .join(', ')}
-                                </Alert.Title>
-                              </Alert.Root>
-                            )}
-                          </FileUpload.RootProvider>
+                          {/* Ошибки загрузки */}
+                          {uploadError && (
+                            <Alert.Root status="error" mt={4}>
+                              <Alert.Indicator />
+                              <Alert.Title>{uploadError}</Alert.Title>
+                            </Alert.Root>
+                          )}
 
                           {/* Список загруженных изображений */}
                           {images.length > 0 && (
