@@ -4,8 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
-const JWT_SECRET =
-  process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Находим администратора
     const admin = await prisma.admin.findUnique({
       where: { username },
     });

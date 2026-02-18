@@ -52,6 +52,7 @@ export default function MainLayout({
                 _hover={{
                   boxShadow: 'xl',
                 }}
+                borderRadius="10px"
               >
                 <HeaderMenu />
               </Box>

@@ -95,7 +95,7 @@ const NewsList: React.FC<NewsListProps> = ({
 
   if (loading) {
     return (
-      <Stack width="100%">
+      <Stack width="100%" pt={10}>
         {showTitle && (
           <>
             <Skeleton height="40px" width="150px" mb={2} />
