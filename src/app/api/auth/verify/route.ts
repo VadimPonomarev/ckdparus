@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET не настроен в переменных окружения');
+      return NextResponse.json(
+        { valid: false, error: 'Ошибка конфигурации сервера' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { token } = body;
 
@@ -18,13 +25,29 @@ export async function POST(request: NextRequest) {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
+
       return NextResponse.json({
         valid: true,
         user: decoded,
       });
     } catch (error) {
+      // Более детальная обработка ошибок JWT
+      if (error instanceof jwt.TokenExpiredError) {
+        return NextResponse.json(
+          { valid: false, error: 'Токен просрочен' },
+          { status: 401 }
+        );
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return NextResponse.json(
+          { valid: false, error: 'Недействительный токен' },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
-        { valid: false, error: 'Недействительный токен' },
+        { valid: false, error: 'Ошибка верификации токена' },
         { status: 401 }
       );
     }

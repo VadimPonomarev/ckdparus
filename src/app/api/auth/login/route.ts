@@ -8,6 +8,14 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET не настроен в переменных окружения');
+      return NextResponse.json(
+        { error: 'Ошибка конфигурации сервера' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { username, password } = body;
 
@@ -39,7 +47,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Создаем JWT токен
     const token = jwt.sign(
       {
         id: admin.id,
@@ -49,13 +56,28 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Вход выполнен успешно',
       token,
     });
+
+    response.cookies.set({
+      name: 'token',
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7, // 7 дней
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json({ error: 'Ошибка при входе' }, { status: 500 });
+  } finally {
+    // Важно закрывать соединение с Prisma
+    await prisma.$disconnect();
   }
 }
