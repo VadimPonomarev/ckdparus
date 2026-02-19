@@ -1,17 +1,6 @@
 'use client';
 
-import {
-  Box,
-  HStack,
-  Text,
-  Button,
-  Menu,
-  Portal,
-  Icon,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
-} from '@chakra-ui/react';
+import { Box, HStack, Text } from '@chakra-ui/react';
 import { LuChevronRight } from 'react-icons/lu';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -187,7 +176,6 @@ const STATIC_TEAMS_MENU = {
 const STATIC_MENUS = {
   documents: {
     title: 'Документы',
-    href: '/documents',
     children: [
       {
         title: 'Общая информация об учреждении',
@@ -218,7 +206,6 @@ const STATIC_MENUS = {
   },
   security: {
     title: 'Безопасность',
-    href: '/security',
     children: [
       { title: 'Антитерро', href: '/security/antiterror' },
       {
@@ -229,7 +216,6 @@ const STATIC_MENUS = {
   },
   contact: {
     title: 'Контакты',
-    href: '/about',
     children: [
       { title: 'Сотрудники', href: '/employees' },
       { title: 'О нас', href: '/about' },
@@ -243,11 +229,14 @@ const MenuLink: React.FC<{
   href?: string;
   onClick?: (e: React.MouseEvent) => void;
   isActive?: boolean;
-}> = ({ children, href, onClick, isActive = false }) => {
+  isClickable?: boolean;
+}> = ({ children, href, onClick, isActive = false, isClickable = true }) => {
   const router = useRouter();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!isClickable) return;
+
     if (onClick) {
       onClick(e);
     } else if (href) {
@@ -260,12 +249,12 @@ const MenuLink: React.FC<{
       as="span"
       px={5}
       fontSize="xl"
-      cursor="pointer"
+      cursor={isClickable ? 'pointer' : 'default'}
       transition="all 0.2s ease-in-out"
       color={isActive ? 'blue.600' : 'black.700'}
       _hover={{
         textDecoration: 'none',
-        color: 'blue.600',
+        color: isClickable ? 'blue.600' : 'black.700',
       }}
       onClick={handleClick}
     >
@@ -346,7 +335,11 @@ const CollectivesMenu: React.FC = () => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <MenuLink href={STATIC_TEAMS_MENU.href} isActive={isMenuOpen}>
+      <MenuLink
+        href={STATIC_TEAMS_MENU.href}
+        isActive={isMenuOpen}
+        isClickable={false}
+      >
         {STATIC_TEAMS_MENU.title}
       </MenuLink>
 
@@ -452,7 +445,7 @@ const DropdownMenu: React.FC<{
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <MenuLink href={href} isActive={isMenuOpen}>
+      <MenuLink href={href} isActive={isMenuOpen} isClickable={false}>
         {title}
       </MenuLink>
 
@@ -611,6 +604,7 @@ const HeaderMenu: React.FC = () => {
             );
           }
 
+          // Для пунктов без дочерних элементов (Главная, Галерея) - кликабельны
           return (
             <MenuLink key={index} href={'href' in item ? item.href : undefined}>
               {item.title}
