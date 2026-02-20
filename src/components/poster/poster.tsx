@@ -9,7 +9,6 @@ import {
   SimpleGrid,
   Center,
   Skeleton,
-  Alert,
 } from '@chakra-ui/react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import PosterCard from './postercard';
@@ -20,13 +19,19 @@ interface Event {
   title: string;
   briefdescription?: string;
   fulldescription?: string;
-  date: Date;
+  date: string; // ИЗМЕНЕНО: Date -> string (API возвращает строку)
   location?: string;
   price?: number;
   imageUrl?: string;
   category?: string;
   isActive: boolean;
   isFeatured: boolean;
+}
+
+interface ApiResponse {
+  events: Event[];
+  totalCount: number;
+  hasMore: boolean;
 }
 
 interface PosterProps {
@@ -55,15 +60,17 @@ const Poster: React.FC<PosterProps> = ({
       try {
         setLoading(true);
         const params = new URLSearchParams();
-        if (showFeaturedOnly) params.append('featured', 'false');
+        // ИЗМЕНЕНО: featured и future параметры
+        if (showFeaturedOnly) params.append('featured', 'true'); // было 'false'
         if (limit) params.append('limit', limit.toString());
-        if (futureOnly) params.append('future', 'false');
+        if (futureOnly) params.append('future', 'true'); // было 'false'
 
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
-        const data = await response.json();
-        setEvents(data);
+        const data: ApiResponse = await response.json();
+        // ИЗМЕНЕНО: получаем events из объекта ответа
+        setEvents(data.events || []);
       } catch (err) {
         console.error('Error fetching events:', err);
         setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
@@ -127,6 +134,8 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
+        {/* ИЗМЕНЕНО: добавляем Alert для ошибки */}
+
         <Text>{error}</Text>
       </Stack>
     );
@@ -169,7 +178,8 @@ const Poster: React.FC<PosterProps> = ({
               id={event.id}
               key={event.id}
               title={event.title}
-              date={event.date}
+              // ИЗМЕНЕНО: преобразуем строку в Date
+              date={new Date(event.date)}
               imageUrl={event.imageUrl}
               briefdescription={event.briefdescription}
               location={event.location}
@@ -224,7 +234,8 @@ const Poster: React.FC<PosterProps> = ({
               <PosterCard
                 id={event.id}
                 title={event.title}
-                date={event.date}
+                // ИЗМЕНЕНО: преобразуем строку в Date
+                date={new Date(event.date)}
                 imageUrl={event.imageUrl}
                 briefdescription={event.briefdescription}
                 location={event.location}
