@@ -279,7 +279,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                       <Text fontSize="lg" fontWeight="bold">
                         {location ===
                         'Калининградская область, г. Советск, ул. Победы 34 а'
-                          ? 'ЦКД Парсу'
+                          ? 'ЦКД Парус'
                           : location}
                       </Text>
                       {address && (
