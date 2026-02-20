@@ -17,7 +17,7 @@ interface Event {
   title: string;
   briefdescription?: string;
   fulldescription?: string;
-  date: Date;
+  date: string; // ИЗМЕНЕНО: API возвращает строку
   location?: string;
   price?: number;
   imageUrl?: string;
@@ -26,12 +26,18 @@ interface Event {
   isFeatured: boolean;
 }
 
+interface ApiResponse {
+  events: Event[];
+  totalCount: number;
+  hasMore: boolean;
+}
+
 interface PosterGridProps {
   showTitle?: boolean;
   showFeaturedOnly?: boolean;
   futureOnly?: boolean;
-  initialLimit?: number; // Сколько загружать изначально
-  loadMoreCount?: number; // Сколько дозагружать при клике
+  initialLimit?: number;
+  loadMoreCount?: number;
 }
 
 const PosterGrid: React.FC<PosterGridProps> = ({
@@ -42,17 +48,18 @@ const PosterGrid: React.FC<PosterGridProps> = ({
   loadMoreCount = 16,
 }) => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         const params = new URLSearchParams({
           limit: initialLimit.toString(),
           offset: '0',
@@ -64,11 +71,12 @@ const PosterGrid: React.FC<PosterGridProps> = ({
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
-        const data = await response.json();
-        setEvents(data);
-        setDisplayedEvents(data);
-        setHasMore(data.length === initialLimit); // Если вернулось меньше чем limit, значит больше нет
-        setOffset(initialLimit);
+        const data: ApiResponse = await response.json();
+
+        // ИСПРАВЛЕНО: data.events - это массив, а не data
+        setEvents(data.events || []);
+        setHasMore(data.hasMore);
+        setTotalCount(data.totalCount);
       } catch (err) {
         console.error('Error fetching events:', err);
         setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
@@ -83,10 +91,11 @@ const PosterGrid: React.FC<PosterGridProps> = ({
   const handleLoadMore = async () => {
     try {
       setLoadingMore(true);
+      setError(null);
 
       const params = new URLSearchParams({
         limit: loadMoreCount.toString(),
-        offset: offset.toString(),
+        offset: events.length.toString(), // ИСПРАВЛЕНО: используем events.length
       });
 
       if (showFeaturedOnly) params.append('featured', 'true');
@@ -95,12 +104,12 @@ const PosterGrid: React.FC<PosterGridProps> = ({
       const response = await fetch(`/api/events?${params}`);
       if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
-      const newEvents = await response.json();
+      const data: ApiResponse = await response.json();
 
-      if (newEvents.length > 0) {
-        setDisplayedEvents(prev => [...prev, ...newEvents]);
-        setOffset(prev => prev + newEvents.length);
-        setHasMore(newEvents.length === loadMoreCount);
+      // ИСПРАВЛЕНО: data.events - это массив
+      if (data.events && data.events.length > 0) {
+        setEvents(prev => [...prev, ...data.events]);
+        setHasMore(data.hasMore);
       } else {
         setHasMore(false);
       }
@@ -141,14 +150,24 @@ const PosterGrid: React.FC<PosterGridProps> = ({
             <Separator />
           </>
         )}
-        <Center p={10}>
-          <Text color="red.500">{error}</Text>
+
+        <Text>{error}</Text>
+
+        <Center>
+          <Button
+            onClick={() => window.location.reload()}
+            colorScheme="blue"
+            size="sm"
+            mt={4}
+          >
+            Попробовать снова
+          </Button>
         </Center>
       </Stack>
     );
   }
 
-  if (displayedEvents.length === 0) {
+  if (events.length === 0) {
     return (
       <Stack width="100%" pt={10}>
         {showTitle && (
@@ -177,24 +196,35 @@ const PosterGrid: React.FC<PosterGridProps> = ({
         </>
       )}
 
-      <SimpleGrid columns={[1, 2, 3, 4]} gap={4}>
-        {displayedEvents.map(event => (
-          <PosterCard
-            key={event.id}
-            id={event.id}
-            title={event.title}
-            date={event.date}
-            imageUrl={event.imageUrl}
-            briefdescription={event.briefdescription}
-            location={event.location}
-            price={event.price}
-            category={event.category}
-            linkUrl={`/events/${event.id}`}
-          />
-        ))}
-      </SimpleGrid>
+      <Box>
+        <SimpleGrid columns={[1, 2, 3, 4]} gap={4}>
+          {events.map(event => (
+            <PosterCard
+              key={event.id}
+              id={event.id}
+              title={event.title}
+              date={new Date(event.date)} // ИЗМЕНЕНО: преобразуем строку в Date
+              imageUrl={event.imageUrl}
+              briefdescription={event.briefdescription}
+              location={event.location}
+              price={event.price}
+              category={event.category}
+              linkUrl={`/events/${event.id}`}
+            />
+          ))}
+        </SimpleGrid>
 
-      {hasMore && (
+        {/* Индикатор загрузки */}
+        {loadingMore && (
+          <SimpleGrid columns={[1, 2, 3, 4]} gap={4} mt={4}>
+            {[...Array(loadMoreCount)].map((_, i) => (
+              <Skeleton key={`loading-${i}`} height="350px" borderRadius="md" />
+            ))}
+          </SimpleGrid>
+        )}
+      </Box>
+
+      {hasMore && !loadingMore && (
         <Center pt={4} pb={8}>
           <Button
             onClick={handleLoadMore}
@@ -202,16 +232,21 @@ const PosterGrid: React.FC<PosterGridProps> = ({
             colorScheme="blue"
             size="lg"
             px={8}
+            _hover={{
+              transform: 'translateY(-2px)',
+              boxShadow: 'lg',
+            }}
+            transition="all 0.2s"
           >
             Показать еще
           </Button>
         </Center>
       )}
 
-      {!hasMore && displayedEvents.length > 0 && (
+      {!hasMore && events.length > 0 && (
         <Center pt={2} pb={4}>
           <Text color="gray.500" fontSize="sm">
-            Загружены все мероприятия
+            Загружено {events.length} из {totalCount} мероприятий
           </Text>
         </Center>
       )}
