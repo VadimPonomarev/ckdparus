@@ -4,7 +4,7 @@ import Poster from '@/components/poster/poster';
 import News from '@/components/news/news';
 import HallPlan from '@/components/hallplan/hallplan';
 import YandexMapChakraIframe from '@/components/yandexmap/YandexMapChakraIframe';
-import { Button } from '@chakra-ui/react';
+import { Button, Center } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
@@ -12,13 +12,17 @@ export default function HomePage() {
   return (
     <>
       <Poster />
-      <Button
-        onClick={() => {
-          router.push('/allevents');
-        }}
-      >
-        Все события
-      </Button>
+      <Center>
+        <Button
+          w="200px"
+          bgColor="blue.500"
+          onClick={() => {
+            router.push('/allevents');
+          }}
+        >
+          Все события
+        </Button>
+      </Center>
       <News />
       <HallPlan />
       <YandexMapChakraIframe />
