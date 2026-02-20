@@ -245,7 +245,7 @@ export default function EditEventPage() {
       }
 
       alert('Событие успешно обновлено!');
-      router.push('/admin/events');
+      router.push('/');
     } catch (error) {
       console.error('Error updating event:', error);
       setError(
@@ -763,7 +763,7 @@ export default function EditEventPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push('/admin/events')}
+                        onClick={() => router.push('/')}
                         px={5}
                       >
                         Отмена

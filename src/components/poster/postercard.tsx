@@ -208,7 +208,11 @@ const PosterCard: React.FC<PosterCardProps> = ({
               display="flex"
               alignItems="center"
             >
-              📍 {location}
+              📍{' '}
+              {location ===
+              'Калининградская область, г. Советск, ул. Победы 34 а'
+                ? 'ЦКД Парсу'
+                : location}
             </Text>
           )}
 
