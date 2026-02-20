@@ -7,14 +7,11 @@ import {
   Box,
   Badge,
   HStack,
-  IconButton,
-  Menu,
-  Portal,
   Button,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { FiEdit2, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,8 +29,8 @@ interface PosterCardProps {
   category?: string;
   linkUrl?: string;
   linkText?: string;
-  showActions?: boolean; // Добавлено: показывать ли кнопки действий
-  onDelete?: (id: string) => void; // Добавлено: колбэк после удаления
+  showActions?: boolean;
+  onDelete?: (id: string) => void;
 }
 
 // Функция для получения цветовой схемы по категории
@@ -80,11 +77,11 @@ const PosterCard: React.FC<PosterCardProps> = ({
   category,
   linkUrl = `/events/${id}`,
   linkText = 'Подробнее',
-  showActions = false, // Добавлено
-  onDelete, // Добавлено
+  showActions = false,
+  onDelete,
 }) => {
   const router = useRouter();
-  const { isAuthenticated } = useAuth(); // Добавлено: проверка авторизации
+  const { isAuthenticated } = useAuth();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -95,7 +92,6 @@ const PosterCard: React.FC<PosterCardProps> = ({
   // Определяем изображение (по умолчанию или из БД)
   const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
 
-  // Добавлено: обработчики для действий
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -122,6 +118,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
       }
 
       setIsDeleteDialogOpen(false);
+      alert('Событие успешно удалено');
     } catch (error) {
       console.error('Error deleting event:', error);
       alert(error instanceof Error ? error.message : 'Ошибка при удалении');
@@ -131,25 +128,24 @@ const PosterCard: React.FC<PosterCardProps> = ({
   };
 
   return (
-    <Center
-      p={4}
-      borderRadius="lg"
-      boxShadow="base"
-      border="1px solid"
-      borderColor="gray.200"
-      _hover={{
-        boxShadow: '2xl',
-        borderColor: 'blue.300',
-        transform: 'translateY(-4px)',
-        transition: 'all 0.3s ease-in-out',
-      }}
-      transition="all 0.3s ease"
-      h="100%"
-      position="relative"
-    >
-      <Stack w="100%" h="100%">
-        {/* Верхняя строка с категорией и кнопками действий */}
-        <HStack justify="space-between" align="center">
+    <>
+      <Center
+        p={4}
+        borderRadius="lg"
+        boxShadow="base"
+        border="1px solid"
+        borderColor="gray.200"
+        _hover={{
+          boxShadow: '2xl',
+          borderColor: 'blue.300',
+          transform: 'translateY(-4px)',
+          transition: 'all 0.3s ease-in-out',
+        }}
+        transition="all 0.3s ease"
+        h="100%"
+        position="relative"
+      >
+        <Stack w="100%" h="100%">
           {/* Категория */}
           {category && (
             <Badge
@@ -167,132 +163,121 @@ const PosterCard: React.FC<PosterCardProps> = ({
             </Badge>
           )}
 
-          {/* Добавлено: кнопки действий для администратора */}
-          {showActions && isAuthenticated && (
-            <Menu.Root>
-              <Menu.Trigger asChild>
-                <IconButton
-                  aria-label="Действия"
-                  size="sm"
-                  variant="ghost"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <FiMoreVertical />
-                </IconButton>
-              </Menu.Trigger>
-              <Portal>
-                <Menu.Positioner>
-                  <Menu.Content>
-                    <Menu.Item value="edit" onClick={handleEdit}>
-                      <HStack gap="2">
-                        <FiEdit2 />
-                        <Text>Редактировать</Text>
-                      </HStack>
-                    </Menu.Item>
-                    <Menu.Item
-                      value="delete"
-                      color="red.500"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <HStack gap="2">
-                        <FiTrash2 />
-                        <Text>Удалить</Text>
-                      </HStack>
-                    </Menu.Item>
-                  </Menu.Content>
-                </Menu.Positioner>
-              </Portal>
-            </Menu.Root>
+          {/* Заголовок */}
+          <Text fontSize="xl" fontWeight="bold" lineHeight="tight" minH="56px">
+            {title}
+          </Text>
+
+          {/* Дата и время */}
+          <Box>
+            <Text
+              fontSize="sm"
+              color="gray.600"
+              display="flex"
+              alignItems="center"
+            >
+              📅 {formattedDate}
+            </Text>
+            <Text
+              fontSize="sm"
+              color="gray.600"
+              display="flex"
+              alignItems="center"
+            >
+              🕒 {formattedTime}
+            </Text>
+          </Box>
+
+          {/* Изображение */}
+          <Center>
+            <Image
+              src={imageSrc}
+              alt={alt}
+              w="100%"
+              h="180px"
+              objectFit="contain"
+              borderRadius="md"
+              loading="lazy"
+            />
+          </Center>
+
+          {/* Локация */}
+          {location && (
+            <Text
+              fontSize="sm"
+              color="gray.600"
+              display="flex"
+              alignItems="center"
+            >
+              📍 {location}
+            </Text>
           )}
-        </HStack>
 
-        {/* Заголовок */}
-        <Text fontSize="xl" fontWeight="bold" lineHeight="tight" minH="56px">
-          {title}
-        </Text>
+          {/* Краткое описание */}
+          {briefdescription && (
+            <Text fontSize="sm" color="gray.700" textAlign="justify" flex="1">
+              {briefdescription}
+            </Text>
+          )}
 
-        {/* Дата и время */}
-        <Box>
-          <Text
-            fontSize="sm"
-            color="gray.600"
-            display="flex"
-            alignItems="center"
+          {/* Цена */}
+          {price !== undefined && (
+            <Text fontSize="lg" color="green.600" fontWeight="bold">
+              {price === 0 ? 'Бесплатно' : `${price} ₽`}
+            </Text>
+          )}
+
+          {/* Кнопки действий для администратора - отдельно в конце */}
+          {showActions && isAuthenticated && (
+            <HStack
+              gap={2}
+              mt={2}
+              pt={2}
+              borderTop="1px solid"
+              borderColor="gray.200"
+            >
+              <Button
+                size="sm"
+                colorScheme="blue"
+                variant="outline"
+                onClick={handleEdit}
+                flex={1}
+              >
+                Редактировать
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="red"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                flex={1}
+              >
+                Удалить
+              </Button>
+            </HStack>
+          )}
+
+          {/* Ссылка "Подробнее" */}
+          <Link
+            href={linkUrl}
+            fontSize="md"
+            color="blue.500"
+            fontWeight="semibold"
+            textDecoration="none"
+            _hover={{
+              color: 'blue.600',
+              textDecoration: 'underline',
+            }}
+            alignSelf="flex-start"
+            mt="auto"
+            pt={2}
           >
-            📅 {formattedDate}
-          </Text>
-          <Text
-            fontSize="sm"
-            color="gray.600"
-            display="flex"
-            alignItems="center"
-          >
-            🕒 {formattedTime}
-          </Text>
-        </Box>
+            {linkText} →
+          </Link>
+        </Stack>
+      </Center>
 
-        {/* Изображение */}
-        <Center>
-          <Image
-            src={imageSrc}
-            alt={alt}
-            w="100%"
-            h="180px"
-            objectFit="contain"
-            borderRadius="md"
-            loading="lazy"
-          />
-        </Center>
-
-        {/* Локация */}
-        {location && (
-          <Text
-            fontSize="sm"
-            color="gray.600"
-            display="flex"
-            alignItems="center"
-          >
-            📍 {location}
-          </Text>
-        )}
-
-        {/* Краткое описание */}
-        {briefdescription && (
-          <Text fontSize="sm" color="gray.700" textAlign="justify" flex="1">
-            {briefdescription}
-          </Text>
-        )}
-
-        {/* Цена */}
-        {price !== undefined && (
-          <Text fontSize="lg" color="green.600" fontWeight="bold">
-            {price === 0 ? 'Бесплатно' : `${price} ₽`}
-          </Text>
-        )}
-
-        {/* Ссылка */}
-        <Link
-          href={linkUrl}
-          fontSize="md"
-          color="blue.500"
-          fontWeight="semibold"
-          textDecoration="none"
-          _hover={{
-            color: 'blue.600',
-            textDecoration: 'underline',
-          }}
-          alignSelf="flex-start"
-          mt="auto"
-          pt={2}
-        >
-          {linkText} →
-        </Link>
-      </Stack>
-
-      {/* Добавлено: диалог подтверждения удаления */}
+      {/* Диалог подтверждения удаления */}
       {isDeleteDialogOpen && (
         <Box
           position="fixed"
@@ -337,7 +322,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
           </Box>
         </Box>
       )}
-    </Center>
+    </>
   );
 };
 
