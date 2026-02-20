@@ -35,6 +35,7 @@ export default function MainLayout({
           gradientFrom="blue.100"
           gradientTo="white"
           minH="100vh"
+          color="blackAlpha.900"
         >
           <Box minH="100vh" mx={20} pb={10}>
             <Preheader />
