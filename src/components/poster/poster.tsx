@@ -61,9 +61,9 @@ const Poster: React.FC<PosterProps> = ({
         setLoading(true);
         const params = new URLSearchParams();
         // ИЗМЕНЕНО: featured и future параметры
-        if (showFeaturedOnly) params.append('featured', 'true'); // было 'false'
+        if (showFeaturedOnly) params.append('featured', 'false'); // было 'false'
         if (limit) params.append('limit', limit.toString());
-        if (futureOnly) params.append('future', 'true'); // было 'false'
+        if (futureOnly) params.append('future', 'false'); // было 'false'
 
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
