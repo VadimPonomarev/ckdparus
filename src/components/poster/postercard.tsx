@@ -228,34 +228,34 @@ const PosterCard: React.FC<PosterCardProps> = ({
           )}
 
           {/* Кнопки действий для администратора - отдельно в конце */}
-          {/* {showActions && isAuthenticated && ( */}
-          <HStack
-            gap={2}
-            mt={2}
-            pt={2}
-            borderTop="1px solid"
-            borderColor="gray.200"
-          >
-            <Button
-              size="sm"
-              colorScheme="blue"
-              variant="outline"
-              onClick={handleEdit}
-              flex={1}
+          {showActions && isAuthenticated && (
+            <HStack
+              gap={2}
+              mt={2}
+              pt={2}
+              borderTop="1px solid"
+              borderColor="gray.200"
             >
-              Редактировать
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="red"
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              flex={1}
-            >
-              Удалить
-            </Button>
-          </HStack>
-          {/* )} */}
+              <Button
+                size="sm"
+                colorScheme="blue"
+                variant="outline"
+                onClick={handleEdit}
+                flex={1}
+              >
+                Редактировать
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="red"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                flex={1}
+              >
+                Удалить
+              </Button>
+            </HStack>
+          )}
 
           {/* Ссылка "Подробнее" */}
           <Link
