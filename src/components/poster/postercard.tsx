@@ -77,7 +77,6 @@ const PosterCard: React.FC<PosterCardProps> = ({
   category,
   linkUrl = `/events/${id}`,
   linkText = 'Подробнее',
-  showActions = false,
   onDelete,
 }) => {
   const router = useRouter();
@@ -228,7 +227,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
           )}
 
           {/* Кнопки действий для администратора - отдельно в конце */}
-          {showActions && isAuthenticated && (
+          {isAuthenticated && (
             <HStack
               gap={2}
               mt={2}
