@@ -621,11 +621,11 @@ const HeaderMenu: React.FC = () => {
           ))}
 
         {/* Кнопка входа/выхода как часть основного меню */}
-        {isAuthenticated ? (
+        {/* {isAuthenticated ? (
           <MenuLink onClick={handleLogout}>Выйти</MenuLink>
         ) : (
           <MenuLink onClick={() => router.push('/login')}>Вход</MenuLink>
-        )}
+        )} */}
       </HStack>
     </Box>
   );

@@ -18,13 +18,14 @@ interface CreateEventRequest {
   isActive?: boolean;
 }
 
-// GET - Получение списка событий
+// GET - Получение списка событий с пагинацией
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const featured = searchParams.get('featured');
-    const limit = searchParams.get('limit');
     const future = searchParams.get('future');
+    const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset'); // Добавляем offset
 
     const where: any = {
       isActive: true,
@@ -40,15 +41,27 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Получаем общее количество событий для проверки наличия следующих страниц
+    const totalCount = await prisma.event.count({ where });
+
     const events = await prisma.event.findMany({
       where,
       orderBy: {
         date: 'asc',
       },
       take: limit ? parseInt(limit) : undefined,
+      skip: offset ? parseInt(offset) : 0, // Добавляем пропуск для пагинации
     });
 
-    return NextResponse.json(events);
+    // Возвращаем события и общее количество
+    return NextResponse.json({
+      events,
+      totalCount,
+      hasMore:
+        events.length === (limit ? parseInt(limit) : 10) &&
+        (offset ? parseInt(offset) + events.length : events.length) <
+          totalCount,
+    });
   } catch (error) {
     console.error('Error fetching events:', error);
     return NextResponse.json(
