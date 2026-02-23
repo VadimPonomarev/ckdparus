@@ -16,6 +16,7 @@ interface CreateEventRequest {
   category?: string;
   isFeatured?: boolean;
   isActive?: boolean;
+  payUrl?: string;
 }
 
 // GET - Получение списка событий с пагинацией
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
         category: body.category?.trim() || 'другое',
         isFeatured: body.isFeatured || false,
         isActive: body.isActive !== undefined ? body.isActive : true,
-        payUrl: body.payUrl.trim(),
+        payUrl: body.payUrl?.trim() || '',
       },
     });
 
