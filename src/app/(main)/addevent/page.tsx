@@ -121,6 +121,7 @@ export default function AddEventPage() {
       category: '',
       isFeatured: false,
       isActive: true,
+      payUrl: '',
     },
     mode: 'onBlur',
   });
@@ -182,6 +183,7 @@ export default function AddEventPage() {
         category: data.category,
         isFeatured: data.isFeatured,
         isActive: data.isActive,
+        payUrl: data.payUrl,
       };
 
       const response = await fetch('/api/events', {

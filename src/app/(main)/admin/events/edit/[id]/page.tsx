@@ -217,6 +217,8 @@ export default function EditEventPage() {
         imageUrl = uploadData.url;
       }
 
+      console.log(data);
+
       const eventData = {
         title: data.title,
         briefdescription: data.briefdescription,
