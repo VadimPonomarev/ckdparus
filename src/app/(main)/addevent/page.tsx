@@ -85,6 +85,7 @@ const EventSchema = z.object({
   category: z.string().nonempty('Обязательное поле'),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
+  payUrl: z.string(),
 });
 
 // Типы для формы
@@ -606,6 +607,32 @@ export default function AddEventPage() {
                                 <Alert.Indicator />
                                 <Alert.Title>
                                   {errors.category.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+
+                          {/* URL для продажи билетов */}
+                          <Field.Root invalid={!!errors.payUrl}>
+                            <Field.Label>
+                              URL для покупке на Пирамиде
+                            </Field.Label>
+                            <Controller
+                              name="payUrl"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="Ведите URL сайта продажи билетов"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.payUrl && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.payUrl.message}
                                 </Alert.Title>
                               </Alert.Root>
                             )}

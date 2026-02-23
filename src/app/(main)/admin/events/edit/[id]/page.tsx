@@ -79,6 +79,7 @@ const EventSchema = z.object({
   category: z.string().nonempty('Обязательное поле'),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
+  payUrl: z.string(),
 });
 
 type EventFormValues = z.infer<typeof EventSchema>;
@@ -119,6 +120,7 @@ export default function EditEventPage() {
       category: '',
       isFeatured: false,
       isActive: true,
+      payUrl: '',
     },
     mode: 'onBlur',
   });
@@ -162,6 +164,7 @@ export default function EditEventPage() {
           category: event.category || '',
           isFeatured: event.isFeatured,
           isActive: event.isActive,
+          payUrl: event.payUrl || '',
         });
 
         setCurrentImageUrl(event.imageUrl);
@@ -225,6 +228,7 @@ export default function EditEventPage() {
         category: data.category,
         isFeatured: data.isFeatured,
         isActive: data.isActive,
+        payUrl: data.payUrl || '',
       };
 
       const response = await fetch(`/api/events/${id}`, {
@@ -674,6 +678,32 @@ export default function EditEventPage() {
                                 <Alert.Indicator />
                                 <Alert.Title>
                                   {errors.category.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+
+                          {/* URL для продажи билетов */}
+                          <Field.Root invalid={!!errors.payUrl}>
+                            <Field.Label>
+                              URL для покупке на Пирамиде
+                            </Field.Label>
+                            <Controller
+                              name="payUrl"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="Ведите URL сайта продажи билетов"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.payUrl && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.payUrl.message}
                                 </Alert.Title>
                               </Alert.Root>
                             )}

@@ -24,6 +24,7 @@ model Event {
   fulldescription String?
   date        DateTime
   location    String?
+  payUrl      String?
   price       Int?
   imageUrl    String?  @map("image_url")
   category    String?

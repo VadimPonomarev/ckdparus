@@ -50,6 +50,7 @@ interface EventDetailCardProps {
     vk?: string;
     telegram?: string;
   };
+  payUrl?: string;
   onRegister?: () => void;
   onBookmark?: () => void;
 }
@@ -104,7 +105,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
   fulldescription,
   tags = [],
   socialLinks,
-  onRegister,
+  payUrl,
   onBookmark,
 }) => {
   // Заменяем useDisclosure на useState
@@ -127,14 +128,10 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
   // Обработчики
   const handleRegister = () => {
-    if (onRegister) {
-      onRegister();
-    } else {
-      toaster.create({
-        title: 'Регистрация',
-        description: 'Вы успешно зарегистрировались на мероприятие!',
-        type: 'success',
-      });
+    // Проверяем наличие payUrl
+    if (payUrl && payUrl.trim() !== '') {
+      // Открываем ссылку в новой вкладке
+      window.open(payUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -170,6 +167,9 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
     maxParticipants && currentParticipants
       ? Math.round((currentParticipants / maxParticipants) * 100)
       : 0;
+
+  // Проверяем, доступна ли ссылка для покупки
+  const isPayUrlAvailable = payUrl && payUrl.trim() !== '';
 
   return (
     <>
@@ -388,7 +388,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
               display="flex"
               justifyContent="center"
             >
-              <Stack>
+              <Stack width="100%">
                 {/* Цена */}
                 <Box textAlign="center">
                   <Heading as="h3" size="xl" color="gray.800" mb={2}>
@@ -401,13 +401,19 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
                 {/* Кнопка регистрации/покупки */}
                 <Button
-                  colorScheme="blue"
+                  colorScheme={isPayUrlAvailable ? 'blue' : 'gray'}
                   size="lg"
                   height="60px"
                   fontSize="lg"
+                  disabled={!isPayUrlAvailable}
                   onClick={handleRegister}
+                  _hover={
+                    !isPayUrlAvailable ? { cursor: 'not-allowed' } : undefined
+                  }
                 >
-                  {price === 0 ? 'Зарегистрироваться' : 'Купить билет'}
+                  {isPayUrlAvailable
+                    ? 'Купить билет'
+                    : 'Онлайн продажа недоступна'}
                 </Button>
 
                 {/* Информация о количестве участников */}
