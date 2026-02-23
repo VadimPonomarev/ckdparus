@@ -113,6 +113,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         category: body.category,
         isFeatured: body.isFeatured,
         isActive: body.isActive,
+        payUrl: body.payUrl,
       },
     });
 
