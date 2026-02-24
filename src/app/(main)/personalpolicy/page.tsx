@@ -13,8 +13,8 @@ import {
 
 const PrivacyPolicy: React.FC = () => {
   return (
-    <Box bg="gray.50" py={10} minH="100vh">
-      <Container maxW="container.lg" borderRadius="xl" boxShadow="lg" p={8}>
+    <Box py={10} minH="100vh">
+      <Container>
         <VStack align="stretch">
           {/* Заголовок */}
           <Heading as="h1" size="xl" color="blue.600" textAlign="center">
@@ -29,7 +29,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               1. Общие положения
             </Heading>
-            <VStack align="stretch" pl={4}>
+            <VStack align="stretch" pl={10}>
               <Text>
                 <strong>1.1</strong> Центр Культуры и Досуга “Парус” (далее по
                 тексту – Оператор) ставит соблюдение прав и свобод граждан одним
@@ -54,7 +54,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               2. Основные понятия, используемые в Политике
             </Heading>
-            <List.Root>
+            <List.Root pl={10}>
               <List.Item>
                 <strong>Веб-сайт</strong> — совокупность графических и
                 информационных материалов, а также программ для ЭВМ и баз
@@ -114,7 +114,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               3. Оператор может обрабатывать следующие персональные данные
             </Heading>
-            <List.Root>
+            <List.Root pl={10}>
               <List.Item>Адрес электронной почты Пользователя;</List.Item>
               <List.Item>Номер телефона Пользователя;</List.Item>
               <List.Item>Фамилию, имя, отчество Пользователя;</List.Item>
@@ -131,7 +131,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               4. Цели обработки персональных данных
             </Heading>
-            <VStack align="stretch" pl={4}>
+            <VStack align="stretch" pl={10}>
               <Text>
                 <strong>4.1</strong> Цель обработки адреса электронной почты,
                 номера телефона, фамилии, имени, отчества Пользователя — также
@@ -158,7 +158,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               5. Правовые основания обработки персональных данных
             </Heading>
-            <VStack align="stretch" pl={4}>
+            <VStack align="stretch" pl={10}>
               <Text>
                 <strong>5.1</strong> Оператор обрабатывает персональные данные
                 Пользователя только в случае их отправки Пользователем через
@@ -184,7 +184,7 @@ const PrivacyPolicy: React.FC = () => {
               6. Порядок сбора, хранения, передачи и других видов обработки
               персональных данных
             </Heading>
-            <VStack align="stretch" pl={4}>
+            <VStack align="stretch" pl={10}>
               <Text>
                 <strong>6.1</strong> Оператор обеспечивает сохранность
                 персональных данных и принимает все возможные меры, исключающие
@@ -218,10 +218,6 @@ const PrivacyPolicy: React.FC = () => {
                 , с пометкой «Отзыв согласия на обработку персональных данных».
               </Text>
             </VStack>
-            <Text fontSize="sm" mt={2} fontStyle="italic">
-              * В оригинальном документе допущена опечатка в нумерации (два
-              пункта 6.3). Здесь исправлено на 6.3 и 6.4 для корректности.
-            </Text>
           </Box>
 
           {/* 7. Заключительные положения */}
@@ -229,7 +225,7 @@ const PrivacyPolicy: React.FC = () => {
             <Heading as="h2" size="md" mb={3} color="blue.500">
               7. Заключительные положения
             </Heading>
-            <VStack align="stretch" pl={4}>
+            <VStack align="stretch" pl={10}>
               <Text>
                 <strong>7.1</strong> Пользователь может получить любые
                 разъяснения по интересующим вопросам, касающимся обработки его
