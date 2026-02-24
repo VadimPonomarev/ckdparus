@@ -1,28 +1,47 @@
-import { Box, HStack, Link, Stack, Text } from '@chakra-ui/react';
+import { HStack, Link, Stack, Text } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
 
 const Development = () => {
+  const router = useRouter();
   return (
-    <HStack width="100%" justify="space-between" pb={10} px={20} color="blackAlpha.500">
-      <Link >
-        <Text _hover={{
-          textDecoration: 'none',
-          color: 'blue.600',
-        }}>Политика обработки персональных данных</Text>
+    <HStack
+      width="100%"
+      justify="space-between"
+      pb={10}
+      px={20}
+      color="blackAlpha.500"
+    >
+      <Link
+        onClick={() => {
+          router.push('/personalpolicy');
+        }}
+      >
+        <Text
+          _hover={{
+            textDecoration: 'none',
+            color: 'blue.600',
+          }}
+        >
+          Политика обработки персональных данных
+        </Text>
       </Link>
       <Link href="mailto:vadim_i4@mail.ru">Место для вашей рекламмы </Link>
       <Stack>
-        <Link href='/'>
+        <Link href="/">
           <Text>Development ( Vadim Ponomarev )</Text>
         </Link>
         <Link href="mailto:vadim_i4@mail.ru">
-          <Text _hover={{
-            textDecoration: 'none',
-            color: 'blue.600',
-          }}>Vadim_i4@mail.ru</Text>
+          <Text
+            _hover={{
+              textDecoration: 'none',
+              color: 'blue.600',
+            }}
+          >
+            Vadim_i4@mail.ru
+          </Text>
         </Link>
       </Stack>
     </HStack>
-
   );
 };
 
