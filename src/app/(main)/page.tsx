@@ -24,6 +24,17 @@ export default function HomePage() {
         </Button>
       </Center>
       <News />
+      <Center>
+        <Button
+          w="200px"
+          bgColor="blue.500"
+          onClick={() => {
+            router.push('/allnews');
+          }}
+        >
+          Все новости
+        </Button>
+      </Center>
       <HallPlan />
       <YandexMapChakraIframe />
     </>
