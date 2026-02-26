@@ -13,23 +13,35 @@ import {
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import NewsCard from './newscard';
 
-// Тип новости из Prisma
+// Тип новости из Prisma (соответствует API)
 interface News {
   id: string;
   title: string;
   content: string;
-  excerpt?: string;
-  imageUrl?: string;
+  excerpt?: string | null;
+  imageUrl?: string | null;
   isPublished: boolean;
   views: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ИЗМЕНЕНО: API возвращает строку
+  updatedAt: string;
+  images?: Array<{
+    id: string;
+    url: string;
+    alt?: string | null;
+    caption?: string | null;
+    order: number;
+  }>;
+}
+
+interface ApiResponse {
+  news: News[];
+  totalCount: number;
+  hasMore: boolean;
 }
 
 interface NewsListProps {
   showTitle?: boolean;
   showPublishedOnly?: boolean;
-  showFeaturedOnly?: boolean;
   maxVisibleItems?: number;
   limit?: number;
 }
@@ -37,7 +49,6 @@ interface NewsListProps {
 const NewsList: React.FC<NewsListProps> = ({
   showTitle = true,
   showPublishedOnly = true,
-  showFeaturedOnly = false,
   maxVisibleItems = 5,
   limit = 10,
 }) => {
@@ -52,15 +63,22 @@ const NewsList: React.FC<NewsListProps> = ({
       try {
         setLoading(true);
         const params = new URLSearchParams();
+
         if (showPublishedOnly) params.append('published', 'true');
-        if (showFeaturedOnly) params.append('featured', 'true');
-        if (limit) params.append('limit', limit.toString());
+
+        // ИСПРАВЛЕНО: Используем offset и limit для пагинации
+        // Загружаем достаточно новостей для слайдера + запас
+        const itemsToFetch = Math.max(limit, maxVisibleItems + 5);
+        params.append('limit', itemsToFetch.toString());
+        params.append('offset', '0');
 
         const response = await fetch(`/api/news?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки новостей');
 
-        const data = await response.json();
-        setNews(data);
+        const data: ApiResponse = await response.json();
+
+        // ИСПРАВЛЕНО: API возвращает объект с полем news
+        setNews(data.news || []);
       } catch (err) {
         console.error('Error fetching news:', err);
         setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
@@ -70,9 +88,13 @@ const NewsList: React.FC<NewsListProps> = ({
     };
 
     fetchNews();
-  }, [showPublishedOnly, showFeaturedOnly, limit]);
+  }, [showPublishedOnly, limit, maxVisibleItems]);
 
-  const filteredNews = news;
+  // Фильтруем только опубликованные новости, если нужно
+  const filteredNews = showPublishedOnly
+    ? news.filter(item => item.isPublished)
+    : news;
+
   const totalItems = filteredNews.length;
   const showSlider = totalItems > maxVisibleItems;
 
@@ -164,11 +186,12 @@ const NewsList: React.FC<NewsListProps> = ({
               key={item.id}
               id={item.id}
               title={item.title}
-              date={item.createdAt}
+              date={new Date(item.createdAt)} // ИСПРАВЛЕНО: преобразуем строку в Date
               content={item.content}
-              excerpt={item.excerpt}
-              imageUrl={item.imageUrl}
+              excerpt={item.excerpt || undefined}
+              imageUrl={item.imageUrl || undefined}
               views={item.views}
+              isPublished={item.isPublished}
               linkUrl={`/news/${item.id}`}
             />
           ))}
@@ -217,11 +240,12 @@ const NewsList: React.FC<NewsListProps> = ({
               <NewsCard
                 id={item.id}
                 title={item.title}
-                date={item.createdAt}
+                date={new Date(item.createdAt)} // ИСПРАВЛЕНО: преобразуем строку в Date
                 content={item.content}
-                excerpt={item.excerpt}
-                imageUrl={item.imageUrl}
+                excerpt={item.excerpt || undefined}
+                imageUrl={item.imageUrl || undefined}
                 views={item.views}
+                isPublished={item.isPublished}
                 linkUrl={`/news/${item.id}`}
               />
             </Box>
