@@ -45,8 +45,8 @@ interface NewsDetailCardProps {
   id: string;
   title: string;
   content: string;
-  excerpt?: string;
-  imageUrl?: string;
+  excerpt?: string | null;
+  imageUrl?: string | null;
   images?: NewsImage[];
   isPublished: boolean;
   views: number;
