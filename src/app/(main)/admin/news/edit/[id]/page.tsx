@@ -9,7 +9,6 @@ import {
   Card,
   Container,
   Field,
-  Fieldset,
   Input,
   Textarea,
   Checkbox,
@@ -24,10 +23,6 @@ import {
   Spinner,
   Center,
   Alert,
-  createListCollection,
-  For,
-  Portal,
-  Select,
 } from '@chakra-ui/react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -279,146 +274,149 @@ export default function EditNewsPage() {
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <Fieldset.Root>
-                  <Stack gap="6">
-                    <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
-                      {/* Левая колонка - основные поля */}
-                      <Box flex="2">
-                        <Fieldset.Content>
-                          <Field.Root invalid={!!errors.title}>
-                            <Field.Label>Заголовок</Field.Label>
-                            <Controller
-                              name="title"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  {...field}
-                                  placeholder="Введите заголовок новости"
-                                  onBlur={field.onBlur}
-                                />
-                              )}
-                            />
-                            {errors.title && (
-                              <Field.ErrorText>
-                                {errors.title.message}
-                              </Field.ErrorText>
+                <Stack gap="6">
+                  <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
+                    {/* Левая колонка - основные поля */}
+                    <Box flex="2">
+                      <Stack gap="4">
+                        {/* Заголовок */}
+                        <Field.Root invalid={!!errors.title}>
+                          <Field.Label>Заголовок</Field.Label>
+                          <Controller
+                            name="title"
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                placeholder="Введите заголовок новости"
+                                onBlur={field.onBlur}
+                              />
                             )}
-                          </Field.Root>
+                          />
+                          {errors.title && (
+                            <Field.ErrorText>
+                              {errors.title.message}
+                            </Field.ErrorText>
+                          )}
+                        </Field.Root>
 
-                          <Field.Root invalid={!!errors.excerpt}>
-                            <Field.Label>Краткое описание</Field.Label>
-                            <Controller
-                              name="excerpt"
-                              control={control}
-                              render={({ field }) => (
-                                <Textarea
-                                  {...field}
-                                  placeholder="Краткое описание (до 300 символов)"
-                                  rows={3}
-                                  maxLength={300}
-                                  onBlur={field.onBlur}
-                                />
-                              )}
-                            />
-                            <Field.HelperText>
-                              Будет отображаться в превью новости
-                            </Field.HelperText>
-                            {errors.excerpt && (
-                              <Field.ErrorText>
-                                {errors.excerpt.message}
-                              </Field.ErrorText>
+                        {/* Краткое описание */}
+                        <Field.Root invalid={!!errors.excerpt}>
+                          <Field.Label>Краткое описание</Field.Label>
+                          <Controller
+                            name="excerpt"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                {...field}
+                                placeholder="Краткое описание (до 300 символов)"
+                                rows={3}
+                                maxLength={300}
+                                onBlur={field.onBlur}
+                              />
                             )}
-                          </Field.Root>
+                          />
+                          <Field.HelperText>
+                            Будет отображаться в превью новости
+                          </Field.HelperText>
+                          {errors.excerpt && (
+                            <Field.ErrorText>
+                              {errors.excerpt.message}
+                            </Field.ErrorText>
+                          )}
+                        </Field.Root>
 
-                          <Field.Root invalid={!!errors.content}>
-                            <Field.Label>Содержание</Field.Label>
-                            <Controller
-                              name="content"
-                              control={control}
-                              render={({ field }) => (
-                                <Textarea
-                                  {...field}
-                                  placeholder="Полный текст новости"
-                                  rows={10}
-                                  onBlur={field.onBlur}
-                                />
-                              )}
-                            />
-                            {errors.content && (
-                              <Field.ErrorText>
-                                {errors.content.message}
-                              </Field.ErrorText>
+                        {/* Содержание */}
+                        <Field.Root invalid={!!errors.content}>
+                          <Field.Label>Содержание</Field.Label>
+                          <Controller
+                            name="content"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                {...field}
+                                placeholder="Полный текст новости"
+                                rows={10}
+                                onBlur={field.onBlur}
+                              />
                             )}
-                          </Field.Root>
+                          />
+                          {errors.content && (
+                            <Field.ErrorText>
+                              {errors.content.message}
+                            </Field.ErrorText>
+                          )}
+                        </Field.Root>
 
-                          {/* Дополнительные изображения */}
-                          <Box>
-                            <HStack justify="space-between" mb={4}>
-                              <Field.Label mb={0}>
-                                Дополнительные изображения
-                              </Field.Label>
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  append({
-                                    url: '',
-                                    alt: '',
-                                    caption: '',
-                                    order: fields.length,
-                                  })
-                                }
-                                colorScheme="blue"
-                                variant="outline"
-                              >
-                                Добавить
-                              </Button>
-                            </HStack>
+                        {/* Дополнительные изображения */}
+                        <Box>
+                          <HStack justify="space-between" mb={4}>
+                            <Text fontWeight="medium">
+                              Дополнительные изображения
+                            </Text>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                append({
+                                  url: '',
+                                  alt: '',
+                                  caption: '',
+                                  order: fields.length,
+                                })
+                              }
+                              colorScheme="blue"
+                              variant="outline"
+                            >
+                              Добавить
+                            </Button>
+                          </HStack>
 
-                            {fields.length > 0 ? (
-                              <VStack align="stretch">
-                                {fields.map((field, index) => (
-                                  <Box
-                                    key={field.id}
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="gray.200"
-                                    borderRadius="md"
-                                  >
-                                    <HStack justify="space-between" mb={3}>
-                                      <Text fontWeight="bold">
-                                        Изображение {index + 1}
-                                      </Text>
-                                      <Button
-                                        size="sm"
-                                        colorScheme="red"
-                                        variant="ghost"
-                                        onClick={() => remove(index)}
-                                      >
-                                        <FaTrash />
-                                      </Button>
-                                    </HStack>
+                          {fields.length > 0 ? (
+                            <VStack align="stretch">
+                              {fields.map((field, index) => (
+                                <Box
+                                  key={field.id}
+                                  p={4}
+                                  border="1px solid"
+                                  borderColor="gray.200"
+                                  borderRadius="md"
+                                >
+                                  <HStack justify="space-between" mb={3}>
+                                    <Text fontWeight="bold">
+                                      Изображение {index + 1}
+                                    </Text>
+                                    <Button
+                                      size="sm"
+                                      colorScheme="red"
+                                      variant="ghost"
+                                      onClick={() => remove(index)}
+                                    >
+                                      <FaTrash />
+                                    </Button>
+                                  </HStack>
 
-                                    <VStack>
-                                      <Field.Root
-                                        invalid={!!errors.images?.[index]?.url}
-                                      >
-                                        <Controller
-                                          name={`images.${index}.url`}
-                                          control={control}
-                                          render={({ field }) => (
-                                            <Input
-                                              {...field}
-                                              placeholder="URL изображения"
-                                            />
-                                          )}
-                                        />
-                                        {errors.images?.[index]?.url && (
-                                          <Field.ErrorText>
-                                            {errors.images[index]?.url?.message}
-                                          </Field.ErrorText>
+                                  <VStack>
+                                    <Field.Root
+                                      invalid={!!errors.images?.[index]?.url}
+                                    >
+                                      <Controller
+                                        name={`images.${index}.url`}
+                                        control={control}
+                                        render={({ field }) => (
+                                          <Input
+                                            {...field}
+                                            placeholder="URL изображения"
+                                          />
                                         )}
-                                      </Field.Root>
+                                      />
+                                      {errors.images?.[index]?.url && (
+                                        <Field.ErrorText>
+                                          {errors.images[index]?.url?.message}
+                                        </Field.ErrorText>
+                                      )}
+                                    </Field.Root>
 
+                                    <Field.Root>
                                       <Controller
                                         name={`images.${index}.alt`}
                                         control={control}
@@ -429,7 +427,9 @@ export default function EditNewsPage() {
                                           />
                                         )}
                                       />
+                                    </Field.Root>
 
+                                    <Field.Root>
                                       <Controller
                                         name={`images.${index}.caption`}
                                         control={control}
@@ -440,171 +440,172 @@ export default function EditNewsPage() {
                                           />
                                         )}
                                       />
-                                    </VStack>
+                                    </Field.Root>
+                                  </VStack>
 
-                                    {field.url && (
-                                      <Box mt={3}>
-                                        <Image
-                                          src={field.url}
-                                          alt={field.alt || 'Preview'}
-                                          maxH="100px"
-                                          objectFit="cover"
-                                          borderRadius="md"
-                                        />
-                                      </Box>
-                                    )}
-                                  </Box>
-                                ))}
-                              </VStack>
-                            ) : (
-                              <Text color="gray.500" textAlign="center" py={4}>
-                                Нет дополнительных изображений
-                              </Text>
-                            )}
-                          </Box>
-                        </Fieldset.Content>
-                      </Box>
-
-                      {/* Правая колонка */}
-                      <Box flex="1">
-                        <Fieldset.Content>
-                          {/* Загрузка главного изображения */}
-                          <Field.Root>
-                            <Field.Label>Главное изображение</Field.Label>
-                            <VStack gap="4" align="stretch">
-                              {/* Текущее изображение */}
-                              {currentImageUrl && !acceptedFile && (
-                                <Box>
-                                  <Text
-                                    fontSize="sm"
-                                    fontWeight="medium"
-                                    mb="2"
-                                  >
-                                    Текущее изображение:
-                                  </Text>
-                                  <Image
-                                    src={currentImageUrl}
-                                    alt="Текущее изображение"
-                                    borderRadius="md"
-                                    maxH="200px"
-                                    objectFit="cover"
-                                    width="full"
-                                  />
-                                  <Button
-                                    size="xs"
-                                    variant="ghost"
-                                    colorPalette="red"
-                                    mt={2}
-                                    onClick={() => setCurrentImageUrl(null)}
-                                  >
-                                    Удалить изображение
-                                  </Button>
+                                  {field.url && (
+                                    <Box mt={3}>
+                                      <Image
+                                        src={field.url}
+                                        alt={field.alt || 'Preview'}
+                                        maxH="100px"
+                                        objectFit="cover"
+                                        borderRadius="md"
+                                      />
+                                    </Box>
+                                  )}
                                 </Box>
-                              )}
-
-                              <FileUpload.RootProvider value={fileUpload}>
-                                <FileUpload.HiddenInput />
-
-                                {!acceptedFile && !currentImageUrl ? (
-                                  <FileUpload.Dropzone>
-                                    <FileUpload.DropzoneContent>
-                                      <VStack gap="3" py="6">
-                                        <Text textAlign="center">
-                                          Перетащите сюда изображение
-                                          <br />
-                                          <Text
-                                            as="span"
-                                            fontSize="sm"
-                                            color="gray.500"
-                                          >
-                                            или
-                                          </Text>
-                                        </Text>
-                                        <FileUpload.Trigger asChild>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            px={10}
-                                          >
-                                            Выберите файл
-                                          </Button>
-                                        </FileUpload.Trigger>
-                                        <Text
-                                          fontSize="xs"
-                                          color="gray.500"
-                                          textAlign="center"
-                                        >
-                                          JPG, PNG, WebP до 5MB
-                                        </Text>
-                                      </VStack>
-                                    </FileUpload.DropzoneContent>
-                                  </FileUpload.Dropzone>
-                                ) : (
-                                  acceptedFile && (
-                                    <FileUpload.ItemGroup>
-                                      <FileUpload.Item file={acceptedFile}>
-                                        <FileUpload.ItemPreview>
-                                          {acceptedFile.type.startsWith(
-                                            'image/'
-                                          ) &&
-                                            previewUrl && (
-                                              <FileUpload.ItemPreviewImage
-                                                src={previewUrl}
-                                                alt="Предпросмотр"
-                                              />
-                                            )}
-                                        </FileUpload.ItemPreview>
-                                        <FileUpload.ItemContent>
-                                          <FileUpload.ItemName />
-                                          <FileUpload.ItemSizeText />
-                                          <FileUpload.ItemDeleteTrigger
-                                            asChild
-                                            onClick={handleRemoveFile}
-                                          >
-                                            <Button
-                                              size="xs"
-                                              variant="ghost"
-                                              colorPalette="red"
-                                            ></Button>
-                                          </FileUpload.ItemDeleteTrigger>
-                                        </FileUpload.ItemContent>
-                                      </FileUpload.Item>
-                                    </FileUpload.ItemGroup>
-                                  )
-                                )}
-                              </FileUpload.RootProvider>
-
-                              {fileUpload.rejectedFiles.length > 0 && (
-                                <Alert.Root status="error">
-                                  <Alert.Indicator />
-                                  <Alert.Title>
-                                    {fileUpload.rejectedFiles[0].errors
-                                      .map(error =>
-                                        error === 'TOO_LARGE'
-                                          ? 'Файл слишком большой. Максимум 5MB'
-                                          : error === 'INVALID_TYPE'
-                                            ? 'Недопустимый тип файла'
-                                            : 'Ошибка загрузки файла'
-                                      )
-                                      .join(', ')}
-                                  </Alert.Title>
-                                </Alert.Root>
-                              )}
-
-                              {uploadError && (
-                                <Alert.Root status="error">
-                                  <Alert.Indicator />
-                                  <Alert.Title>{uploadError}</Alert.Title>
-                                </Alert.Root>
-                              )}
+                              ))}
                             </VStack>
-                            <Field.HelperText>
-                              Изображение будет отображаться в карточке новости
-                            </Field.HelperText>
-                          </Field.Root>
+                          ) : (
+                            <Text color="gray.500" textAlign="center" py={4}>
+                              Нет дополнительных изображений
+                            </Text>
+                          )}
+                        </Box>
+                      </Stack>
+                    </Box>
 
-                          {/* Чекбокс публикации */}
-                          <Stack gap="4" mt={4}>
+                    {/* Правая колонка */}
+                    <Box flex="1">
+                      <Stack gap="4">
+                        {/* Загрузка главного изображения */}
+                        <Field.Root>
+                          <Field.Label>Главное изображение</Field.Label>
+                          <VStack gap="4" align="stretch">
+                            {/* Текущее изображение */}
+                            {currentImageUrl && !acceptedFile && (
+                              <Box>
+                                <Text fontSize="sm" fontWeight="medium" mb="2">
+                                  Текущее изображение:
+                                </Text>
+                                <Image
+                                  src={currentImageUrl}
+                                  alt="Текущее изображение"
+                                  borderRadius="md"
+                                  maxH="200px"
+                                  objectFit="cover"
+                                  width="full"
+                                />
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  colorPalette="red"
+                                  mt={2}
+                                  onClick={() => setCurrentImageUrl(null)}
+                                >
+                                  Удалить изображение
+                                </Button>
+                              </Box>
+                            )}
+
+                            <FileUpload.RootProvider value={fileUpload}>
+                              <FileUpload.HiddenInput />
+
+                              {!acceptedFile && !currentImageUrl ? (
+                                <FileUpload.Dropzone>
+                                  <FileUpload.DropzoneContent>
+                                    <VStack gap="3" py="6">
+                                      <Text textAlign="center">
+                                        Перетащите сюда изображение
+                                        <br />
+                                        <Text
+                                          as="span"
+                                          fontSize="sm"
+                                          color="gray.500"
+                                        >
+                                          или
+                                        </Text>
+                                      </Text>
+                                      <FileUpload.Trigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          px={10}
+                                        >
+                                          Выберите файл
+                                        </Button>
+                                      </FileUpload.Trigger>
+                                      <Text
+                                        fontSize="xs"
+                                        color="gray.500"
+                                        textAlign="center"
+                                      >
+                                        JPG, PNG, WebP до 5MB
+                                      </Text>
+                                    </VStack>
+                                  </FileUpload.DropzoneContent>
+                                </FileUpload.Dropzone>
+                              ) : (
+                                acceptedFile && (
+                                  <FileUpload.ItemGroup>
+                                    <FileUpload.Item file={acceptedFile}>
+                                      <FileUpload.ItemPreview>
+                                        {acceptedFile.type.startsWith(
+                                          'image/'
+                                        ) &&
+                                          previewUrl && (
+                                            <FileUpload.ItemPreviewImage
+                                              src={previewUrl}
+                                              alt="Предпросмотр"
+                                            />
+                                          )}
+                                      </FileUpload.ItemPreview>
+                                      <FileUpload.ItemContent>
+                                        <FileUpload.ItemName />
+                                        <FileUpload.ItemSizeText />
+                                      </FileUpload.ItemContent>
+                                      <FileUpload.ItemDeleteTrigger
+                                        asChild
+                                        onClick={handleRemoveFile}
+                                      >
+                                        <Button
+                                          size="xs"
+                                          variant="ghost"
+                                          colorPalette="red"
+                                        >
+                                          ✕
+                                        </Button>
+                                      </FileUpload.ItemDeleteTrigger>
+                                    </FileUpload.Item>
+                                  </FileUpload.ItemGroup>
+                                )
+                              )}
+                            </FileUpload.RootProvider>
+
+                            {fileUpload.rejectedFiles.length > 0 && (
+                              <Alert.Root status="error">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {fileUpload.rejectedFiles[0].errors
+                                    .map(error =>
+                                      error === 'TOO_LARGE'
+                                        ? 'Файл слишком большой. Максимум 5MB'
+                                        : error === 'INVALID_TYPE'
+                                          ? 'Недопустимый тип файла'
+                                          : 'Ошибка загрузки файла'
+                                    )
+                                    .join(', ')}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+
+                            {uploadError && (
+                              <Alert.Root status="error">
+                                <Alert.Indicator />
+                                <Alert.Title>{uploadError}</Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </VStack>
+                          <Field.HelperText>
+                            Изображение будет отображаться в карточке новости
+                          </Field.HelperText>
+                        </Field.Root>
+
+                        {/* Чекбокс публикации */}
+                        <Field.Root>
+                          <HStack justify="space-between" width="full">
+                            <Field.Label>Опубликовано</Field.Label>
                             <Controller
                               name="isPublished"
                               control={control}
@@ -618,40 +619,39 @@ export default function EditNewsPage() {
                                 >
                                   <Checkbox.HiddenInput />
                                   <Checkbox.Control cursor="pointer" />
-                                  <Checkbox.Label>Опубликовано</Checkbox.Label>
                                 </Checkbox.Root>
                               )}
                             />
-                            <Box fontSize="sm" color="gray.500" ml="7">
-                              Если снять галочку, новость будет видна только
-                              администраторам
-                            </Box>
-                          </Stack>
-                        </Fieldset.Content>
-                      </Box>
-                    </Stack>
-
-                    {/* Кнопки */}
-                    <Card.Footer justifyContent="flex-end" gap="3" px={0}>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.push('/news')}
-                        px={5}
-                      >
-                        Отмена
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorPalette="blue"
-                        loading={isSubmitting}
-                        px={5}
-                      >
-                        {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
-                      </Button>
-                    </Card.Footer>
+                          </HStack>
+                          <Field.HelperText>
+                            Если снять галочку, новость будет видна только
+                            администраторам
+                          </Field.HelperText>
+                        </Field.Root>
+                      </Stack>
+                    </Box>
                   </Stack>
-                </Fieldset.Root>
+
+                  {/* Кнопки */}
+                  <HStack justifyContent="flex-end" gap="3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.push('/news')}
+                      px={5}
+                    >
+                      Отмена
+                    </Button>
+                    <Button
+                      type="submit"
+                      colorPalette="blue"
+                      loading={isSubmitting}
+                      px={5}
+                    >
+                      {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
+                    </Button>
+                  </HStack>
+                </Stack>
               </form>
             </Stack>
           </Card.Body>
