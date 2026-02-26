@@ -7,10 +7,10 @@ const prisma = new PrismaClient();
 // GET - Получение конкретной новости по ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
 
     const news = await prisma.news.findUnique({
       where: { id },
@@ -53,10 +53,10 @@ export async function GET(
 // PATCH - Обновление новости
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
 
     // Проверяем существование новости
@@ -170,10 +170,10 @@ export async function PATCH(
 // DELETE - Удаление новости
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
 
     // Проверяем существование новости
     const existingNews = await prisma.news.findUnique({
