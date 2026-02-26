@@ -1,4 +1,5 @@
 // components/news/newsdetailcard.tsx
+'use client';
 import {
   Box,
   Container,
@@ -12,50 +13,44 @@ import {
   GridItem,
   Flex,
   Icon,
-  Link,
+  HStack,
+  VStack,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import {
   FaCalendarAlt,
+  FaClock,
   FaEye,
-  FaBookmark,
+  FaShare,
   FaEdit,
-  FaShareAlt,
-  FaPrint,
-  FaVk,
-  FaTelegram,
-  FaCopy,
-  FaImages,
+  FaTrash,
 } from 'react-icons/fa';
 import { useState } from 'react';
-import { toaster } from '@/components/ui/toaster';
-import GallerySlider from '@/components/gallery/galleryslider';
-
-// Типы для пропсов
-interface NewsImage {
-  id: string;
-  url: string;
-  alt?: string;
-  caption?: string;
-  order: number;
-}
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { toaster } from '../ui/toaster';
 
 interface NewsDetailCardProps {
   id: string;
   title: string;
   content: string;
-  excerpt?: string;
-  imageUrl?: string;
-  images?: NewsImage[];
+  excerpt?: string | null;
+  imageUrl?: string | null;
   isPublished: boolean;
   views: number;
   createdAt: Date;
   updatedAt: Date;
+  images?: Array<{
+    id: string;
+    url: string;
+    alt?: string | null;
+    caption?: string | null;
+    order: number;
+  }>;
   onBookmark?: () => void;
   onEdit?: () => void;
-  category?: string;
-  tags?: string[];
+  onDelete?: () => void;
 }
 
 const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
@@ -64,543 +59,382 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   content,
   excerpt,
   imageUrl,
-  images = [],
   isPublished,
   views,
   createdAt,
   updatedAt,
+  images = [],
   onBookmark,
   onEdit,
-  category = 'новости',
-  tags = [],
+  onDelete,
 }) => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
 
   // Форматирование дат
   const formattedDate = format(new Date(createdAt), 'dd MMMM yyyy', {
     locale: ru,
   });
   const formattedTime = format(new Date(createdAt), 'HH:mm', { locale: ru });
-  const formattedUpdated = format(new Date(updatedAt), 'dd.MM.yyyy HH:mm', {
+  const formattedUpdateDate = format(new Date(updatedAt), 'dd MMMM yyyy', {
     locale: ru,
   });
 
-  // Изображение по умолчанию
-  const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
+  // Основное изображение (первое из массива или отдельное)
+  const mainImage = images.length > 0 ? images[0].url : imageUrl;
+  const imageSrc = mainImage || '/images/HeaderPicture.jpg';
 
-  // Обработчики действий
-  const handleBookmark = () => {
-    const newBookmarkedState = !isBookmarked;
-    setIsBookmarked(newBookmarkedState);
-    if (onBookmark) {
-      onBookmark();
-    }
+  // Галерея изображений (все кроме первого)
+  const galleryImages = images.slice(1);
 
-    toaster.create({
-      title: newBookmarkedState
-        ? 'Добавлено в избранное'
-        : 'Удалено из избранного',
-      type: 'success',
-    });
-  };
-
-  const handleShare = (platform: string) => {
-    const url = window.location.href;
-    const text = `${title} - ${excerpt || content.substring(0, 100)}...`;
-    const shareUrls = {
-      vk: `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(excerpt || '')}`,
-      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-    };
-
-    if (platform in shareUrls) {
-      window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
-    }
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: excerpt || content.substring(0, 100) + '...',
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
       toaster.create({
         title: 'Ссылка скопирована',
         type: 'success',
+        duration: 2000,
+      });
+    }
+  };
+
+  const handleBookmark = () => {
+    const newState = !isBookmarked;
+    setIsBookmarked(newState);
+    if (onBookmark) onBookmark();
+
+    toaster.create({
+      title: newState ? 'Добавлено в избранное' : 'Удалено из избранного',
+      type: 'success',
+      duration: 2000,
+    });
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit();
+    } else {
+      router.push(`/admin/news/edit/${id}`);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(`/api/news/${id}`, {
+        method: 'DELETE',
       });
 
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Ошибка при удалении');
+      }
+
+      toaster.create({
+        title: 'Новость удалена',
+        type: 'success',
+        duration: 3000,
+      });
+
+      if (onDelete) {
+        onDelete();
+      } else {
+        router.push('/news');
+      }
+    } catch (error) {
+      console.error('Error deleting news:', error);
       toaster.create({
         title: 'Ошибка',
-        description: 'Не удалось скопировать ссылку',
+        description:
+          error instanceof Error ? error.message : 'Не удалось удалить новость',
         type: 'error',
+        duration: 5000,
       });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleOpenGallery = () => {
-    if (images.length > 0) {
-      setShowGallery(true);
-    }
-  };
-
-  const handleCloseGallery = () => {
-    setShowGallery(false);
-  };
-
-  // Время чтения (примерный расчет)
-  const readingTime = Math.max(1, Math.ceil(content.length / 1200));
-
-  // Преобразуем изображения для галереи
-  const galleryImages = images.map(img => ({
-    id: img.id,
-    url: img.url,
-    alt: img.alt || `Фото к новости "${title}"`,
-    caption: img.caption,
-  }));
 
   return (
     <Box>
-      {/* Модальное окно галереи */}
-      {showGallery && galleryImages.length > 0 && (
-        <Box
-          position="fixed"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="black"
-          zIndex={9999}
-          overflow="hidden"
-        >
-          <Button
-            position="absolute"
-            top={4}
-            right={4}
-            zIndex={10000}
-            colorScheme="whiteAlpha"
-            onClick={handleCloseGallery}
-          >
-            ✕
-          </Button>
-          <GallerySlider images={galleryImages} />
-        </Box>
-      )}
-
-      <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
-        {/* Левая колонка - основная информация */}
-        <GridItem>
-          <Stack>
-            {/* Заголовок и мета-информация */}
-            <Box>
-              <Badge
-                colorPalette="blue"
-                fontSize="md"
-                px={4}
-                py={2}
-                borderRadius="full"
-                mb={4}
-              >
-                {category}
-              </Badge>
-
-              <Heading
-                as="h1"
-                size="2xl"
-                fontWeight="bold"
-                color="fg.emphasized"
-                mb={4}
-              >
-                {title}
-              </Heading>
-
+      <Container maxW="1200px" py={8}>
+        <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
+          {/* Левая колонка - основная информация */}
+          <GridItem>
+            <Stack>
+              {/* Заголовок и действия */}
               <Flex
+                justifyContent="space-between"
                 alignItems="center"
                 flexWrap="wrap"
                 gap={4}
-                color="fg.muted"
               >
-                <Flex alignItems="center" gap={2}>
-                  <Icon as={FaCalendarAlt} boxSize="14px" />
-                  <Text fontSize="md">
-                    {formattedDate} в {formattedTime}
-                  </Text>
-                </Flex>
+                <Heading as="h1" size="2xl" fontWeight="bold" color="gray.800">
+                  {title}
+                </Heading>
 
-                <Flex alignItems="center" gap={2}>
-                  <Icon as={FaEye} boxSize="14px" />
-                  <Text fontSize="md">{views} просмотров</Text>
-                </Flex>
-
-                {images.length > 0 && (
-                  <Flex alignItems="center" gap={2}>
-                    <Icon as={FaImages} boxSize="14px" />
-                    <Text fontSize="md">{images.length} фото</Text>
-                  </Flex>
-                )}
-
-                <Text fontSize="md">🕑 {readingTime} мин. чтения</Text>
-
-                {updatedAt.getTime() !== createdAt.getTime() && (
-                  <Text fontSize="sm" color="fg.subtle" fontStyle="italic">
-                    Обновлено: {formattedUpdated}
-                  </Text>
-                )}
+                <HStack>
+                  <Button variant="outline" size="sm" onClick={handleShare}>
+                    Поделиться
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBookmark}
+                    colorScheme={isBookmarked ? 'yellow' : 'gray'}
+                  >
+                    {isBookmarked ? 'В избранном' : 'В избранное'}
+                  </Button>
+                </HStack>
               </Flex>
-            </Box>
 
-            {/* Краткое описание */}
-            {excerpt && (
-              <Box
-                bg="bg.subtle"
-                p={6}
-                borderRadius="lg"
-                borderLeft="4px solid"
-                borderColor="border.emphasized"
-              >
-                <Text
-                  fontSize="lg"
-                  fontWeight="medium"
-                  color="fg.emphasized"
-                  fontStyle="italic"
+              {/* Мета-информация */}
+              <HStack flexWrap="wrap" gap={2}>
+                <HStack>
+                  <Icon as={FaCalendarAlt} color="blue.500" />
+                  <Text>{formattedDate}</Text>
+                </HStack>
+                <HStack>
+                  <Icon as={FaClock} color="green.500" />
+                  <Text>{formattedTime}</Text>
+                </HStack>
+                <HStack>
+                  <Icon as={FaEye} color="gray.500" />
+                  <Text>{views} просмотров</Text>
+                </HStack>
+                {!isPublished && (
+                  <Badge colorScheme="yellow" px={3} py={1} borderRadius="full">
+                    Черновик
+                  </Badge>
+                )}
+              </HStack>
+
+              {/* Краткое описание (если есть) */}
+              {excerpt && (
+                <Box
+                  bg="blue.50"
+                  p={4}
+                  borderRadius="lg"
+                  borderLeft="4px solid"
+                  borderLeftColor="blue.500"
                 >
-                  {excerpt}
-                </Text>
-              </Box>
-            )}
+                  <Text fontSize="lg" fontStyle="italic" color="gray.700">
+                    {excerpt}
+                  </Text>
+                </Box>
+              )}
 
-            {/* Основное изображение */}
-            {imageUrl && (
-              <Box
-                borderRadius="xl"
-                overflow="hidden"
-                boxShadow="lg"
-                position="relative"
-                mb={4}
-                cursor={images.length > 0 ? 'pointer' : 'default'}
-                onClick={handleOpenGallery}
-              >
+              {/* Основное изображение */}
+              <Box borderRadius="xl" overflow="hidden" boxShadow="xl">
                 <Image
                   src={imageSrc}
                   alt={title}
                   w="100%"
-                  h={{ base: '300px', md: '500px' }}
+                  h={{ base: '300px', md: '400px' }}
                   objectFit="cover"
                   loading="eager"
                 />
-                {images.length > 0 && (
-                  <Box
-                    position="absolute"
-                    bottom={4}
-                    right={4}
-                    bg="blackAlpha.700"
-                    color="white"
-                    px={3}
-                    py={1}
-                    borderRadius="md"
-                    fontSize="sm"
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                  >
-                    <Icon as={FaImages} />
-                    {images.length} фото
-                  </Box>
-                )}
               </Box>
-            )}
 
-            {/* Миниатюры дополнительных изображений */}
-            {images.length > 1 && (
-              <Flex gap={2} mb={6} overflowX="auto" py={2}>
-                {images.slice(0, 5).map((img, index) => (
-                  <Box
-                    key={img.id}
-                    flexShrink={0}
-                    w="100px"
-                    h="80px"
-                    borderRadius="md"
-                    overflow="hidden"
-                    cursor="pointer"
-                    border="2px solid"
-                    borderColor={
-                      img.url === imageUrl ? 'blue.500' : 'transparent'
-                    }
-                    onClick={handleOpenGallery}
-                  >
-                    <Image
-                      src={img.url}
-                      alt={img.alt || `Фото ${index + 1}`}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                    />
-                  </Box>
-                ))}
-                {images.length > 5 && (
-                  <Box
-                    flexShrink={0}
-                    w="100px"
-                    h="80px"
-                    borderRadius="md"
-                    bg="blackAlpha.700"
-                    color="white"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    cursor="pointer"
-                    onClick={handleOpenGallery}
-                  >
-                    +{images.length - 5}
-                  </Box>
-                )}
-              </Flex>
-            )}
-
-            {/* Содержание */}
-            <Box
-              bg="bg.surface"
-              p={{ base: 6, md: 8 }}
-              borderRadius="lg"
-              boxShadow="sm"
-            >
-              <div
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.8',
-                  color: '#374151',
-                  whiteSpace: 'pre-line',
-                }}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </Box>
-
-            {/* Теги */}
-            {tags.length > 0 && (
-              <Box>
-                <Heading as="h3" size="md" mb={4} color="fg.emphasized">
-                  Теги
-                </Heading>
-                <Flex flexWrap="wrap" gap={2}>
-                  {tags.map((tag, index) => (
-                    <Link
-                      key={index}
-                      href={`/news?tag=${tag}`}
-                      _hover={{ textDecoration: 'none' }}
-                    >
-                      <Badge
-                        colorPalette="gray"
-                        px={4}
-                        py={2}
-                        borderRadius="full"
-                        fontSize="sm"
-                        _hover={{
-                          bg: 'bg.subtle',
-                          transform: 'translateY(-2px)',
-                          transition: 'all 0.2s',
-                        }}
+              {/* Галерея изображений */}
+              {galleryImages.length > 0 && (
+                <Box>
+                  <Heading as="h2" size="md" mb={4}>
+                    Фотогалерея
+                  </Heading>
+                  <Grid columns={{ base: 2, md: 3, lg: 4 }} gap={4}>
+                    {galleryImages.map(img => (
+                      <Box
+                        key={img.id}
+                        borderRadius="lg"
+                        overflow="hidden"
+                        cursor="pointer"
+                        onClick={() => window.open(img.url, '_blank')}
                       >
-                        #{tag}
-                      </Badge>
-                    </Link>
-                  ))}
-                </Flex>
-              </Box>
-            )}
-          </Stack>
-        </GridItem>
+                        <Image
+                          src={img.url}
+                          alt={img.alt || title}
+                          w="100%"
+                          h="150px"
+                          objectFit="cover"
+                          _hover={{ transform: 'scale(1.05)' }}
+                          transition="transform 0.2s"
+                        />
+                        {img.caption && (
+                          <Text fontSize="xs" mt={1} color="gray.600">
+                            {img.caption}
+                          </Text>
+                        )}
+                      </Box>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
 
-        {/* Правая колонка - боковая панель */}
-        <GridItem>
-          <Box
-            position="sticky"
-            top="100px"
-            bg="bg.surface"
-            borderRadius="xl"
-            boxShadow="lg"
-            p={6}
-            border="1px solid"
-            borderColor="border.subtle"
-          >
-            <Stack>
-              {/* Действия */}
-              <Box>
-                <Heading as="h3" size="md" mb={4} color="fg.emphasized">
-                  Действия
+              {/* Полный текст новости */}
+              <Box
+                bg="white"
+                p={6}
+                borderRadius="lg"
+                boxShadow="md"
+                border="1px solid"
+                borderColor="gray.100"
+              >
+                <Heading as="h2" size="lg" mb={4} color="gray.800">
+                  Содержание
                 </Heading>
-                <Stack>
-                  <Button
-                    variant={isBookmarked ? 'solid' : 'outline'}
-                    colorPalette={isBookmarked ? 'yellow' : 'gray'}
-                    onClick={handleBookmark}
-                    w="100%"
-                    justifyContent="flex-start"
-                    gap={2}
-                  >
-                    <Icon as={FaBookmark} />
-                    {isBookmarked ? 'В избранном' : 'В избранное'}
-                  </Button>
+                <Text
+                  fontSize="md"
+                  lineHeight="1.8"
+                  color="gray.700"
+                  whiteSpace="pre-line"
+                >
+                  {content}
+                </Text>
+              </Box>
 
-                  {images.length > 0 && (
-                    <Button
-                      variant="outline"
-                      colorPalette="blue"
-                      onClick={handleOpenGallery}
-                      w="100%"
-                      justifyContent="flex-start"
-                      gap={2}
-                    >
-                      <Icon as={FaImages} />
-                      Открыть галерею ({images.length})
-                    </Button>
-                  )}
+              {/* Информация об обновлении */}
+              {createdAt !== updatedAt && (
+                <Text fontSize="sm" color="gray.500" textAlign="right">
+                  Обновлено: {formattedUpdateDate}
+                </Text>
+              )}
+            </Stack>
+          </GridItem>
 
-                  {onEdit && (
+          {/* Правая колонка - боковая панель */}
+          <GridItem>
+            <Box
+              position="sticky"
+              top="100px"
+              bg="white"
+              borderRadius="xl"
+              boxShadow="xl"
+              p={6}
+              border="1px solid"
+              borderColor="gray.200"
+            >
+              <VStack align="stretch">
+                {/* Статистика */}
+                <Box textAlign="center">
+                  <Heading as="h3" size="xl" color="blue.600">
+                    {views}
+                  </Heading>
+                  <Text color="gray.600">просмотров</Text>
+                </Box>
+
+                {/* Действия для всех пользователей */}
+                <Button colorScheme="blue" size="lg" onClick={handleShare}>
+                  Поделиться
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleBookmark}
+                  colorScheme={isBookmarked ? 'yellow' : 'gray'}
+                >
+                  {isBookmarked ? 'В избранном' : 'Добавить в избранное'}
+                </Button>
+
+                {/* Действия для администратора */}
+                {isAuthenticated && (
+                  <>
+                    <Text fontWeight="bold" color="gray.700">
+                      Управление
+                    </Text>
+
                     <Button
+                      colorScheme="blue"
                       variant="outline"
-                      colorPalette="green"
-                      onClick={onEdit}
-                      w="100%"
-                      justifyContent="flex-start"
-                      gap={2}
+                      size="lg"
+                      onClick={handleEdit}
                     >
-                      <Icon as={FaEdit} />
                       Редактировать
                     </Button>
-                  )}
 
-                  <Button
-                    variant="outline"
-                    colorPalette="gray"
-                    onClick={handlePrint}
-                    w="100%"
-                    justifyContent="flex-start"
-                    gap={2}
-                  >
-                    <Icon as={FaPrint} />
-                    Распечатать
-                  </Button>
-                </Stack>
-              </Box>
+                    <Button
+                      colorScheme="red"
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                      Удалить
+                    </Button>
 
-              {/* Быстрые ссылки для шаринга */}
-              <Box>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Поделиться
-                </Heading>
-                <Flex gap={3} justifyContent="center">
-                  <Button
-                    aria-label="Поделиться ВКонтакте"
-                    onClick={() => handleShare('vk')}
-                    variant="ghost"
-                    colorPalette="blue"
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaVk} boxSize="20px" />
-                  </Button>
-                  <Button
-                    aria-label="Поделиться в Telegram"
-                    onClick={() => handleShare('telegram')}
-                    variant="ghost"
-                    colorPalette="telegram"
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaTelegram} boxSize="20px" />
-                  </Button>
-                  <Button
-                    aria-label="Копировать ссылку"
-                    onClick={handleCopyLink}
-                    variant="ghost"
-                    colorPalette={copied ? 'green' : 'gray'}
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaCopy} boxSize="20px" />
-                  </Button>
-                </Flex>
-              </Box>
+                    {!isPublished && (
+                      <Badge colorScheme="yellow" p={2} textAlign="center">
+                        Черновик (виден только администраторам)
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </VStack>
+            </Box>
+          </GridItem>
+        </Grid>
+      </Container>
 
-              {/* Статистика */}
-              <Box>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Статистика
-                </Heading>
-                <Stack gap={2}>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Просмотры:</Text>
-                    <Text fontWeight="semibold">{views}</Text>
-                  </Flex>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Дата публикации:</Text>
-                    <Text fontWeight="medium">{formattedDate}</Text>
-                  </Flex>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Время чтения:</Text>
-                    <Text fontWeight="medium">{readingTime} мин.</Text>
-                  </Flex>
-                  {images.length > 0 && (
-                    <Flex justifyContent="space-between">
-                      <Text color="fg.muted">Фотографий:</Text>
-                      <Text fontWeight="medium">{images.length}</Text>
-                    </Flex>
-                  )}
-                </Stack>
-              </Box>
-
-              {/* Все новости */}
-              <Box>
-                <Button
-                  mt={2}
-                  colorPalette="blue"
-                  size="sm"
-                  w="100%"
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      window.location.href = '/news';
-                    }
-                  }}
-                >
-                  Все новости →
-                </Button>
-              </Box>
-            </Stack>
-          </Box>
-        </GridItem>
-      </Grid>
-
-      {/* Кнопки навигации внизу */}
-      <Flex
-        justifyContent="space-between"
-        mt={8}
-        pt={8}
-        borderTop="1px solid"
-        borderColor="border.subtle"
-      >
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/news';
-            }
-          }}
-          gap={2}
+      {/* Диалог подтверждения удаления */}
+      {isDeleteDialogOpen && (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg="blackAlpha.600"
+          zIndex="modal"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          onClick={() => setIsDeleteDialogOpen(false)}
         >
-          <Icon as={FaCalendarAlt} />
-          Все новости
-        </Button>
-        {images.length > 0 && (
-          <Button variant="outline" onClick={handleOpenGallery} gap={2}>
-            <Icon as={FaImages} />
-            Галерея ({images.length})
-          </Button>
-        )}
-      </Flex>
+          <Box
+            bg="white"
+            p={6}
+            borderRadius="lg"
+            maxW="400px"
+            onClick={e => e.stopPropagation()}
+          >
+            <Heading size="md" mb={4}>
+              Удаление новости
+            </Heading>
+            <Text mb={4}>
+              Вы уверены, что хотите удалить новость "{title}"?
+            </Text>
+            <Text fontSize="sm" color="gray.500" mb={6}>
+              Это действие нельзя отменить.
+            </Text>
+            <HStack justify="flex-end" gap={3}>
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isDeleting}
+              >
+                Отмена
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDelete}
+                loadingText="Удаление..."
+              >
+                Удалить
+              </Button>
+            </HStack>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

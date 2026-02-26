@@ -4,15 +4,14 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// GET - получение конкретной новости
+// GET - Получение конкретной новости по ID
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const id = params.id;
 
-    // Находим новость с изображениями
     const news = await prisma.news.findUnique({
       where: { id },
       include: {
@@ -34,56 +33,98 @@ export async function GET(
     // Увеличиваем счетчик просмотров
     await prisma.news.update({
       where: { id },
-      data: { views: { increment: 1 } },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
     });
 
     return NextResponse.json(news);
   } catch (error) {
     console.error('Error fetching news:', error);
     return NextResponse.json(
-      { error: 'Ошибка при получении новости' },
+      { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     );
   }
 }
 
-// PUT - обновление новости
-export async function PUT(
+// PATCH - Обновление новости
+export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const id = params.id;
     const body = await request.json();
-    const { title, content, excerpt, imageUrl, images, isPublished } = body;
+
+    // Проверяем существование новости
+    const existingNews = await prisma.news.findUnique({
+      where: { id },
+      include: {
+        images: true,
+      },
+    });
+
+    if (!existingNews) {
+      return NextResponse.json(
+        { error: 'Новость не найдена' },
+        { status: 404 }
+      );
+    }
+
+    // Валидация
+    const validationErrors: string[] = [];
+
+    if (body.title !== undefined && !body.title.trim()) {
+      validationErrors.push('Заголовок не может быть пустым');
+    }
+
+    if (body.content !== undefined && !body.content.trim()) {
+      validationErrors.push('Содержание не может быть пустым');
+    }
+
+    if (body.excerpt !== undefined && body.excerpt.length > 300) {
+      validationErrors.push(
+        'Краткое описание не должно превышать 300 символов'
+      );
+    }
+
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        { error: validationErrors.join(', ') },
+        { status: 400 }
+      );
+    }
 
     // Обновляем новость
     const updatedNews = await prisma.news.update({
       where: { id },
       data: {
-        title,
-        content,
-        excerpt: excerpt || null,
-        imageUrl: imageUrl || null,
-        isPublished: isPublished ?? true,
+        title: body.title?.trim(),
+        content: body.content?.trim(),
+        excerpt: body.excerpt?.trim(),
+        imageUrl: body.imageUrl?.trim(),
+        isPublished: body.isPublished,
       },
     });
 
-    // Если переданы изображения, обновляем их
-    if (images && Array.isArray(images)) {
+    // Обновляем изображения, если они есть
+    if (body.images) {
       // Удаляем старые изображения
       await prisma.newsImage.deleteMany({
         where: { newsId: id },
       });
 
-      // Создаем новые изображения
-      if (images.length > 0) {
+      // Создаем новые
+      if (body.images.length > 0) {
         await prisma.newsImage.createMany({
-          data: images.map((img: any, index: number) => ({
+          data: body.images.map((img: any, index: number) => ({
             newsId: id,
-            url: img.url,
-            alt: img.alt || null,
-            caption: img.caption || null,
+            url: img.url.trim(),
+            alt: img.alt?.trim() || null,
+            caption: img.caption?.trim() || null,
             order: img.order ?? index,
           })),
         });
@@ -102,33 +143,63 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(newsWithImages);
+    return NextResponse.json({
+      success: true,
+      message: 'Новость успешно обновлена',
+      data: newsWithImages,
+    });
   } catch (error) {
     console.error('Error updating news:', error);
+
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint failed')) {
+        return NextResponse.json(
+          { error: 'Новость с таким заголовком уже существует' },
+          { status: 409 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Ошибка при обновлении новости' },
+      { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     );
   }
 }
 
-// DELETE - удаление новости
+// DELETE - Удаление новости
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const id = params.id;
 
+    // Проверяем существование новости
+    const existingNews = await prisma.news.findUnique({
+      where: { id },
+    });
+
+    if (!existingNews) {
+      return NextResponse.json(
+        { error: 'Новость не найдена' },
+        { status: 404 }
+      );
+    }
+
+    // Удаляем новость (связанные изображения удалятся каскадно)
     await prisma.news.delete({
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: 'Новость успешно удалена',
+    });
   } catch (error) {
     console.error('Error deleting news:', error);
     return NextResponse.json(
-      { error: 'Ошибка при удалении новости' },
+      { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     );
   }

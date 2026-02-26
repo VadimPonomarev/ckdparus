@@ -1,26 +1,45 @@
+// app/news/[id]/page.tsx
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Spinner, Center, Box, Text, Heading, Button } from '@chakra-ui/react';
+import {
+  Spinner,
+  Center,
+  Box,
+  Text,
+  Heading,
+  Button,
+  VStack,
+} from '@chakra-ui/react';
 import { toaster } from '@/components/ui/toaster';
 import NewsDetailCard from '@/components/news/newsdetailcard';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Тип для данных новости
+// Тип для данных новости (соответствует API)
 interface NewsData {
   id: string;
   title: string;
   content: string;
-  excerpt?: string;
-  imageUrl?: string;
+  excerpt?: string | null;
+  imageUrl?: string | null;
   isPublished: boolean;
   views: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  images?: Array<{
+    id: string;
+    url: string;
+    alt?: string | null;
+    caption?: string | null;
+    order: number;
+  }>;
 }
 
 const NewsPage = () => {
   const params = useParams();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const id = params.id as string;
 
   const [newsData, setNewsData] = useState<NewsData | null>(null);
@@ -39,17 +58,15 @@ const NewsPage = () => {
         const response = await fetch(`/api/news/${id}`);
 
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Новость не найдена');
+          }
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || `Ошибка ${response.status}`);
         }
 
-        const data = await response.json();
-
-        setNewsData({
-          ...data,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
-        });
+        const data: NewsData = await response.json();
+        setNewsData(data);
       } catch (err) {
         console.error('Ошибка загрузки новости:', err);
         setError(
@@ -72,7 +89,6 @@ const NewsPage = () => {
   // Обработчик добавления в избранное
   const handleBookmark = async () => {
     try {
-      // Здесь можно добавить API для добавления в избранное
       const response = await fetch(`/api/news/${id}/bookmark`, {
         method: 'POST',
         headers: {
@@ -103,20 +119,24 @@ const NewsPage = () => {
     }
   };
 
-  // Обработчик редактирования (если есть права)
+  // Обработчик редактирования
   const handleEdit = () => {
-    // Редирект на страницу редактирования
-    window.location.href = `/admin/news/edit/${id}`;
+    router.push(`/admin/news/edit/${id}`);
+  };
+
+  // Обработчик удаления
+  const handleDelete = () => {
+    router.push('/news');
   };
 
   // Состояние загрузки
   if (loading) {
     return (
       <Center minH="60vh">
-        <Box textAlign="center">
-          <Spinner size="xl" color="blue.500" mb={4} />
+        <VStack>
+          <Spinner size="xl" color="blue.500" />
           <Text color="gray.600">Загрузка новости...</Text>
-        </Box>
+        </VStack>
       </Center>
     );
   }
@@ -124,20 +144,19 @@ const NewsPage = () => {
   // Состояние ошибки
   if (error) {
     return (
-      <Center minH="60vh" p={4}>
-        <Heading size="md" mb={2}>
-          Ошибка загрузки
-        </Heading>
-        <Text color="gray.600" mb={4}>
-          {error}
-        </Text>
-        <Button
-          onClick={() => window.location.reload()}
-          colorScheme="blue"
-          size="sm"
-        >
-          Попробовать снова
-        </Button>
+      <Center minH="60vh">
+        <VStack p={4}>
+          <Heading size="md" color="red.500">
+            {error}
+          </Heading>
+          <Button
+            onClick={() => router.push('/news')}
+            colorScheme="blue"
+            size="lg"
+          >
+            Вернуться к списку новостей
+          </Button>
+        </VStack>
       </Center>
     );
   }
@@ -145,27 +164,41 @@ const NewsPage = () => {
   // Новость не найдена
   if (!newsData) {
     return (
-      <Center minH="60vh" p={4}>
-        <Heading size="md" mb={2}>
-          Новость не найдена
-        </Heading>
-        <Text color="gray.600">
-          Запрошенная новость не существует или была удалена
-        </Text>
+      <Center minH="60vh">
+        <VStack p={4}>
+          <Heading size="md">Новость не найдена</Heading>
+          <Text color="gray.600">
+            Запрошенная новость не существует или была удалена
+          </Text>
+          <Button
+            onClick={() => router.push('/news')}
+            colorScheme="blue"
+            size="lg"
+          >
+            Вернуться к списку новостей
+          </Button>
+        </VStack>
       </Center>
     );
   }
 
   // Проверка на публикацию (если пользователь не админ)
-  if (!newsData.isPublished) {
+  if (!newsData.isPublished && !isAuthenticated) {
     return (
-      <Center minH="60vh" p={4}>
-        <Heading size="md" mb={2}>
-          Новость не опубликована
-        </Heading>
-        <Text color="gray.600">
-          Эта новость находится в черновике и недоступна для просмотра
-        </Text>
+      <Center minH="60vh">
+        <VStack p={4}>
+          <Heading size="md">Новость не опубликована</Heading>
+          <Text color="gray.600" textAlign="center">
+            Эта новость находится в черновике и доступна только администраторам
+          </Text>
+          <Button
+            onClick={() => router.push('/news')}
+            colorScheme="blue"
+            size="lg"
+          >
+            Вернуться к списку новостей
+          </Button>
+        </VStack>
       </Center>
     );
   }
@@ -173,9 +206,19 @@ const NewsPage = () => {
   // Успешная загрузка - отображаем компонент
   return (
     <NewsDetailCard
-      {...newsData}
+      id={newsData.id}
+      title={newsData.title}
+      content={newsData.content}
+      excerpt={newsData.excerpt}
+      imageUrl={newsData.imageUrl}
+      isPublished={newsData.isPublished}
+      views={newsData.views}
+      createdAt={new Date(newsData.createdAt)}
+      updatedAt={new Date(newsData.updatedAt)}
+      images={newsData.images}
       onBookmark={handleBookmark}
       onEdit={handleEdit}
+      onDelete={handleDelete}
     />
   );
 };
