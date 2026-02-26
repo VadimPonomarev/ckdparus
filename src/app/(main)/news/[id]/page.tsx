@@ -1,4 +1,4 @@
-// app/news/[id]/page.tsx
+// app/(main)/news/[id]/page.tsx
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -11,12 +11,21 @@ import {
   Heading,
   Button,
   VStack,
+  Container,
 } from '@chakra-ui/react';
 import { toaster } from '@/components/ui/toaster';
 import NewsDetailCard from '@/components/news/newsdetailcard';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Тип для данных новости (соответствует API)
+interface NewsImage {
+  id: string;
+  url: string;
+  alt?: string | null;
+  caption?: string | null;
+  order: number;
+}
+
 interface NewsData {
   id: string;
   title: string;
@@ -27,13 +36,7 @@ interface NewsData {
   views: number;
   createdAt: string;
   updatedAt: string;
-  images?: Array<{
-    id: string;
-    url: string;
-    alt?: string | null;
-    caption?: string | null;
-    order: number;
-  }>;
+  images?: NewsImage[];
 }
 
 const NewsPage = () => {
@@ -132,93 +135,113 @@ const NewsPage = () => {
   // Состояние загрузки
   if (loading) {
     return (
-      <Center minH="60vh">
-        <VStack>
-          <Spinner size="xl" color="blue.500" />
-          <Text color="gray.600">Загрузка новости...</Text>
-        </VStack>
-      </Center>
+      <Container maxW="1200px" py={8}>
+        <Center minH="60vh">
+          <VStack>
+            <Spinner size="xl" color="blue.500" />
+            <Text color="gray.600">Загрузка новости...</Text>
+          </VStack>
+        </Center>
+      </Container>
     );
   }
 
   // Состояние ошибки
   if (error) {
     return (
-      <Center minH="60vh">
-        <VStack p={4}>
-          <Heading size="md" color="red.500">
-            {error}
-          </Heading>
-          <Button
-            onClick={() => router.push('/news')}
-            colorScheme="blue"
-            size="lg"
-          >
-            Вернуться к списку новостей
-          </Button>
-        </VStack>
-      </Center>
+      <Container maxW="1200px" py={8}>
+        <Center minH="60vh">
+          <VStack p={4}>
+            <Heading size="md" color="red.500">
+              {error}
+            </Heading>
+            <Button
+              onClick={() => router.push('/news')}
+              colorScheme="blue"
+              size="lg"
+            >
+              Вернуться к списку новостей
+            </Button>
+          </VStack>
+        </Center>
+      </Container>
     );
   }
 
   // Новость не найдена
   if (!newsData) {
     return (
-      <Center minH="60vh">
-        <VStack p={4}>
-          <Heading size="md">Новость не найдена</Heading>
-          <Text color="gray.600">
-            Запрошенная новость не существует или была удалена
-          </Text>
-          <Button
-            onClick={() => router.push('/news')}
-            colorScheme="blue"
-            size="lg"
-          >
-            Вернуться к списку новостей
-          </Button>
-        </VStack>
-      </Center>
+      <Container maxW="1200px" py={8}>
+        <Center minH="60vh">
+          <VStack p={4}>
+            <Heading size="md">Новость не найдена</Heading>
+            <Text color="gray.600">
+              Запрошенная новость не существует или была удалена
+            </Text>
+            <Button
+              onClick={() => router.push('/news')}
+              colorScheme="blue"
+              size="lg"
+            >
+              Вернуться к списку новостей
+            </Button>
+          </VStack>
+        </Center>
+      </Container>
     );
   }
 
   // Проверка на публикацию (если пользователь не админ)
   if (!newsData.isPublished && !isAuthenticated) {
     return (
-      <Center minH="60vh">
-        <VStack p={4}>
-          <Heading size="md">Новость не опубликована</Heading>
-          <Text color="gray.600" textAlign="center">
-            Эта новость находится в черновике и доступна только администраторам
-          </Text>
-          <Button
-            onClick={() => router.push('/news')}
-            colorScheme="blue"
-            size="lg"
-          >
-            Вернуться к списку новостей
-          </Button>
-        </VStack>
-      </Center>
+      <Container maxW="1200px" py={8}>
+        <Center minH="60vh">
+          <VStack p={4}>
+            <Heading size="md">Новость не опубликована</Heading>
+            <Text color="gray.600" textAlign="center">
+              Эта новость находится в черновике и доступна только
+              администраторам
+            </Text>
+            <Button
+              onClick={() => router.push('/news')}
+              colorScheme="blue"
+              size="lg"
+            >
+              Вернуться к списку новостей
+            </Button>
+          </VStack>
+        </Center>
+      </Container>
     );
   }
+
+  // Преобразуем данные для передачи в компонент
+  const formattedNewsData = {
+    ...newsData,
+    excerpt: newsData.excerpt || undefined,
+    imageUrl: newsData.imageUrl || undefined,
+    images: newsData.images?.map(img => ({
+      ...img,
+      alt: img.alt || undefined,
+      caption: img.caption || undefined,
+    })),
+  };
 
   // Успешная загрузка - отображаем компонент
   return (
     <NewsDetailCard
-      id={newsData.id}
-      title={newsData.title}
-      content={newsData.content}
-      excerpt={newsData.excerpt}
-      imageUrl={newsData.imageUrl}
-      isPublished={newsData.isPublished}
-      views={newsData.views}
-      createdAt={new Date(newsData.createdAt)}
-      updatedAt={new Date(newsData.updatedAt)}
-      images={newsData.images}
+      id={formattedNewsData.id}
+      title={formattedNewsData.title}
+      content={formattedNewsData.content}
+      excerpt={formattedNewsData.excerpt}
+      imageUrl={formattedNewsData.imageUrl}
+      isPublished={formattedNewsData.isPublished}
+      views={formattedNewsData.views}
+      createdAt={new Date(formattedNewsData.createdAt)}
+      updatedAt={new Date(formattedNewsData.updatedAt)}
+      images={formattedNewsData.images}
       onBookmark={handleBookmark}
       onEdit={handleEdit}
-      onDelete={handleDelete}
     />
   );
 };
