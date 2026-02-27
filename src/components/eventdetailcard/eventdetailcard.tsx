@@ -161,18 +161,6 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
     });
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: title,
-        text: description.substring(0, 100) + '...',
-        url: window.location.href,
-      });
-    } else {
-      openShareDialog();
-    }
-  };
-
   // Расчет заполненности
   const participationPercentage =
     maxParticipants && currentParticipants
@@ -311,17 +299,6 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     {getCategoryLabel(category)}
                   </Badge>
                 )}
-
-                <Flex gap={3}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShare}
-                    px={10}
-                  >
-                    Поделиться
-                  </Button>
-                </Flex>
               </Flex>
 
               {/* Заголовок */}
