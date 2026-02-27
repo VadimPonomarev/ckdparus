@@ -412,12 +412,12 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   }
                 >
                   {isPayUrlAvailable
-                    ? 'Купить билет'
+                    ? 'Купить билет онлайн'
                     : 'Онлайн продажа недоступна'}
                 </Button>
 
                 {/* Информация о количестве участников */}
-                {maxParticipants && (
+                {/* {maxParticipants && (
                   <Box>
                     <Flex justifyContent="space-between" mb={2}>
                       <Text color="gray.600">Зарегистрировано:</Text>
@@ -456,7 +456,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                           : 'Доступно мест'}
                     </Text>
                   </Box>
-                )}
+                )} */}
 
                 {/* Дополнительная информация */}
                 <Stack>
@@ -473,45 +473,6 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     <Text fontSize="sm">{location}</Text>
                   </Flex>
                 </Stack>
-
-                {/* Социальные сети мероприятия */}
-                {(socialLinks?.instagram ||
-                  socialLinks?.vk ||
-                  socialLinks?.telegram) && (
-                  <>
-                    <Box>
-                      <Text fontWeight="medium" mb={3}>
-                        Следите за мероприятием:
-                      </Text>
-                      <Flex gap={3} justifyContent="center">
-                        {socialLinks.instagram && (
-                          <Link href={socialLinks.instagram} target="_blank">
-                            <Icon
-                              as={FaInstagram}
-                              boxSize={6}
-                              color="pink.500"
-                            />
-                          </Link>
-                        )}
-                        {socialLinks.vk && (
-                          <Link href={socialLinks.vk} target="_blank">
-                            <Icon as={FaVk} boxSize={6} color="blue.600" />
-                          </Link>
-                        )}
-                        {socialLinks.telegram && (
-                          <Link href={socialLinks.telegram} target="_blank">
-                            <Icon
-                              as={FaTelegram}
-                              boxSize={6}
-                              color="blue.400"
-                            />
-                          </Link>
-                        )}
-                      </Flex>
-                    </Box>
-                  </>
-                )}
-
                 {/* Важная информация */}
                 <Box
                   bg="blue.50"
@@ -526,13 +487,13 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     fontWeight="medium"
                     mb={2}
                   >
-                    📋 Важная информация
+                    Заказать билет можно по телефону:
+                  </Text>
+                  <Text fontSize="sm" color="blue.700" fontWeight="medium">
+                    <Link href="tel:+7 902 423 4771">+7 902 423 4771</Link>
                   </Text>
                   <Text fontSize="sm" color="blue.700">
-                    • Регистрация обязательна
-                    <br />
-                    • Приходите за 15 минут до начала
-                    <br />• Возьмите с собой документ, удостоверяющий личность
+                    Спрайнис Ольга Витальевна
                   </Text>
                 </Box>
               </Stack>

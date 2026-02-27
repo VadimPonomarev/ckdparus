@@ -64,9 +64,6 @@ const Poster: React.FC<PosterProps> = ({
         if (limit) params.append('limit', limit.toString());
         if (futureOnly) params.append('future', 'true'); // только будующие события
 
-        console.log('futureOnly', futureOnly);
-        console.log('params', params);
-
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
