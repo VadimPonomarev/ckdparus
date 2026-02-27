@@ -1,7 +1,6 @@
 // components/news/newsdetailcard.tsx
 import {
   Box,
-  Container,
   Image,
   Stack,
   Text,
@@ -19,13 +18,8 @@ import { ru } from 'date-fns/locale';
 import {
   FaCalendarAlt,
   FaEye,
-  FaBookmark,
-  FaEdit,
-  FaShareAlt,
-  FaPrint,
   FaVk,
   FaTelegram,
-  FaCopy,
   FaImages,
 } from 'react-icons/fa';
 import { useState } from 'react';
@@ -65,17 +59,14 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   excerpt,
   imageUrl,
   images = [],
-  isPublished,
   views,
   createdAt,
   updatedAt,
   onBookmark,
-  onEdit,
   category = 'новости',
   tags = [],
 }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
 
   // Форматирование дат
@@ -90,22 +81,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   // Изображение по умолчанию
   const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
 
-  // Обработчики действий
-  const handleBookmark = () => {
-    const newBookmarkedState = !isBookmarked;
-    setIsBookmarked(newBookmarkedState);
-    if (onBookmark) {
-      onBookmark();
-    }
-
-    toaster.create({
-      title: newBookmarkedState
-        ? 'Добавлено в избранное'
-        : 'Удалено из избранного',
-      type: 'success',
-    });
-  };
-
   const handleShare = (platform: string) => {
     const url = window.location.href;
     const text = `${title} - ${excerpt || content.substring(0, 100)}...`;
@@ -117,29 +92,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
     if (platform in shareUrls) {
       window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
     }
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      toaster.create({
-        title: 'Ссылка скопирована',
-        type: 'success',
-      });
-
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toaster.create({
-        title: 'Ошибка',
-        description: 'Не удалось скопировать ссылку',
-        type: 'error',
-      });
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   const handleOpenGallery = () => {
@@ -433,18 +385,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   Действия
                 </Heading>
                 <Stack>
-                  <Button
-                    variant={isBookmarked ? 'solid' : 'outline'}
-                    colorPalette={isBookmarked ? 'yellow' : 'gray'}
-                    onClick={handleBookmark}
-                    w="100%"
-                    justifyContent="flex-start"
-                    gap={2}
-                  >
-                    <Icon as={FaBookmark} />
-                    {isBookmarked ? 'В избранном' : 'В избранное'}
-                  </Button>
-
                   {images.length > 0 && (
                     <Button
                       variant="outline"
@@ -458,32 +398,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                       Открыть галерею ({images.length})
                     </Button>
                   )}
-
-                  {onEdit && (
-                    <Button
-                      variant="outline"
-                      colorPalette="green"
-                      onClick={onEdit}
-                      w="100%"
-                      justifyContent="flex-start"
-                      gap={2}
-                    >
-                      <Icon as={FaEdit} />
-                      Редактировать
-                    </Button>
-                  )}
-
-                  <Button
-                    variant="outline"
-                    colorPalette="gray"
-                    onClick={handlePrint}
-                    w="100%"
-                    justifyContent="flex-start"
-                    gap={2}
-                  >
-                    <Icon as={FaPrint} />
-                    Распечатать
-                  </Button>
                 </Stack>
               </Box>
 
@@ -512,16 +426,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     p={2}
                   >
                     <Icon as={FaTelegram} boxSize="20px" />
-                  </Button>
-                  <Button
-                    aria-label="Копировать ссылку"
-                    onClick={handleCopyLink}
-                    variant="ghost"
-                    colorPalette={copied ? 'green' : 'gray'}
-                    size="sm"
-                    p={2}
-                  >
-                    <Icon as={FaCopy} boxSize="20px" />
                   </Button>
                 </Flex>
               </Box>
@@ -562,7 +466,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   w="100%"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
-                      window.location.href = '/news';
+                      window.location.href = '/allnews';
                     }
                   }}
                 >
@@ -573,34 +477,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           </Box>
         </GridItem>
       </Grid>
-
-      {/* Кнопки навигации внизу */}
-      <Flex
-        justifyContent="space-between"
-        mt={8}
-        pt={8}
-        borderTop="1px solid"
-        borderColor="border.subtle"
-      >
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/news';
-            }
-          }}
-          gap={2}
-        >
-          <Icon as={FaCalendarAlt} />
-          Все новости
-        </Button>
-        {images.length > 0 && (
-          <Button variant="outline" onClick={handleOpenGallery} gap={2}>
-            <Icon as={FaImages} />
-            Галерея ({images.length})
-          </Button>
-        )}
-      </Flex>
     </Box>
   );
 };
