@@ -60,16 +60,17 @@ const Poster: React.FC<PosterProps> = ({
       try {
         setLoading(true);
         const params = new URLSearchParams();
-        // ИЗМЕНЕНО: featured и future параметры
-        if (showFeaturedOnly) params.append('featured', 'false'); // было 'false'
+        if (showFeaturedOnly) params.append('featured', 'false');
         if (limit) params.append('limit', limit.toString());
         if (futureOnly) params.append('future', 'true'); // только будующие события
+
+        console.log('futureOnly', futureOnly);
+        console.log('params', params);
 
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
 
         const data: ApiResponse = await response.json();
-        // ИЗМЕНЕНО: получаем events из объекта ответа
         setEvents(data.events || []);
       } catch (err) {
         console.error('Error fetching events:', err);
@@ -114,7 +115,6 @@ const Poster: React.FC<PosterProps> = ({
         )}
         <SimpleGrid columns={[1, 2, 3, 5]} gap={4} mt={4}>
           {' '}
-          {/* Исправлено: spacing → gap */}
           {[...Array(maxVisibleItems)].map((_, i) => (
             <Skeleton key={i} height="350px" borderRadius="md" />
           ))}
@@ -134,7 +134,6 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-        {/* ИЗМЕНЕНО: добавляем Alert для ошибки */}
 
         <Text>{error}</Text>
       </Stack>
@@ -172,7 +171,6 @@ const Poster: React.FC<PosterProps> = ({
         )}
         <SimpleGrid columns={[1, 2, 3, 5]} gap={4} width="100%">
           {' '}
-          {/* Исправлено: spacing → gap */}
           {filteredEvents.map(event => (
             <PosterCard
               id={event.id}
@@ -234,7 +232,6 @@ const Poster: React.FC<PosterProps> = ({
               <PosterCard
                 id={event.id}
                 title={event.title}
-                // ИЗМЕНЕНО: преобразуем строку в Date
                 date={new Date(event.date)}
                 imageUrl={event.imageUrl}
                 briefdescription={event.briefdescription}
@@ -266,7 +263,6 @@ const Poster: React.FC<PosterProps> = ({
       {totalItems > maxVisibleItems && (
         <HStack justify="center" mt={4} gap={2}>
           {' '}
-          {/* Добавлен gap */}
           {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
             (_, index) => (
               <Box
