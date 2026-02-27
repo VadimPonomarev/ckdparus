@@ -13,6 +13,9 @@ import {
   Flex,
   Icon,
   Link,
+  Dialog,
+  Portal,
+  CloseButton,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -23,9 +26,10 @@ import {
   FaInstagram,
   FaVk,
   FaTelegram,
+  FaExpand,
 } from 'react-icons/fa';
 import { useState } from 'react';
-import { toaster } from '@/components/ui/toaster'; // Импортируем toaster
+import { toaster } from '@/components/ui/toaster';
 
 // Типы для пропсов
 interface EventDetailCardProps {
@@ -108,13 +112,20 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
   payUrl,
   onBookmark,
 }) => {
-  // Заменяем useDisclosure на useState
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Состояние для модального окна изображения
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+
+  // Состояние для модального окна шаринга
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // Функции для управления модальным окном
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  // Функции для управления диалогом изображения
+  const openImageDialog = () => setIsImageDialogOpen(true);
+  const closeImageDialog = () => setIsImageDialogOpen(false);
+
+  // Функции для управления диалогом шаринга
+  const openShareDialog = () => setIsShareDialogOpen(true);
+  const closeShareDialog = () => setIsShareDialogOpen(false);
 
   // Форматирование даты и времени
   const formattedDate = format(new Date(date), 'dd MMMM yyyy', { locale: ru });
@@ -158,7 +169,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
         url: window.location.href,
       });
     } else {
-      openModal();
+      openShareDialog();
     }
   };
 
@@ -173,6 +184,114 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
   return (
     <>
+      {/* Диалог для увеличенного изображения */}
+      <Dialog.Root open={isImageDialogOpen} onOpenChange={closeImageDialog}>
+        <Portal>
+          <Dialog.Backdrop bg="blackAlpha.800" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg="transparent"
+              boxShadow="none"
+              maxW="95vw"
+              maxH="95vh"
+              p={0}
+              overflow="hidden"
+            >
+              <Dialog.Body
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                p={0}
+                m={0}
+              >
+                <Box
+                  position="relative"
+                  onClick={closeImageDialog}
+                  cursor="zoom-out"
+                  maxW="100%"
+                  maxH="90vh"
+                >
+                  <Image
+                    src={imageSrc}
+                    alt={alt}
+                    objectFit="contain"
+                    w="100%"
+                    h="100%"
+                    maxH="90vh"
+                    borderRadius="md"
+                  />
+                </Box>
+              </Dialog.Body>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton
+                  size="lg"
+                  color="white"
+                  bg="blackAlpha.600"
+                  position="fixed"
+                  top={4}
+                  right={4}
+                  _hover={{ bg: 'blackAlpha.800' }}
+                  onClick={closeImageDialog}
+                />
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
+      {/* Диалог для шаринга */}
+      <Dialog.Root open={isShareDialogOpen} onOpenChange={closeShareDialog}>
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Поделиться мероприятием</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Stack gap={4}>
+                  <Text>Вы можете поделиться ссылкой на это мероприятие:</Text>
+                  <Flex
+                    p={3}
+                    bg="gray.50"
+                    borderRadius="md"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Text fontSize="sm" color="gray.600" maxW="70%">
+                      {window.location.href}
+                    </Text>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toaster.create({
+                          title: 'Ссылка скопирована',
+                          type: 'success',
+                        });
+                        closeShareDialog();
+                      }}
+                    >
+                      Копировать
+                    </Button>
+                  </Flex>
+                </Stack>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button variant="outline" onClick={closeShareDialog}>
+                    Закрыть
+                  </Button>
+                </Dialog.ActionTrigger>
+              </Dialog.Footer>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" onClick={closeShareDialog} />
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
       <Box>
         <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
           {/* Левая колонка - основная информация */}
@@ -210,12 +329,15 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                 {title}
               </Heading>
 
-              {/* Основное изображение */}
+              {/* Основное изображение с возможностью увеличения */}
               <Box
                 borderRadius="xl"
                 overflow="hidden"
                 boxShadow="xl"
                 position="relative"
+                cursor="pointer"
+                onClick={openImageDialog}
+                role="group"
               >
                 <Image
                   src={imageSrc}
@@ -224,7 +346,30 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   h={{ base: '300px', md: '500px' }}
                   objectFit="contain"
                   loading="eager"
+                  transition="transform 0.3s"
+                  _groupHover={{ transform: 'scale(1.02)' }}
+                  bg="gray.50"
                 />
+
+                {/* Индикатор увеличения при наведении */}
+                <Flex
+                  position="absolute"
+                  bottom={4}
+                  right={4}
+                  bg="blackAlpha.600"
+                  color="white"
+                  px={3}
+                  py={2}
+                  borderRadius="md"
+                  alignItems="center"
+                  gap={2}
+                  opacity={0}
+                  transition="opacity 0.2s"
+                  _groupHover={{ opacity: 1 }}
+                >
+                  <Icon as={FaExpand} />
+                  <Text fontSize="sm">Увеличить</Text>
+                </Flex>
               </Box>
 
               {/* Основная информация в карточках */}
@@ -416,48 +561,6 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     : 'Онлайн продажа недоступна'}
                 </Button>
 
-                {/* Информация о количестве участников */}
-                {/* {maxParticipants && (
-                  <Box>
-                    <Flex justifyContent="space-between" mb={2}>
-                      <Text color="gray.600">Зарегистрировано:</Text>
-                      <Text fontWeight="bold">
-                        {currentParticipants || 0}/{maxParticipants}
-                      </Text>
-                    </Flex>
-                    <Box
-                      w="100%"
-                      bg="gray.100"
-                      borderRadius="full"
-                      overflow="hidden"
-                      h="8px"
-                    >
-                      <Box
-                        w={`${participationPercentage}%`}
-                        h="100%"
-                        bg={
-                          participationPercentage >= 90
-                            ? 'red.400'
-                            : 'green.400'
-                        }
-                        transition="width 0.3s ease"
-                      />
-                    </Box>
-                    <Text
-                      fontSize="sm"
-                      color="gray.500"
-                      mt={2}
-                      textAlign="center"
-                    >
-                      {participationPercentage >= 90
-                        ? 'Осталось мало мест!'
-                        : participationPercentage >= 70
-                          ? 'Места заканчиваются'
-                          : 'Доступно мест'}
-                    </Text>
-                  </Box>
-                )} */}
-
                 {/* Дополнительная информация */}
                 <Stack>
                   <Flex alignItems="center">
@@ -473,6 +576,7 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     <Text fontSize="sm">{location}</Text>
                   </Flex>
                 </Stack>
+
                 {/* Важная информация */}
                 <Stack
                   bg="blue.50"
@@ -486,14 +590,16 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                     Заказать билет можно по телефону:
                   </Text>
 
-                  <Link
-                    href="tel:+7 902 423 4771"
-                    fontSize="sm"
-                    color="blue.700"
-                    fontWeight="medium"
-                  >
-                    +7 902 423 4771
-                  </Link>
+                  <Text>
+                    <Link
+                      href="tel:+7 902 423 4771"
+                      fontSize="sm"
+                      color="blue.700"
+                      fontWeight="medium"
+                    >
+                      +7 902 423 4771
+                    </Link>
+                  </Text>
 
                   <Text fontSize="sm" color="blue.700">
                     Спрайнис Ольга Витальевна
