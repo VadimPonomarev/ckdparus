@@ -89,44 +89,6 @@ const NewsPage = () => {
     fetchNews();
   }, [id]);
 
-  // Обработчик добавления в избранное
-  const handleBookmark = async () => {
-    try {
-      const response = await fetch(`/api/news/${id}/bookmark`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Ошибка добавления в избранное');
-      }
-
-      const result = await response.json();
-
-      toaster.create({
-        title: 'Успешно!',
-        description: result.message || 'Новость добавлена в избранное',
-        type: 'success',
-      });
-    } catch (err) {
-      toaster.create({
-        title: 'Ошибка',
-        description:
-          err instanceof Error
-            ? err.message
-            : 'Не удалось добавить в избранное',
-        type: 'error',
-      });
-    }
-  };
-
-  // Обработчик редактирования
-  const handleEdit = () => {
-    router.push(`/admin/news/edit/${id}`);
-  };
-
   // Обработчик удаления
   const handleDelete = () => {
     router.push('/news');
@@ -240,8 +202,6 @@ const NewsPage = () => {
       createdAt={new Date(formattedNewsData.createdAt)}
       updatedAt={new Date(formattedNewsData.updatedAt)}
       images={formattedNewsData.images}
-      onBookmark={handleBookmark}
-      onEdit={handleEdit}
     />
   );
 };

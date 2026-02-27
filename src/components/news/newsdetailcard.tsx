@@ -46,8 +46,6 @@ interface NewsDetailCardProps {
   views: number;
   createdAt: Date;
   updatedAt: Date;
-  onBookmark?: () => void;
-  onEdit?: () => void;
   category?: string;
   tags?: string[];
 }
@@ -62,11 +60,9 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   views,
   createdAt,
   updatedAt,
-  onBookmark,
   category = 'новости',
   tags = [],
 }) => {
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
 
   // Форматирование дат
