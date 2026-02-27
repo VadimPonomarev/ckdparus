@@ -474,28 +474,31 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   </Flex>
                 </Stack>
                 {/* Важная информация */}
-                <Box
+                <Stack
                   bg="blue.50"
                   p={4}
                   borderRadius="md"
                   border="1px solid"
                   borderColor="blue.100"
+                  textAlign="center"
                 >
-                  <Text
-                    fontSize="sm"
-                    color="blue.800"
-                    fontWeight="medium"
-                    mb={2}
-                  >
+                  <Text fontSize="sm" color="blue.800" fontWeight="medium">
                     Заказать билет можно по телефону:
                   </Text>
-                  <Text fontSize="sm" color="blue.700" fontWeight="medium">
-                    <Link href="tel:+7 902 423 4771">+7 902 423 4771</Link>
-                  </Text>
+
+                  <Link
+                    href="tel:+7 902 423 4771"
+                    fontSize="sm"
+                    color="blue.700"
+                    fontWeight="medium"
+                  >
+                    +7 902 423 4771
+                  </Link>
+
                   <Text fontSize="sm" color="blue.700">
                     Спрайнис Ольга Витальевна
                   </Text>
-                </Box>
+                </Stack>
               </Stack>
             </Box>
           </GridItem>
