@@ -16,7 +16,11 @@ const Links = () => {
         Полезные ссылки
       </Text>
       <Separator />
-      <Grid templateColumns="repeat(7, 1fr)" gap={5}>
+      <Grid
+        templateColumns={{ base: 'repeat(1, 1fr)', md: 'repeat(7, 1fr)' }}
+        justifyItems="center"
+        gap={5}
+      >
         <Link href="https://culture.gov.ru">
           <Image
             src="/images/min_kulturi.jpg"
