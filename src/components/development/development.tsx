@@ -4,12 +4,13 @@ import { useRouter } from 'next/navigation';
 const Development = () => {
   const router = useRouter();
   return (
-    <HStack
+    <Stack
       width="100%"
       justify="space-between"
       pb={10}
-      px={20}
+      px={{ base: '5', md: 20 }}
       color="blackAlpha.500"
+      direction={{ base: 'column', md: 'row' }}
     >
       <Link
         onClick={() => {
@@ -41,7 +42,7 @@ const Development = () => {
           </Text>
         </Link>
       </Stack>
-    </HStack>
+    </Stack>
   );
 };
 

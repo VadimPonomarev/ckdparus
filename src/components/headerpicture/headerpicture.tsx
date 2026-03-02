@@ -3,8 +3,14 @@ import '@fontsource/dancing-script/700.css';
 
 const Headerpicture = () => {
   return (
-    <HStack width="100%" height="250px" justify="space-around">
-      <HStack w="100%" position="relative">
+    <Stack
+      width="100%"
+      height="100%"
+      justify={{ base: 'center', md: 'space-around' }}
+      direction={{ base: 'column', md: 'row' }}
+      gap={10}
+    >
+      <HStack w="100%" position="relative" pt={{ base: 10, md: 0 }}>
         <Image
           position="relative"
           src="/images/logo_blue.png"
@@ -13,10 +19,11 @@ const Headerpicture = () => {
           borderRadius="20px"
           // height="100%"
           w="70%"
+          zIndex={1}
         />
         <Box
           position="absolute"
-          right="-10%"
+          right={{ base: '-1', md: '-10%' }}
           w="80%"
           css={{
             maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
@@ -59,17 +66,17 @@ const Headerpicture = () => {
         src="/images/year_edin.jpeg"
         alt="Header"
         objectFit="contain"
-        height="180px"
+        height={{ md: '180px' }}
         borderRadius="20px"
       />
       <Image
         src="/images/80_kal.png"
         alt="Header"
         objectFit="contain"
-        height="180px"
+        height={{ md: '180px' }}
         borderRadius="20px"
       />
-    </HStack>
+    </Stack>
   );
 };
 

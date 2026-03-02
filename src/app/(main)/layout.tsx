@@ -37,7 +37,7 @@ export default function MainLayout({
           minH="100vh"
           color="blackAlpha.900"
         >
-          <Box minH="100vh" mx={20} pb={10}>
+          <Box minH="100vh" mx={{ base: 5, md: 20 }} pb={10}>
             <Preheader />
             <Stack gap={10}>
               <Headerpicture />
@@ -54,6 +54,7 @@ export default function MainLayout({
                   boxShadow: 'xl',
                 }}
                 borderRadius="10px"
+                hideBelow="md"
               >
                 <HeaderMenu />
               </Box>

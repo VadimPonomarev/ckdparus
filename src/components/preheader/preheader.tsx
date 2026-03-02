@@ -4,9 +4,13 @@ import AccessibilityButton from '@/components/accessibility/AccessibilityButton'
 
 const Preheader = () => {
   return (
-    <Stack direction="row" h="20">
-      <HStack justifyContent="space-between" w="100%">
-        <Stack fontSize="18px" fontWeight="bold">
+    <Stack direction="row" h="100%">
+      <Stack
+        justifyContent="space-between"
+        w="100%"
+        direction={{ base: 'column', md: 'row' }}
+      >
+        <Stack fontSize={{ base: '1rem', md: '1.5rem' }} fontWeight="bold">
           <HStack justifyContent="start">
             <Link
               color="blue.600"
@@ -21,8 +25,9 @@ const Preheader = () => {
         </Stack>
 
         <HStack gap={5}>
-          {/* Кнопка для слабовидящих */}
-          <AccessibilityButton />
+          <Box hideBelow="md">
+            <AccessibilityButton />
+          </Box>
 
           <Link href="https://max.ru/id3911001237_gos" target="_blank">
             <HStack
@@ -62,7 +67,7 @@ const Preheader = () => {
             </HStack>
           </Link>
         </HStack>
-      </HStack>
+      </Stack>
     </Stack>
   );
 };
