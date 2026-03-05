@@ -145,6 +145,7 @@ const MobMenu: React.FC = () => {
           variant="ghost"
           size="lg"
           display={{ base: 'flex', md: 'none' }}
+          bgColor="blue.100"
         >
           <LuMenu size={24} />
         </IconButton>

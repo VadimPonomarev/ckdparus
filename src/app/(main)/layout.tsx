@@ -39,7 +39,7 @@ export default function MainLayout({
           color="blackAlpha.900"
         >
           <Box minH="100vh" mx={{ base: 5, md: 20 }} pb={10}>
-            <Box position="sticky" top="0" zIndex="1000" hideFrom="md">
+            <Box position="sticky" top="1" zIndex="1000" hideFrom="md">
               <MobMenu />
             </Box>
             <Preheader />
