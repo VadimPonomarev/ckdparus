@@ -1,17 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  HStack,
-  Separator,
   Stack,
   Text,
-  IconButton,
-  Box,
-  SimpleGrid,
+  Separator,
   Center,
   Skeleton,
+  Box,
+  useBreakpointValue, // Добавляем хук для определения размера экрана
 } from '@chakra-ui/react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Mousewheel, Keyboard } from 'swiper/modules';
 import NewsCard from './newscard';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 // Тип новости из Prisma (соответствует API)
 interface News {
@@ -22,7 +26,7 @@ interface News {
   imageUrl?: string | null;
   isPublished: boolean;
   views: number;
-  createdAt: string; // ИЗМЕНЕНО: API возвращает строку
+  createdAt: string;
   updatedAt: string;
   images?: Array<{
     id: string;
@@ -44,6 +48,8 @@ interface NewsListProps {
   showPublishedOnly?: boolean;
   maxVisibleItems?: number;
   limit?: number;
+  useTestData?: boolean;
+  hideNavigationOnMobile?: boolean; // Новый пропс
 }
 
 const NewsList: React.FC<NewsListProps> = ({
@@ -51,23 +57,27 @@ const NewsList: React.FC<NewsListProps> = ({
   showPublishedOnly = true,
   maxVisibleItems = 5,
   limit = 10,
+  hideNavigationOnMobile = true, // По умолчанию скрываем на мобильных
 }) => {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Определяем, является ли устройство мобильным
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  // Определяем, показывать ли навигацию
+  const showNavigation = !(hideNavigationOnMobile && isMobile);
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
         setLoading(true);
+
         const params = new URLSearchParams();
 
         if (showPublishedOnly) params.append('published', 'true');
 
-        // ИСПРАВЛЕНО: Используем offset и limit для пагинации
-        // Загружаем достаточно новостей для слайдера + запас
         const itemsToFetch = Math.max(limit, maxVisibleItems + 5);
         params.append('limit', itemsToFetch.toString());
         params.append('offset', '0');
@@ -76,8 +86,6 @@ const NewsList: React.FC<NewsListProps> = ({
         if (!response.ok) throw new Error('Ошибка загрузки новостей');
 
         const data: ApiResponse = await response.json();
-
-        // ИСПРАВЛЕНО: API возвращает объект с полем news
         setNews(data.news || []);
       } catch (err) {
         console.error('Error fetching news:', err);
@@ -90,30 +98,9 @@ const NewsList: React.FC<NewsListProps> = ({
     fetchNews();
   }, [showPublishedOnly, limit, maxVisibleItems]);
 
-  // Фильтруем только опубликованные новости, если нужно
   const filteredNews = showPublishedOnly
     ? news.filter(item => item.isPublished)
     : news;
-
-  const totalItems = filteredNews.length;
-  const showSlider = totalItems > maxVisibleItems;
-
-  const handleNext = () => {
-    if (currentIndex < totalItems - maxVisibleItems) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-  };
-
-  const visibleItems = filteredNews.slice(
-    currentIndex,
-    currentIndex + maxVisibleItems
-  );
 
   if (loading) {
     return (
@@ -124,11 +111,22 @@ const NewsList: React.FC<NewsListProps> = ({
             <Separator />
           </>
         )}
-        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} mt={4}>
+        <Swiper
+          spaceBetween={16}
+          slidesPerView={1}
+          breakpoints={{
+            480: { slidesPerView: 2 },
+            768: { slidesPerView: 3 },
+            1024: { slidesPerView: maxVisibleItems },
+          }}
+          className="news-swiper"
+        >
           {[...Array(maxVisibleItems)].map((_, i) => (
-            <Skeleton key={i} height="350px" borderRadius="md" />
+            <SwiperSlide key={i}>
+              <Skeleton height="350px" borderRadius="md" />
+            </SwiperSlide>
           ))}
-        </SimpleGrid>
+        </Swiper>
       </Stack>
     );
   }
@@ -169,37 +167,6 @@ const NewsList: React.FC<NewsListProps> = ({
     );
   }
 
-  if (!showSlider) {
-    return (
-      <Stack width="100%">
-        {showTitle && (
-          <>
-            <Text fontSize="2xl" fontWeight="bold">
-              Новости
-            </Text>
-            <Separator />
-          </>
-        )}
-        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} width="100%">
-          {filteredNews.map(item => (
-            <NewsCard
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              date={new Date(item.createdAt)} // ИСПРАВЛЕНО: преобразуем строку в Date
-              content={item.content}
-              excerpt={item.excerpt || undefined}
-              imageUrl={item.imageUrl || undefined}
-              views={item.views}
-              isPublished={item.isPublished}
-              linkUrl={`/news/${item.id}`}
-            />
-          ))}
-        </SimpleGrid>
-      </Stack>
-    );
-  }
-
   return (
     <Stack width="100%" position="relative">
       {showTitle && (
@@ -211,36 +178,41 @@ const NewsList: React.FC<NewsListProps> = ({
         </>
       )}
 
-      <HStack width="100%" justify="space-between" align="center">
-        <IconButton
-          aria-label="Предыдущие новости"
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-          variant="ghost"
-          size="lg"
-          visibility={currentIndex === 0 ? 'hidden' : 'visible'}
-          opacity={currentIndex === 0 ? 0 : 1}
-          transition="all 0.2s ease"
+      <Box width="100%" mt={4}>
+        <Swiper
+          cssMode={true}
+          navigation={showNavigation} // Условное отображение навигации
+          pagination={true}
+          mousewheel={true}
+          keyboard={true}
+          modules={[Navigation, Pagination, Mousewheel, Keyboard]}
+          spaceBetween={16}
+          slidesPerView={1}
+          breakpoints={{
+            480: {
+              slidesPerView: 2,
+              slidesPerGroup: 2,
+            },
+            768: {
+              slidesPerView: 3,
+              slidesPerGroup: 3,
+            },
+            1024: {
+              slidesPerView: maxVisibleItems,
+              slidesPerGroup: maxVisibleItems,
+            },
+          }}
+          className="news-swiper"
+          style={{
+            padding: showNavigation ? '4px 0 30px 0' : '0 0 30px 0', // Убираем отступ для стрелок на мобильных
+          }}
         >
-          <FaChevronLeft />
-        </IconButton>
-
-        <Box
-          ref={sliderRef}
-          width="100%"
-          overflow="hidden"
-          position="relative"
-          flex="1"
-          display="flex"
-          gap="16px"
-          justifyContent="space-between"
-        >
-          {visibleItems.map(item => (
-            <Box key={item.id} flex="1" minW="200px">
+          {filteredNews.map(item => (
+            <SwiperSlide key={item.id}>
               <NewsCard
                 id={item.id}
                 title={item.title}
-                date={new Date(item.createdAt)} // ИСПРАВЛЕНО: преобразуем строку в Date
+                date={new Date(item.createdAt)}
                 content={item.content}
                 excerpt={item.excerpt || undefined}
                 imageUrl={item.imageUrl || undefined}
@@ -248,48 +220,10 @@ const NewsList: React.FC<NewsListProps> = ({
                 isPublished={item.isPublished}
                 linkUrl={`/news/${item.id}`}
               />
-            </Box>
+            </SwiperSlide>
           ))}
-        </Box>
-
-        <IconButton
-          aria-label="Следующие новости"
-          onClick={handleNext}
-          disabled={currentIndex >= totalItems - maxVisibleItems}
-          variant="ghost"
-          size="lg"
-          visibility={
-            currentIndex >= totalItems - maxVisibleItems ? 'hidden' : 'visible'
-          }
-          opacity={currentIndex >= totalItems - maxVisibleItems ? 0 : 1}
-          transition="all 0.2s ease"
-        >
-          <FaChevronRight />
-        </IconButton>
-      </HStack>
-
-      {totalItems > maxVisibleItems && (
-        <HStack justify="center" mt={4} gap={2}>
-          {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
-            (_, index) => (
-              <Box
-                key={index}
-                width="8px"
-                height="8px"
-                borderRadius="full"
-                bg={index === currentIndex ? 'blue.500' : 'gray.300'}
-                cursor="pointer"
-                onClick={() => setCurrentIndex(index)}
-                _hover={{
-                  bg: index === currentIndex ? 'blue.600' : 'gray.400',
-                  transform: 'scale(1.2)',
-                }}
-                transition="all 0.2s ease"
-              />
-            )
-          )}
-        </HStack>
-      )}
+        </Swiper>
+      </Box>
     </Stack>
   );
 };

@@ -1,17 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  HStack,
-  Separator,
   Stack,
   Text,
-  IconButton,
-  Box,
-  SimpleGrid,
+  Separator,
   Center,
   Skeleton,
+  Box,
+  useBreakpointValue,
 } from '@chakra-ui/react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Mousewheel, Keyboard } from 'swiper/modules';
 import PosterCard from './postercard';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 // Тип события из Prisma
 interface Event {
@@ -19,7 +23,7 @@ interface Event {
   title: string;
   briefdescription?: string;
   fulldescription?: string;
-  date: string; // ИЗМЕНЕНО: Date -> string (API возвращает строку)
+  date: string;
   location?: string;
   price?: number;
   imageUrl?: string;
@@ -40,6 +44,8 @@ interface PosterProps {
   maxVisibleItems?: number;
   limit?: number;
   futureOnly?: boolean;
+  useTestData?: boolean;
+  hideNavigationOnMobile?: boolean;
 }
 
 const Poster: React.FC<PosterProps> = ({
@@ -48,21 +54,31 @@ const Poster: React.FC<PosterProps> = ({
   maxVisibleItems = 5,
   limit = 10,
   futureOnly = true,
+  hideNavigationOnMobile = true,
 }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Определяем, является ли устройство мобильным
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  // Определяем, показывать ли навигацию
+  const showNavigation = !(hideNavigationOnMobile && isMobile);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
+
         const params = new URLSearchParams();
         if (showFeaturedOnly) params.append('featured', 'false');
-        if (limit) params.append('limit', limit.toString());
-        if (futureOnly) params.append('future', 'true'); // только будующие события
+
+        const itemsToFetch = Math.max(limit, maxVisibleItems + 5);
+        params.append('limit', itemsToFetch.toString());
+        params.append('offset', '0');
+
+        if (futureOnly) params.append('future', 'true');
 
         const response = await fetch(`/api/events?${params}`);
         if (!response.ok) throw new Error('Ошибка загрузки мероприятий');
@@ -78,28 +94,9 @@ const Poster: React.FC<PosterProps> = ({
     };
 
     fetchEvents();
-  }, [showFeaturedOnly, limit, futureOnly]);
+  }, [showFeaturedOnly, limit, futureOnly, maxVisibleItems]);
 
   const filteredEvents = events;
-  const totalItems = filteredEvents.length;
-  const showSlider = totalItems > maxVisibleItems;
-
-  const handleNext = () => {
-    if (currentIndex < totalItems - maxVisibleItems) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-  };
-
-  const visibleItems = filteredEvents.slice(
-    currentIndex,
-    currentIndex + maxVisibleItems
-  );
 
   if (loading) {
     return (
@@ -110,12 +107,22 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} mt={4}>
-          {' '}
+        <Swiper
+          spaceBetween={16}
+          slidesPerView={1}
+          breakpoints={{
+            480: { slidesPerView: 2 },
+            768: { slidesPerView: 3 },
+            1024: { slidesPerView: maxVisibleItems },
+          }}
+          className="events-swiper"
+        >
           {[...Array(maxVisibleItems)].map((_, i) => (
-            <Skeleton key={i} height="350px" borderRadius="md" />
+            <SwiperSlide key={i}>
+              <Skeleton height="350px" borderRadius="md" />
+            </SwiperSlide>
           ))}
-        </SimpleGrid>
+        </Swiper>
       </Stack>
     );
   }
@@ -131,8 +138,9 @@ const Poster: React.FC<PosterProps> = ({
             <Separator />
           </>
         )}
-
-        <Text>{error}</Text>
+        <Center p={10}>
+          <Text color="red.500">Ошибка: {error}</Text>
+        </Center>
       </Stack>
     );
   }
@@ -155,39 +163,6 @@ const Poster: React.FC<PosterProps> = ({
     );
   }
 
-  if (!showSlider) {
-    return (
-      <Stack width="100%">
-        {showTitle && (
-          <>
-            <Text fontSize="2xl" fontWeight="bold">
-              Афиша
-            </Text>
-            <Separator />
-          </>
-        )}
-        <SimpleGrid columns={[1, 2, 3, 5]} gap={4} width="100%">
-          {' '}
-          {filteredEvents.map(event => (
-            <PosterCard
-              id={event.id}
-              key={event.id}
-              title={event.title}
-              // ИЗМЕНЕНО: преобразуем строку в Date
-              date={new Date(event.date)}
-              imageUrl={event.imageUrl}
-              briefdescription={event.briefdescription}
-              location={event.location}
-              price={event.price}
-              category={event.category}
-              linkUrl={`/events/${event.id}`}
-            />
-          ))}
-        </SimpleGrid>
-      </Stack>
-    );
-  }
-
   return (
     <Stack width="100%" position="relative">
       {showTitle && (
@@ -199,33 +174,37 @@ const Poster: React.FC<PosterProps> = ({
         </>
       )}
 
-      <HStack width="100%" justify="space-between" align="center">
-        <IconButton
-          aria-label="Предыдущие мероприятия"
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-          variant="ghost"
-          size="lg"
-          visibility={currentIndex === 0 ? 'hidden' : 'visible'}
-          opacity={currentIndex === 0 ? 0 : 1}
-          transition="all 0.2s ease"
+      <Box width="100%" mt={4}>
+        <Swiper
+          cssMode={true}
+          navigation={showNavigation}
+          pagination={true}
+          mousewheel={true}
+          keyboard={true}
+          modules={[Navigation, Pagination, Mousewheel, Keyboard]}
+          spaceBetween={16}
+          slidesPerView={1}
+          breakpoints={{
+            480: {
+              slidesPerView: 2,
+              slidesPerGroup: 2,
+            },
+            768: {
+              slidesPerView: 3,
+              slidesPerGroup: 3,
+            },
+            1024: {
+              slidesPerView: maxVisibleItems,
+              slidesPerGroup: maxVisibleItems,
+            },
+          }}
+          className="events-swiper"
+          style={{
+            padding: showNavigation ? '4px 0 30px 0' : '0 0 30px 0',
+          }}
         >
-          <FaChevronLeft />
-        </IconButton>
-
-        {/* Используем Box с display: flex и gap */}
-        <Box
-          ref={sliderRef}
-          width="100%"
-          overflow="hidden"
-          position="relative"
-          flex="1"
-          display="flex"
-          gap="16px" // Добавляем расстояние между карточками
-          justifyContent="space-between"
-        >
-          {visibleItems.map(event => (
-            <Box key={event.id} flex="1" minW="200px">
+          {filteredEvents.map(event => (
+            <SwiperSlide key={event.id}>
               <PosterCard
                 id={event.id}
                 title={event.title}
@@ -237,49 +216,10 @@ const Poster: React.FC<PosterProps> = ({
                 category={event.category}
                 linkUrl={`/events/${event.id}`}
               />
-            </Box>
+            </SwiperSlide>
           ))}
-        </Box>
-
-        <IconButton
-          aria-label="Следующие мероприятия"
-          onClick={handleNext}
-          disabled={currentIndex >= totalItems - maxVisibleItems}
-          variant="ghost"
-          size="lg"
-          visibility={
-            currentIndex >= totalItems - maxVisibleItems ? 'hidden' : 'visible'
-          }
-          opacity={currentIndex >= totalItems - maxVisibleItems ? 0 : 1}
-          transition="all 0.2s ease"
-        >
-          <FaChevronRight />
-        </IconButton>
-      </HStack>
-
-      {totalItems > maxVisibleItems && (
-        <HStack justify="center" mt={4} gap={2}>
-          {' '}
-          {Array.from({ length: totalItems - maxVisibleItems + 1 }).map(
-            (_, index) => (
-              <Box
-                key={index}
-                width="8px"
-                height="8px"
-                borderRadius="full"
-                bg={index === currentIndex ? 'blue.500' : 'gray.300'}
-                cursor="pointer"
-                onClick={() => setCurrentIndex(index)}
-                _hover={{
-                  bg: index === currentIndex ? 'blue.600' : 'gray.400',
-                  transform: 'scale(1.2)',
-                }}
-                transition="all 0.2s ease"
-              />
-            )
-          )}
-        </HStack>
-      )}
+        </Swiper>
+      </Box>
     </Stack>
   );
 };
