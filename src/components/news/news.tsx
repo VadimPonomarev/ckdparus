@@ -187,14 +187,6 @@ const NewsList: React.FC<NewsListProps> = ({
           spaceBetween={16}
           slidesPerView={1}
           breakpoints={{
-            480: {
-              slidesPerView: 2,
-              slidesPerGroup: 2,
-            },
-            768: {
-              slidesPerView: 3,
-              slidesPerGroup: 3,
-            },
             1024: {
               slidesPerView: maxVisibleItems,
               slidesPerGroup: maxVisibleItems,
