@@ -115,8 +115,6 @@ const NewsList: React.FC<NewsListProps> = ({
           spaceBetween={16}
           slidesPerView={1}
           breakpoints={{
-            480: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
             1024: { slidesPerView: maxVisibleItems },
           }}
           className="news-swiper"
