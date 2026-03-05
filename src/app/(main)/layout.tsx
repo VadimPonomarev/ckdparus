@@ -10,8 +10,7 @@ import Footer from '@/components/footer/footer';
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel';
-import MobileMenu from '@/components/menu/mobileMenu';
-// import MobileMenu from '@/components/menu/mobileMenu';
+import MobMenu from '@/components/menu/mobmenu';
 
 export default function MainLayout({
   children,
@@ -41,7 +40,7 @@ export default function MainLayout({
         >
           <Box minH="100vh" mx={{ base: 5, md: 20 }} pb={10}>
             <Box position="sticky" top="0" zIndex="1000" hideFrom="md">
-              <MobileMenu />
+              <MobMenu />
             </Box>
             <Preheader />
             <Stack gap={10}>

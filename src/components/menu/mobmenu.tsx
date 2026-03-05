@@ -101,7 +101,7 @@ const MobileMenuItem: React.FC<{
 };
 
 // Компонент мобильного меню
-const MobileMenu: React.FC = () => {
+const MobMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
@@ -136,7 +136,7 @@ const MobileMenu: React.FC = () => {
   return (
     <DrawerRoot open={open} onOpenChange={e => setOpen(e.open)}>
       {/* Бэкдроп (затемнение фона) */}
-      {/* <DrawerBackdrop /> */}
+      <DrawerBackdrop />
 
       {/* Кнопка-триггер для открытия меню */}
       <DrawerTrigger asChild>
@@ -145,17 +145,16 @@ const MobileMenu: React.FC = () => {
           variant="ghost"
           size="lg"
           display={{ base: 'flex', md: 'none' }}
-          bg="unset"
         >
           <LuMenu size={24} />
         </IconButton>
       </DrawerTrigger>
 
       {/* Контент Drawer */}
-      <DrawerContent rounded="l3" maxW="300px">
+      <DrawerContent rounded="l3" bg="white" maxW="300px">
         {/* Заголовок с кнопкой закрытия */}
-        <DrawerHeader p={4}>
-          <Text fontSize="xl" fontWeight="bold">
+        <DrawerHeader>
+          <Text fontSize="xl" fontWeight="bold" p={4}>
             Меню
           </Text>
           <DrawerCloseTrigger />
@@ -223,4 +222,4 @@ const MobileMenu: React.FC = () => {
   );
 };
 
-export default MobileMenu;
+export default MobMenu;
