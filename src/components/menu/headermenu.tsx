@@ -7,31 +7,31 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Типы
-interface TeamItem {
+export interface TeamItem {
   name: string;
   slug: string;
   href: string;
 }
 
-interface CategoryItem {
+export interface CategoryItem {
   title: string;
   teams: TeamItem[];
 }
 
-interface MenuItemType {
+export interface MenuItemType {
   title: string;
   href?: string;
   children?: MenuItemType[];
 }
 
-interface NavItem {
+export interface NavItem {
   title: string;
   href?: string;
   children?: MenuItemType[];
 }
 
 // Полные статические данные для всех коллективов
-const STATIC_COLLECTIVES: CategoryItem[] = [
+export const STATIC_COLLECTIVES: CategoryItem[] = [
   {
     title: 'Хореографические коллективы',
     teams: [
@@ -160,7 +160,7 @@ const STATIC_COLLECTIVES: CategoryItem[] = [
 ];
 
 // Статические данные для меню коллективов
-const STATIC_TEAMS_MENU = {
+export const STATIC_TEAMS_MENU = {
   title: 'Коллективы и Объединения',
   href: '/teams',
   children: STATIC_COLLECTIVES.map(category => ({
@@ -173,7 +173,7 @@ const STATIC_TEAMS_MENU = {
 };
 
 // Статические данные для остальных меню
-const STATIC_MENUS = {
+export const STATIC_MENUS = {
   documents: {
     title: 'Документы',
     children: [
@@ -224,7 +224,7 @@ const STATIC_MENUS = {
 };
 
 // Компонент для пунктов меню
-const MenuLink: React.FC<{
+export const MenuLink: React.FC<{
   children: React.ReactNode;
   href?: string;
   onClick?: (e: React.MouseEvent) => void;
@@ -264,7 +264,7 @@ const MenuLink: React.FC<{
 };
 
 // Компонент для пунктов выпадающего меню
-const DropdownItem: React.FC<{
+export const DropdownItem: React.FC<{
   children: React.ReactNode;
   href?: string;
   onClick?: (e: React.MouseEvent) => void;
@@ -301,7 +301,7 @@ const DropdownItem: React.FC<{
 };
 
 // Компонент для меню коллективов
-const CollectivesMenu: React.FC = () => {
+export const CollectivesMenu: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   let closeTimeout: NodeJS.Timeout;
@@ -407,7 +407,7 @@ const CollectivesMenu: React.FC = () => {
 };
 
 // Компонент для меню документов/безопасности/контактов
-const DropdownMenu: React.FC<{
+export const DropdownMenu: React.FC<{
   title: string;
   href?: string;
   children?: MenuItemType[];
