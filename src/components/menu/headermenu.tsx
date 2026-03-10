@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, HStack, Text } from '@chakra-ui/react';
+import { Box, HStack, Separator, Text } from '@chakra-ui/react';
 import { LuChevronRight } from 'react-icons/lu';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -551,6 +551,10 @@ const HeaderMenu: React.FC = () => {
       title: 'Добавление новости',
       href: '/addnews',
     },
+    {
+      title: 'Добавление галереи',
+      href: '/addgallery',
+    },
   ];
 
   const handleLogout = () => {
@@ -613,12 +617,6 @@ const HeaderMenu: React.FC = () => {
         })}
 
         {/* Показываем админские пункты только если авторизован */}
-        {isAuthenticated &&
-          adminMenuItems.map((item, index) => (
-            <MenuLink key={`admin-${index}`} href={item.href}>
-              {item.title}
-            </MenuLink>
-          ))}
 
         {/* Кнопка входа/выхода как часть основного меню */}
         {/* {isAuthenticated ? (
@@ -627,6 +625,17 @@ const HeaderMenu: React.FC = () => {
           <MenuLink onClick={() => router.push('/login')}>Вход</MenuLink>
         )} */}
       </HStack>
+
+      {isAuthenticated && (
+        <HStack pt={10}>
+          <Separator />
+          {adminMenuItems.map((item, index) => (
+            <MenuLink key={`admin-${index}`} href={item.href}>
+              {item.title}
+            </MenuLink>
+          ))}
+        </HStack>
+      )}
     </Box>
   );
 };
