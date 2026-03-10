@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
   Button,
@@ -23,12 +23,16 @@ import {
   GridItem,
   Badge,
   Flex,
+  Spinner,
+  Center,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { HiX } from 'react-icons/hi';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaTrash } from 'react-icons/fa';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 // Функция для транслитерации кириллицы в латиницу
@@ -107,10 +111,10 @@ const transliterate = (text: string): string => {
     .map(char => map[char] || char)
     .join('')
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Удаляем все кроме букв, цифр, пробелов и дефисов
-    .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
-    .replace(/-+/g, '-') // Убираем множественные дефисы
-    .replace(/^-|-$/g, ''); // Убираем дефисы в начале и конце
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 };
 
 // Схема валидации с использованием Zod
@@ -140,23 +144,53 @@ const GallerySchema = z.object({
 // Типы для формы
 type GalleryFormValues = z.infer<typeof GallerySchema>;
 
-// Интерфейс для файла с предпросмотром
-interface ImageFile {
+// Интерфейс для существующего изображения из БД
+interface ExistingImage {
+  id: string;
+  url: string;
+  alt: string | null;
+  caption: string | null;
+  order: number;
+}
+
+// Интерфейс для нового файла с предпросмотром
+interface NewImageFile {
   id: string;
   file: File;
   preview: string;
   alt: string;
   caption: string;
   order: number;
+  isNew: true;
 }
 
-export default function AddGalleryPage() {
+// Интерфейс для существующего изображения в UI
+interface ExistingImageUI {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+  order: number;
+  preview?: string;
+  isNew: false;
+}
+
+// Объединенный тип для изображений в UI
+type ImageItem = NewImageFile | ExistingImageUI;
+
+export default function EditGalleryPage() {
   const router = useRouter();
+  const params = useParams();
+  const galleryId = params.id as string;
+
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [images, setImages] = useState<ImageFile[]>([]);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [coverImageIndex, setCoverImageIndex] = useState<number>(-1);
   const [slug, setSlug] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Создаем ref для file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -181,6 +215,62 @@ export default function AddGalleryPage() {
   // Отслеживаем изменение title для автоматической генерации slug
   const title = watch('title');
 
+  // Загрузка данных галереи
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/galleries/${galleryId}`);
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки галереи');
+        }
+
+        const gallery = await response.json();
+
+        // Заполняем форму
+        setValue('title', gallery.title);
+        setValue('description', gallery.description || '');
+        setValue('slug', gallery.slug);
+        setSlug(gallery.slug);
+
+        // Загружаем изображения
+        if (gallery.images && gallery.images.length > 0) {
+          const galleryImages: ExistingImageUI[] = gallery.images.map(
+            (img: ExistingImage) => ({
+              id: img.id,
+              url: img.url,
+              alt: img.alt || '',
+              caption: img.caption || '',
+              order: img.order,
+              isNew: false,
+            })
+          );
+
+          // Сортируем по order
+          galleryImages.sort((a, b) => a.order - b.order);
+          setImages(galleryImages);
+
+          // Находим индекс обложки
+          const coverIndex = galleryImages.findIndex(
+            img => img.url === gallery.coverImage
+          );
+          setCoverImageIndex(coverIndex !== -1 ? coverIndex : 0);
+        }
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
+        alert('Ошибка при загрузке данных галереи');
+        router.push('/admin/galleries');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (galleryId) {
+      fetchGallery();
+    }
+  }, [galleryId, setValue, router]);
+
   // Генерируем slug при изменении title
   const generateSlug = () => {
     if (title) {
@@ -195,13 +285,14 @@ export default function AddGalleryPage() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    const newImages: ImageFile[] = Array.from(files).map((file, index) => ({
-      id: `${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+    const newImages: NewImageFile[] = Array.from(files).map((file, index) => ({
+      id: `new-${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
       file,
       preview: URL.createObjectURL(file),
       alt: '',
       caption: '',
       order: images.length + index,
+      isNew: true,
     }));
 
     setImages(prevImages => [...prevImages, ...newImages]);
@@ -213,7 +304,7 @@ export default function AddGalleryPage() {
 
     setUploadError(null);
 
-    // Сбрасываем input, чтобы можно было выбрать тот же файл снова
+    // Сбрасываем input
     event.target.value = '';
   };
 
@@ -225,13 +316,14 @@ export default function AddGalleryPage() {
     const files = event.dataTransfer.files;
     if (!files || files.length === 0) return;
 
-    const newImages: ImageFile[] = Array.from(files).map((file, index) => ({
-      id: `${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+    const newImages: NewImageFile[] = Array.from(files).map((file, index) => ({
+      id: `new-${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
       file,
       preview: URL.createObjectURL(file),
       alt: '',
       caption: '',
       order: images.length + index,
+      isNew: true,
     }));
 
     setImages(prevImages => [...prevImages, ...newImages]);
@@ -249,7 +341,11 @@ export default function AddGalleryPage() {
   // Удаление изображения
   const handleRemoveImage = (index: number) => {
     const imageToRemove = images[index];
-    URL.revokeObjectURL(imageToRemove.preview);
+
+    // Если это новое изображение, освобождаем preview URL
+    if (imageToRemove.isNew && 'preview' in imageToRemove) {
+      URL.revokeObjectURL(imageToRemove.preview);
+    }
 
     const newImages = images.filter((_, i) => i !== index);
     setImages(newImages);
@@ -332,11 +428,52 @@ export default function AddGalleryPage() {
     setCoverImageIndex(index);
   };
 
-  // Очистка всех изображений
-  const clearAllImages = () => {
-    images.forEach(img => URL.revokeObjectURL(img.preview));
-    setImages([]);
-    setCoverImageIndex(-1);
+  // Очистка всех новых изображений
+  const clearNewImages = () => {
+    images.forEach(img => {
+      if (img.isNew && 'preview' in img) {
+        URL.revokeObjectURL(img.preview);
+      }
+    });
+
+    // Оставляем только существующие изображения
+    const existingImages = images.filter(
+      img => !img.isNew
+    ) as ExistingImageUI[];
+    setImages(existingImages);
+
+    if (coverImageIndex >= existingImages.length) {
+      setCoverImageIndex(existingImages.length > 0 ? 0 : -1);
+    }
+  };
+
+  // Удаление галереи
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+
+      const response = await fetch(`/api/galleries/${galleryId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при удалении галереи');
+      }
+
+      alert('Галерея успешно удалена');
+      router.push('/admin/galleries');
+    } catch (error) {
+      console.error('Error deleting gallery:', error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Ошибка при удалении галереи. Попробуйте еще раз.'
+      );
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const onSubmit: SubmitHandler<GalleryFormValues> = async data => {
@@ -350,49 +487,63 @@ export default function AddGalleryPage() {
         return;
       }
 
-      // Загружаем изображения на сервер
+      // Загружаем новые изображения на сервер
       const uploadedImages: {
+        id?: string; // для существующих
         url: string;
         alt: string;
         caption: string;
         order: number;
+        isNew?: boolean;
       }[] = [];
+
       let coverImageUrl = null;
 
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
 
-        // Создаем FormData для загрузки файла
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', img.file);
-        uploadFormData.append('entityType', 'gallery');
+        if (img.isNew) {
+          // Это новое изображение - загружаем файл
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', img.file);
+          uploadFormData.append('entityType', 'gallery');
 
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
+          const uploadResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
 
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          throw new Error(
-            errorData.error || `Ошибка загрузки изображения ${i + 1}`
-          );
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            throw new Error(
+              errorData.error || `Ошибка загрузки изображения ${i + 1}`
+            );
+          }
+
+          const uploadData = await uploadResponse.json();
+
+          uploadedImages.push({
+            url: uploadData.url,
+            alt: img.alt || `Изображение ${i + 1} из галереи "${data.title}"`,
+            caption: img.caption,
+            order: i,
+            isNew: true,
+          });
+        } else {
+          // Существующее изображение
+          uploadedImages.push({
+            id: img.id,
+            url: img.url,
+            alt: img.alt || `Изображение ${i + 1} из галереи "${data.title}"`,
+            caption: img.caption,
+            order: i,
+            isNew: false,
+          });
         }
-
-        const uploadData = await uploadResponse.json();
-
-        const imageData = {
-          url: uploadData.url,
-          alt: img.alt || `Изображение ${i + 1} из галереи "${data.title}"`,
-          caption: img.caption,
-          order: i,
-        };
-
-        uploadedImages.push(imageData);
 
         // Если это обложка, сохраняем URL
         if (i === coverImageIndex) {
-          coverImageUrl = uploadData.url;
+          coverImageUrl = uploadedImages[i].url;
         }
       }
 
@@ -412,8 +563,8 @@ export default function AddGalleryPage() {
         images: uploadedImages,
       };
 
-      const response = await fetch('/api/galleries', {
-        method: 'POST',
+      const response = await fetch(`/api/galleries/${galleryId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -422,26 +573,44 @@ export default function AddGalleryPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка при сохранении галереи');
+        throw new Error(errorData.error || 'Ошибка при обновлении галереи');
       }
 
-      // Освобождаем память от preview URL
-      clearAllImages();
+      // Освобождаем память от preview URL новых изображений
+      images.forEach(img => {
+        if (img.isNew && 'preview' in img) {
+          URL.revokeObjectURL(img.preview);
+        }
+      });
 
-      alert('Галерея успешно создана!');
-      reset();
-      router.push('/gallery');
+      alert('Галерея успешно обновлена!');
+      router.push('/admin/galleries');
     } catch (error) {
-      console.error('Error creating gallery:', error);
+      console.error('Error updating gallery:', error);
       alert(
         error instanceof Error
           ? error.message
-          : 'Ошибка при создании галереи. Попробуйте еще раз.'
+          : 'Ошибка при обновлении галереи. Попробуйте еще раз.'
       );
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <Container maxW="container.xl" py={8}>
+          <Center h="500px">
+            <VStack gap={4}>
+              <Spinner size="xl" color="blue.500" />
+              <Text>Загрузка галереи...</Text>
+            </VStack>
+          </Center>
+        </Container>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>
@@ -449,7 +618,19 @@ export default function AddGalleryPage() {
         <Card.Root>
           <Card.Body p={{ base: 6, md: 10 }}>
             <Stack gap="6">
-              <Heading size="xl">Добавить новую галерею</Heading>
+              <Flex justifyContent="space-between" alignItems="center">
+                <Heading size="xl">Редактировать галерею</Heading>
+                <Button
+                  colorPalette="red"
+                  variant="solid"
+                  onClick={() => setShowDeleteDialog(true)}
+                  loading={isDeleting}
+                  loadingText="Удаление..."
+                >
+                  <FaTrash />
+                  Удалить галерею
+                </Button>
+              </Flex>
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Fieldset.Root>
@@ -565,14 +746,11 @@ export default function AddGalleryPage() {
                               <Heading size="sm">Информация</Heading>
                               <Box fontSize="sm" color="gray.500">
                                 <Text>
-                                  • После создания галереи вы сможете:
+                                  • Всего изображений: {images.length}
                                 </Text>
-                                <Text ml={4}>
-                                  - Добавлять и удалять фотографии
-                                </Text>
-                                <Text ml={4}>- Изменять порядок фото</Text>
-                                <Text ml={4}>
-                                  - Редактировать название и описание
+                                <Text>
+                                  • Новых изображений:{' '}
+                                  {images.filter(img => img.isNew).length}
                                 </Text>
                                 <Text mt={2}>
                                   • Первое изображение автоматически станет
@@ -606,14 +784,14 @@ export default function AddGalleryPage() {
                               )}
                             </HStack>
 
-                            {images.length > 0 && (
+                            {images.some(img => img.isNew) && (
                               <Button
                                 variant="ghost"
                                 colorPalette="red"
                                 size="sm"
-                                onClick={clearAllImages}
+                                onClick={clearNewImages}
                               >
-                                Очистить все
+                                Отменить новые
                               </Button>
                             )}
                           </Flex>
@@ -681,7 +859,7 @@ export default function AddGalleryPage() {
                           {images.length > 0 && (
                             <VStack gap="4" align="stretch" mt={4}>
                               <Text fontWeight="medium" fontSize="sm">
-                                Загруженные изображения ({images.length}):
+                                Изображения ({images.length}):
                               </Text>
 
                               {images.map((image, index) => (
@@ -715,7 +893,11 @@ export default function AddGalleryPage() {
                                         }
                                       >
                                         <Image
-                                          src={image.preview}
+                                          src={
+                                            image.isNew
+                                              ? (image as NewImageFile).preview
+                                              : (image as ExistingImageUI).url
+                                          }
                                           alt={image.alt || 'Превью'}
                                           w="100%"
                                           h="100%"
@@ -730,6 +912,17 @@ export default function AddGalleryPage() {
                                             size="sm"
                                           >
                                             Обложка
+                                          </Badge>
+                                        )}
+                                        {image.isNew && (
+                                          <Badge
+                                            position="absolute"
+                                            top={1}
+                                            right={1}
+                                            colorPalette="green"
+                                            size="sm"
+                                          >
+                                            Новое
                                           </Badge>
                                         )}
                                       </Box>
@@ -850,7 +1043,7 @@ export default function AddGalleryPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push('/gallery')}
+                        onClick={() => router.push('/admin/galleries')}
                         px={5}
                       >
                         Отмена
@@ -860,9 +1053,9 @@ export default function AddGalleryPage() {
                         colorPalette="blue"
                         loading={isSubmitting}
                         px={5}
-                        loadingText="Создание..."
+                        loadingText="Сохранение..."
                       >
-                        Создать галерею
+                        Сохранить изменения
                       </Button>
                     </Card.Footer>
                   </Stack>
@@ -871,6 +1064,46 @@ export default function AddGalleryPage() {
             </Stack>
           </Card.Body>
         </Card.Root>
+
+        {/* Диалог подтверждения удаления */}
+        <Dialog.Root
+          open={showDeleteDialog}
+          onOpenChange={e => setShowDeleteDialog(e.open)}
+        >
+          <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header>
+                  <Dialog.Title>Удаление галереи</Dialog.Title>
+                </Dialog.Header>
+                <Dialog.Body>
+                  <Text>
+                    Вы уверены, что хотите удалить эту галерею? Это действие
+                    нельзя отменить. Все изображения галереи будут также
+                    удалены.
+                  </Text>
+                </Dialog.Body>
+                <Dialog.Footer>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteDialog(false)}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    colorPalette="red"
+                    onClick={handleDelete}
+                    loading={isDeleting}
+                    loadingText="Удаление..."
+                  >
+                    Удалить
+                  </Button>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
       </Container>
     </AuthGuard>
   );

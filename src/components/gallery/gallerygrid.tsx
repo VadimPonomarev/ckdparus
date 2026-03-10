@@ -14,9 +14,12 @@ import {
   Badge,
   Separator,
   Stack,
+  IconButton,
+  HStack,
 } from '@chakra-ui/react';
-import { FaImages, FaArrowRight } from 'react-icons/fa';
+import { FaImages, FaArrowRight, FaEdit, FaTrash } from 'react-icons/fa';
 import { Icon } from '@chakra-ui/react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Gallery {
   id: string;
@@ -36,9 +39,12 @@ interface GalleryImage {
 
 const GalleryGrid = () => {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGalleries = async () => {
@@ -63,11 +69,56 @@ const GalleryGrid = () => {
     fetchGalleries();
   }, []);
 
-  const handleGalleryClick = (gallery: Gallery) => {
+  const handleGalleryClick = (gallery: Gallery, e: React.MouseEvent) => {
+    // Предотвращаем срабатывание при клике на кнопки управления
+    const target = e.target as HTMLElement;
+    if (target.closest('.admin-controls')) {
+      return;
+    }
     router.push(`/gallery/${gallery.id}`);
   };
 
-  if (loading) {
+  const handleEdit = (galleryId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/admin/gallery/edit/${galleryId}`);
+  };
+
+  const handleDelete = async (galleryId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (
+      !confirm(
+        'Вы уверены, что хотите удалить эту галерею? Это действие нельзя отменить.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingId(galleryId);
+      const response = await fetch(`/api/galleries/${galleryId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при удалении галереи');
+      }
+
+      // Удаляем галерею из списка
+      setGalleries(prev => prev.filter(g => g.id !== galleryId));
+    } catch (error) {
+      console.error('Error deleting gallery:', error);
+      alert(
+        error instanceof Error ? error.message : 'Ошибка при удалении галереи'
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Показываем скелетон во время загрузки
+  if (loading || authLoading) {
     return (
       <Grid
         templateColumns={{
@@ -101,15 +152,31 @@ const GalleryGrid = () => {
         <Text fontSize="lg" color="gray.500">
           Галереи пока не добавлены
         </Text>
+        {isAuthenticated && (
+          <Text fontSize="sm" color="gray.500">
+            <a href="/addgallery" style={{ textDecoration: 'underline' }}>
+              Добавить первую галерею
+            </a>
+          </Text>
+        )}
       </Center>
     );
   }
 
   return (
     <Stack gap={10}>
-      <Text fontSize="2xl" fontWeight="bold">
-        Фотогалерея
-      </Text>
+      <Flex justify="space-between" align="center">
+        <Text fontSize="2xl" fontWeight="bold">
+          Фотогалерея
+        </Text>
+        {isAuthenticated && (
+          <a href="/addgallery">
+            <Badge colorPalette="blue" p={3} borderRadius="md" cursor="pointer">
+              + Добавить галерею
+            </Badge>
+          </a>
+        )}
+      </Flex>
       <Separator />
 
       <Grid
@@ -135,7 +202,7 @@ const GalleryGrid = () => {
               borderRadius="xl"
               overflow="hidden"
               cursor="pointer"
-              onClick={() => handleGalleryClick(gallery)}
+              onClick={e => handleGalleryClick(gallery, e)}
               _hover={{
                 transform: 'translateY(-8px)',
                 boxShadow: '2xl',
@@ -150,7 +217,7 @@ const GalleryGrid = () => {
               boxShadow="lg"
             >
               {/* Контейнер изображения */}
-              <Box position="relative" overflow="hidden">
+              <Box position="relative" overflow="hidden" height="300px">
                 <Image
                   src={coverImage}
                   alt={gallery.title}
@@ -190,7 +257,7 @@ const GalleryGrid = () => {
                     borderRadius="full"
                     fontSize="sm"
                   >
-                    {imageCount} фото
+                    {imageCount} {imageCount === 1 ? 'фото' : 'фото'}
                   </Badge>
 
                   {/* Контент */}
@@ -207,20 +274,61 @@ const GalleryGrid = () => {
                 </Box>
               </Box>
 
-              {/* Кнопка просмотра */}
+              {/* Нижняя панель */}
               <Flex
                 position="absolute"
                 bottom={4}
                 left={4}
+                right={4}
                 alignItems="center"
-                gap={2}
-                color="white"
-                fontSize="sm"
-                fontWeight="medium"
-                opacity={0.9}
+                justifyContent="space-between"
               >
-                <Text>Смотреть</Text>
-                <Icon as={FaArrowRight} />
+                {/* Кнопка просмотра */}
+                <Flex
+                  alignItems="center"
+                  gap={2}
+                  color="white"
+                  fontSize="sm"
+                  fontWeight="medium"
+                  opacity={0.9}
+                >
+                  <Text>Смотреть</Text>
+                  <Icon as={FaArrowRight} />
+                </Flex>
+
+                {/* Админские кнопки - показываем только если авторизован */}
+                {isAuthenticated && (
+                  <HStack
+                    className="admin-controls"
+                    gap={2}
+                    bg="blackAlpha.700"
+                    backdropFilter="blur(4px)"
+                    p={1}
+                    borderRadius="lg"
+                  >
+                    <IconButton
+                      aria-label="Редактировать галерею"
+                      size="sm"
+                      variant="ghost"
+                      color="white"
+                      _hover={{ bg: 'whiteAlpha.300' }}
+                      onClick={e => handleEdit(gallery.id, e)}
+                    >
+                      <FaEdit />
+                    </IconButton>
+                    <IconButton
+                      aria-label="Удалить галерею"
+                      size="sm"
+                      variant="ghost"
+                      color="white"
+                      _hover={{ bg: 'whiteAlpha.300' }}
+                      onClick={e => handleDelete(gallery.id, e)}
+                      loading={deletingId === gallery.id}
+                    >
+                      <FaTrash />
+                    </IconButton>
+                  </HStack>
+                )}
               </Flex>
             </Box>
           );
