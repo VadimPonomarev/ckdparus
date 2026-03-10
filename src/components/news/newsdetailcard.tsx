@@ -22,9 +22,12 @@ import {
   FaVk,
   FaTelegram,
   FaImages,
+  FaArrowLeft,
+  FaShare,
 } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import GallerySlider from '@/components/gallery/galleryslider';
+import { useRouter } from 'next/navigation';
 
 // Типы для пропсов
 interface NewsImage {
@@ -63,6 +66,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   category = 'новости',
   tags = [],
 }) => {
+  const router = useRouter();
   const [showGallery, setShowGallery] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
@@ -411,37 +415,46 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
 
         {/* Нижняя панель для мобильных */}
         {isMobile ? (
-          <Box
-            position="sticky"
-            bottom={0}
-            left={0}
-            right={0}
-            bg="white"
-            borderTop="1px solid"
-            borderColor="gray.200"
-            p={3}
-            zIndex={10}
-          >
-            <HStack>
-              {images.length > 0 && (
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  variant="outline"
-                  onClick={handleOpenGallery}
-                  flex={1}
-                >
-                  Фото ({images.length})
-                </Button>
-              )}
-              <Button size="sm" colorScheme="blue" flex={1}>
-                Поделиться
-              </Button>
-              <Button size="sm" colorScheme="blue" as="a" flex={1}>
-                <Link href="/allnews">Все новости</Link>
-              </Button>
-            </HStack>
-          </Box>
+          // <Box
+          //   position="sticky"
+          //   bottom={0}
+          //   left={0}
+          //   right={0}
+          //   bg="white"
+          //   borderTop="1px solid"
+          //   borderColor="gray.200"
+          //   p={3}
+          //   zIndex={10}
+          // >
+          //   <HStack>
+          //     {images.length > 0 && (
+          //       <Button
+          //         size="sm"
+          //         colorScheme="blue"
+          //         variant="outline"
+          //         onClick={handleOpenGallery}
+          //         flex={1}
+          //       >
+          //         Фото ({images.length})
+          //       </Button>
+          //     )}
+          //     <Button size="sm" colorScheme="blue" flex={1}>
+          //       Поделиться
+          //     </Button>
+          //     <Button
+          //       size="sm"
+          //       colorScheme="blue"
+          //       as="a"
+          //       onClick={() => {
+          //         router.push('/allnews');
+          //       }}
+          //       flex={1}
+          //     >
+          //       Все новости
+          //     </Button>
+          //   </HStack>
+          // </Box>
+          <></>
         ) : (
           /* Десктопная боковая панель */
           <Flex justify="space-between" align="start" gap={6}>
@@ -472,8 +485,16 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                       Открыть галерею ({images.length})
                     </Button>
                   )}
-                  <Button size="sm" colorScheme="blue" as="a" w="100%">
-                    <Link href="/allnews">Все новости</Link>
+                  <Button
+                    size="sm"
+                    colorScheme="blue"
+                    as="a"
+                    onClick={() => {
+                      router.push('/allnews');
+                    }}
+                    w="100%"
+                  >
+                    Все новости
                   </Button>
                 </Box>
 
