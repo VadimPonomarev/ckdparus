@@ -7,12 +7,12 @@ import {
   Heading,
   Badge,
   Button,
-  Grid,
-  GridItem,
   Flex,
   Icon,
   Link,
   useBreakpointValue,
+  HStack,
+  VStack,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -24,7 +24,6 @@ import {
   FaImages,
 } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
-import { toaster } from '@/components/ui/toaster';
 import GallerySlider from '@/components/gallery/galleryslider';
 
 // Типы для пропсов
@@ -65,26 +64,13 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   tags = [],
 }) => {
   const [showGallery, setShowGallery] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   // Форматирование дат
   const formattedDate = format(new Date(createdAt), 'dd MMMM yyyy', {
     locale: ru,
   });
   const formattedTime = format(new Date(createdAt), 'HH:mm', { locale: ru });
-  const formattedUpdated = format(new Date(updatedAt), 'dd.MM.yyyy HH:mm', {
-    locale: ru,
-  });
 
   // Изображение по умолчанию
   const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
@@ -92,63 +78,50 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   const handleShare = (platform: string) => {
     const url = window.location.href;
     const text = `${title} - ${excerpt || content.substring(0, 100)}...`;
-    const shareUrls = {
-      vk: `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(excerpt || '')}`,
-      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-    };
 
-    if (platform in shareUrls) {
-      window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
+    if (platform === 'native' && navigator.share) {
+      navigator
+        .share({
+          title: title,
+          text: excerpt || content.substring(0, 100),
+          url: url,
+        })
+        .catch(() => {
+          setShowShareMenu(true);
+        });
+    } else {
+      const shareUrls: Record<string, string> = {
+        vk: `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(excerpt || '')}`,
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+      };
+
+      if (platform in shareUrls) {
+        window.open(shareUrls[platform], '_blank');
+      }
     }
+    setShowShareMenu(false);
   };
 
   const handleOpenGallery = () => {
-    if (images.length > 0) {
-      setShowGallery(true);
-      // Блокируем скролл body при открытии галереи на мобильных
-      if (isMobile) {
-        document.body.style.overflow = 'hidden';
-      }
-    }
+    setShowGallery(true);
+    document.body.style.overflow = 'hidden';
   };
 
   const handleCloseGallery = () => {
     setShowGallery(false);
-    // Возвращаем скролл
     document.body.style.overflow = 'unset';
   };
 
-  // Время чтения (примерный расчет)
+  // Время чтения
   const readingTime = Math.max(1, Math.ceil(content.length / 1200));
 
-  // Преобразуем изображения для галереи
-  const galleryImages = images.map(img => ({
-    id: img.id,
-    url: img.url,
-    alt: img.alt || `Фото к новости "${title}"`,
-    caption: img.caption,
-  }));
-
-  // Адаптивные значения
-  const headingSize = useBreakpointValue({ base: 'xl', md: '2xl' }) as
-    | 'xl'
-    | '2xl';
-  const contentFontSize = useBreakpointValue({ base: '16px', md: '18px' });
-  const imageHeight = useBreakpointValue({
-    base: '250px',
-    sm: '300px',
-    md: '500px',
-  });
-  const sidebarPosition = useBreakpointValue({
-    base: 'static',
-    lg: 'sticky',
-  }) as 'static' | 'sticky';
-  const sidebarTop = useBreakpointValue({ base: '0', lg: '100px' });
+  // Определяем, мобильное ли устройство
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
-    <Box>
-      {/* Модальное окно галереи */}
-      {showGallery && galleryImages.length > 0 && (
+    <>
+      {/* Галерея */}
+      {showGallery && images.length > 0 && (
         <Box
           position="fixed"
           top={0}
@@ -157,7 +130,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           bottom={0}
           bg="black"
           zIndex={9999}
-          overflow="hidden"
         >
           <Button
             position="absolute"
@@ -168,430 +140,390 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
             onClick={handleCloseGallery}
             size={isMobile ? 'sm' : 'md'}
             borderRadius="full"
-            p={isMobile ? 2 : 4}
-            minW="auto"
-            h="auto"
           >
             ✕
           </Button>
-          <GallerySlider images={galleryImages} />
+          <GallerySlider
+            images={images.map(img => ({
+              id: img.id,
+              url: img.url,
+              alt: img.alt || `Фото к новости "${title}"`,
+              caption: img.caption,
+            }))}
+          />
         </Box>
       )}
 
-      <Grid
-        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
-        gap={{ base: 4, md: 6, lg: 8 }}
-        px={{ base: 2, sm: 4, md: 6 }}
-      >
-        {/* Левая колонка - основная информация */}
-        <GridItem>
-          <Stack gap={{ base: 4, md: 6 }}>
-            {/* Заголовок и мета-информация */}
-            <Box>
-              <Badge
-                colorPalette="blue"
-                fontSize={{ base: 'sm', md: 'md' }}
-                px={{ base: 3, md: 4 }}
-                py={{ base: 1, md: 2 }}
-                borderRadius="full"
-                mb={{ base: 2, md: 4 }}
+      {/* Мобильное меню шаринга */}
+      {showShareMenu && isMobile && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="blackAlpha.600"
+          zIndex={1000}
+          onClick={() => setShowShareMenu(false)}
+        >
+          <VStack
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            bg="white"
+            p={4}
+            borderTopRadius="xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <Text fontWeight="bold">Поделиться через</Text>
+            <HStack justify="center">
+              <Button
+                variant="ghost"
+                colorScheme="blue"
+                onClick={() => handleShare('vk')}
+                flexDirection="column"
+                h="auto"
+                py={2}
               >
-                {category}
-              </Badge>
-
-              <Heading
-                as="h1"
-                size={headingSize}
-                fontWeight="bold"
-                color="fg.emphasized"
-                mb={{ base: 2, md: 4 }}
-                lineHeight="1.3"
+                <Icon as={FaVk} boxSize="30px" mb={1} />
+                <Text fontSize="xs">VK</Text>
+              </Button>
+              <Button
+                variant="ghost"
+                colorScheme="blue"
+                onClick={() => handleShare('telegram')}
+                flexDirection="column"
+                h="auto"
+                py={2}
               >
-                {title}
-              </Heading>
+                <Icon as={FaTelegram} boxSize="30px" mb={1} />
+                <Text fontSize="xs">Telegram</Text>
+              </Button>
+            </HStack>
+            <Button size="sm" onClick={() => setShowShareMenu(false)}>
+              Отмена
+            </Button>
+          </VStack>
+        </Box>
+      )}
 
-              <Flex
-                alignItems="flex-start"
-                flexDirection={{ base: 'column', sm: 'row' }}
-                flexWrap="wrap"
-                gap={{ base: 2, md: 4 }}
-                color="fg.muted"
-                fontSize={{ base: 'sm', md: 'md' }}
+      {/* Основной контент */}
+      <Box maxW="1200px" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
+        {/* Кнопка назад */}
+        <Button
+          variant="ghost"
+          onClick={() => window.history.back()}
+          size="sm"
+          mb={4}
+        >
+          Назад
+        </Button>
+
+        {/* Категория */}
+        <Badge
+          colorPalette="blue"
+          fontSize={{ base: 'xs', md: 'sm' }}
+          px={3}
+          py={1}
+          borderRadius="full"
+          mb={2}
+        >
+          {category}
+        </Badge>
+
+        {/* Заголовок */}
+        <Heading
+          as="h1"
+          size={{ base: 'lg', md: '2xl' }}
+          fontWeight="bold"
+          mb={3}
+          lineHeight="1.3"
+        >
+          {title}
+        </Heading>
+
+        {/* Мета-информация */}
+        <Flex
+          direction={{ base: 'column', sm: 'row' }}
+          wrap="wrap"
+          gap={2}
+          mb={4}
+          fontSize="sm"
+          color="gray.600"
+        >
+          <Flex align="center" gap={1}>
+            <Icon as={FaCalendarAlt} boxSize="12px" />
+            <Text>
+              {formattedDate} в {formattedTime}
+            </Text>
+          </Flex>
+          <Flex align="center" gap={1}>
+            <Icon as={FaEye} boxSize="12px" />
+            <Text>{views} просмотров</Text>
+          </Flex>
+          <Text>🕑 {readingTime} мин. чтения</Text>
+        </Flex>
+
+        {/* Краткое описание */}
+        {excerpt && (
+          <Box
+            bg="gray.50"
+            p={4}
+            borderRadius="md"
+            borderLeft="4px solid"
+            borderColor="blue.400"
+            mb={4}
+          >
+            <Text fontSize={{ base: 'sm', md: 'md' }} fontStyle="italic">
+              {excerpt}
+            </Text>
+          </Box>
+        )}
+
+        {/* Основное изображение */}
+        {imageUrl && (
+          <Box
+            borderRadius="lg"
+            overflow="hidden"
+            mb={4}
+            position="relative"
+            onClick={images.length > 0 ? handleOpenGallery : undefined}
+            cursor={images.length > 0 ? 'pointer' : 'default'}
+          >
+            <Image
+              src={imageSrc}
+              alt={title}
+              w="100%"
+              h={{ base: '200px', sm: '300px', md: '400px' }}
+              objectFit="cover"
+            />
+            {images.length > 0 && (
+              <HStack
+                position="absolute"
+                bottom={2}
+                right={2}
+                bg="blackAlpha.700"
+                color="white"
+                px={2}
+                py={1}
+                borderRadius="md"
+                fontSize="xs"
               >
-                <Flex alignItems="center" gap={2}>
-                  <Icon
-                    as={FaCalendarAlt}
-                    boxSize={{ base: '12px', md: '14px' }}
-                  />
-                  <Text>
-                    {formattedDate} в {formattedTime}
-                  </Text>
-                </Flex>
-
-                <Flex alignItems="center" gap={2}>
-                  <Icon as={FaEye} boxSize={{ base: '12px', md: '14px' }} />
-                  <Text>{views} просмотров</Text>
-                </Flex>
-
-                {images.length > 0 && (
-                  <Flex alignItems="center" gap={2}>
-                    <Icon
-                      as={FaImages}
-                      boxSize={{ base: '12px', md: '14px' }}
-                    />
-                    <Text>{images.length} фото</Text>
-                  </Flex>
-                )}
-
-                <Flex alignItems="center" gap={2}>
-                  <Text>🕑 {readingTime} мин. чтения</Text>
-                </Flex>
-
-                {updatedAt.getTime() !== createdAt.getTime() && (
-                  <Text fontSize="xs" color="fg.subtle" fontStyle="italic">
-                    Обновлено: {formattedUpdated}
-                  </Text>
-                )}
-              </Flex>
-            </Box>
-
-            {/* Краткое описание */}
-            {excerpt && (
-              <Box
-                bg="bg.subtle"
-                p={{ base: 4, md: 6 }}
-                borderRadius="lg"
-                borderLeft="4px solid"
-                borderColor="border.emphasized"
-              >
-                <Text
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  fontWeight="medium"
-                  color="fg.emphasized"
-                  fontStyle="italic"
-                >
-                  {excerpt}
-                </Text>
-              </Box>
+                <Icon as={FaImages} />
+                <Text>{images.length}</Text>
+              </HStack>
             )}
+          </Box>
+        )}
 
-            {/* Основное изображение */}
-            {imageUrl && (
+        {/* Миниатюры */}
+        {images.length > 1 && (
+          <Flex gap={2} mb={4} overflowX="auto" pb={2}>
+            {images.slice(0, 5).map((img, idx) => (
               <Box
-                borderRadius="xl"
+                key={img.id}
+                flexShrink={0}
+                w="60px"
+                h="60px"
+                borderRadius="md"
                 overflow="hidden"
-                boxShadow="lg"
-                position="relative"
-                mb={{ base: 2, md: 4 }}
-                cursor={images.length > 0 ? 'pointer' : 'default'}
+                cursor="pointer"
                 onClick={handleOpenGallery}
               >
                 <Image
-                  src={imageSrc}
-                  alt={title}
+                  src={img.url}
+                  alt={img.alt || ''}
                   w="100%"
-                  h={imageHeight}
+                  h="100%"
                   objectFit="cover"
-                  loading="eager"
                 />
-                {images.length > 0 && (
-                  <Box
-                    position="absolute"
-                    bottom={{ base: 2, md: 4 }}
-                    right={{ base: 2, md: 4 }}
-                    bg="blackAlpha.700"
-                    color="white"
-                    px={{ base: 2, md: 3 }}
-                    py={{ base: 1, md: 1 }}
-                    borderRadius="md"
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                  >
-                    <Icon as={FaImages} />
-                    {images.length} фото
-                  </Box>
-                )}
               </Box>
-            )}
-
-            {/* Миниатюры дополнительных изображений */}
-            {images.length > 1 && (
-              <Flex
-                gap={2}
-                mb={{ base: 4, md: 6 }}
-                overflowX="auto"
-                py={2}
-                css={{
-                  '::-webkit-scrollbar': {
-                    height: '4px',
-                  },
-                  '::-webkit-scrollbar-track': {
-                    background: '#f1f1f1',
-                  },
-                  '::-webkit-scrollbar-thumb': {
-                    background: '#888',
-                    borderRadius: '2px',
-                  },
-                }}
+            ))}
+            {images.length > 5 && (
+              <Box
+                flexShrink={0}
+                w="60px"
+                h="60px"
+                borderRadius="md"
+                bg="blackAlpha.700"
+                color="white"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                fontSize="sm"
+                cursor="pointer"
+                onClick={handleOpenGallery}
               >
-                {images.slice(0, 5).map((img, index) => (
-                  <Box
-                    key={img.id}
-                    flexShrink={0}
-                    w={{ base: '70px', md: '100px' }}
-                    h={{ base: '60px', md: '80px' }}
-                    borderRadius="md"
-                    overflow="hidden"
-                    cursor="pointer"
-                    border="2px solid"
-                    borderColor={
-                      img.url === imageUrl ? 'blue.500' : 'transparent'
-                    }
-                    onClick={handleOpenGallery}
-                  >
-                    <Image
-                      src={img.url}
-                      alt={img.alt || `Фото ${index + 1}`}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                    />
-                  </Box>
-                ))}
-                {images.length > 5 && (
-                  <Box
-                    flexShrink={0}
-                    w={{ base: '70px', md: '100px' }}
-                    h={{ base: '60px', md: '80px' }}
-                    borderRadius="md"
-                    bg="blackAlpha.700"
-                    color="white"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    cursor="pointer"
-                    onClick={handleOpenGallery}
-                    fontSize={{ base: 'sm', md: 'md' }}
-                  >
-                    +{images.length - 5}
-                  </Box>
-                )}
-              </Flex>
-            )}
-
-            {/* Содержание */}
-            <Box
-              bg="bg.surface"
-              p={{ base: 4, md: 8 }}
-              borderRadius="lg"
-              boxShadow="sm"
-            >
-              <div
-                style={{
-                  fontSize: contentFontSize,
-                  lineHeight: '1.8',
-                  color: '#374151',
-                  whiteSpace: 'pre-line',
-                  wordBreak: 'break-word',
-                }}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </Box>
-
-            {/* Теги */}
-            {tags.length > 0 && (
-              <Box>
-                <Heading
-                  as="h3"
-                  size={{ base: 'sm', md: 'md' }}
-                  mb={{ base: 2, md: 4 }}
-                  color="fg.emphasized"
-                >
-                  Теги
-                </Heading>
-                <Flex flexWrap="wrap" gap={2}>
-                  {tags.map((tag, index) => (
-                    <Link
-                      key={index}
-                      href={`/news?tag=${tag}`}
-                      _hover={{ textDecoration: 'none' }}
-                    >
-                      <Badge
-                        colorPalette="gray"
-                        px={{ base: 3, md: 4 }}
-                        py={{ base: 1, md: 2 }}
-                        borderRadius="full"
-                        fontSize={{ base: 'xs', md: 'sm' }}
-                        _hover={{
-                          bg: 'bg.subtle',
-                          transform: 'translateY(-2px)',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        #{tag}
-                      </Badge>
-                    </Link>
-                  ))}
-                </Flex>
+                +{images.length - 5}
               </Box>
             )}
-          </Stack>
-        </GridItem>
+          </Flex>
+        )}
 
-        {/* Правая колонка - боковая панель */}
-        <GridItem>
-          <Box
-            position={sidebarPosition}
-            top={sidebarTop}
-            bg="bg.surface"
-            borderRadius="xl"
-            boxShadow={{ base: 'none', lg: 'lg' }}
-            p={{ base: 4, md: 6 }}
-            border={{ base: 'none', lg: '1px solid' }}
-            borderColor={{ lg: 'border.subtle' }}
-            // На мобильных делаем нижнюю панель
-            {...(isMobile && {
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 10,
-              bg: 'bg.surface',
-              boxShadow: '0 -4px 10px rgba(0,0,0,0.1)',
-              borderRadius: 'xl xl 0 0',
-              maxH: 'auto',
-              overflowY: 'auto',
-            })}
-          >
-            <Stack gap={{ base: 3, md: 4 }}>
-              {/* Действия */}
-              <Box>
-                <Heading
-                  as="h3"
-                  size={{ base: 'sm', md: 'md' }}
-                  mb={{ base: 2, md: 4 }}
-                  color="fg.emphasized"
+        {/* Контент */}
+        <Box
+          bg="white"
+          p={{ base: 4, md: 6 }}
+          borderRadius="lg"
+          boxShadow="sm"
+          mb={4}
+        >
+          <div
+            style={{
+              fontSize: isMobile ? '16px' : '18px',
+              lineHeight: '1.7',
+              color: '#2D3748',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </Box>
+
+        {/* Теги */}
+        {tags.length > 0 && (
+          <Box mb={4}>
+            <Text fontWeight="bold" mb={2} fontSize="sm">
+              Теги:
+            </Text>
+            <Flex wrap="wrap" gap={2}>
+              {tags.map((tag, idx) => (
+                <Link
+                  key={idx}
+                  href={`/news?tag=${tag}`}
+                  _hover={{ textDecoration: 'none' }}
                 >
-                  Действия
-                </Heading>
-                <Stack>
+                  <Badge
+                    colorPalette="gray"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="xs"
+                  >
+                    #{tag}
+                  </Badge>
+                </Link>
+              ))}
+            </Flex>
+          </Box>
+        )}
+
+        {/* Нижняя панель для мобильных */}
+        {isMobile ? (
+          <Box
+            position="sticky"
+            bottom={0}
+            left={0}
+            right={0}
+            bg="white"
+            borderTop="1px solid"
+            borderColor="gray.200"
+            p={3}
+            zIndex={10}
+          >
+            <HStack>
+              {images.length > 0 && (
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  variant="outline"
+                  onClick={handleOpenGallery}
+                  flex={1}
+                >
+                  Фото ({images.length})
+                </Button>
+              )}
+              <Button size="sm" colorScheme="blue" flex={1}>
+                Поделиться
+              </Button>
+              <Button size="sm" colorScheme="blue" as="a" flex={1}>
+                <Link href="/allnews">Все новости</Link>
+              </Button>
+            </HStack>
+          </Box>
+        ) : (
+          /* Десктопная боковая панель */
+          <Flex justify="space-between" align="start" gap={6}>
+            <Box flex="1">{/* Контент уже отображен выше */}</Box>
+            <Box
+              w="300px"
+              position="sticky"
+              top="20px"
+              bg="white"
+              p={4}
+              borderRadius="lg"
+              boxShadow="md"
+            >
+              <VStack align="stretch">
+                <Box>
+                  <Text fontWeight="bold" mb={2}>
+                    Действия
+                  </Text>
                   {images.length > 0 && (
                     <Button
+                      size="sm"
+                      colorScheme="blue"
                       variant="outline"
-                      colorPalette="blue"
                       onClick={handleOpenGallery}
                       w="100%"
-                      justifyContent={{ base: 'center', md: 'flex-start' }}
-                      gap={2}
-                      size={{ base: 'sm', md: 'md' }}
+                      mb={2}
                     >
-                      <Icon as={FaImages} />
-                      <Text display={{ base: 'inline', sm: 'inline' }}>
-                        {isMobile
-                          ? 'Галерея'
-                          : `Открыть галерею (${images.length})`}
-                      </Text>
+                      Открыть галерею ({images.length})
                     </Button>
                   )}
-                </Stack>
-              </Box>
-
-              {/* Быстрые ссылки для шаринга */}
-              <Box>
-                <Heading
-                  as="h3"
-                  size="sm"
-                  mb={{ base: 2, md: 3 }}
-                  color="fg.emphasized"
-                >
-                  Поделиться
-                </Heading>
-                <Flex
-                  gap={3}
-                  justifyContent={{ base: 'space-around', md: 'center' }}
-                >
-                  <Button
-                    aria-label="Поделиться ВКонтакте"
-                    onClick={() => handleShare('vk')}
-                    variant="ghost"
-                    colorPalette="blue"
-                    size={{ base: 'md', md: 'sm' }}
-                    p={2}
-                    flex={{ base: 1, md: 'none' }}
-                  >
-                    <Icon as={FaVk} boxSize={{ base: '24px', md: '20px' }} />
+                  <Button size="sm" colorScheme="blue" as="a" w="100%">
+                    <Link href="/allnews">Все новости</Link>
                   </Button>
-                  <Button
-                    aria-label="Поделиться в Telegram"
-                    onClick={() => handleShare('telegram')}
-                    variant="ghost"
-                    colorPalette="telegram"
-                    size={{ base: 'md', md: 'sm' }}
-                    p={2}
-                    flex={{ base: 1, md: 'none' }}
-                  >
-                    <Icon
-                      as={FaTelegram}
-                      boxSize={{ base: '24px', md: '20px' }}
-                    />
-                  </Button>
-                </Flex>
-              </Box>
+                </Box>
 
-              {/* Статистика */}
-              <Box display={{ base: 'none', md: 'block' }}>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
-                  Статистика
-                </Heading>
-                <Stack gap={2}>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Просмотры:</Text>
-                    <Text fontWeight="semibold">{views}</Text>
+                <Box>
+                  <Text fontWeight="bold" mb={2}>
+                    Поделиться
+                  </Text>
+                  <HStack>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleShare('vk')}
+                      flex={1}
+                    >
+                      <FaVk />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleShare('telegram')}
+                      flex={1}
+                    >
+                      <FaTelegram />
+                    </Button>
+                  </HStack>
+                </Box>
+
+                <Box>
+                  <Text fontWeight="bold" mb={2}>
+                    Статистика
+                  </Text>
+                  <Flex justify="space-between" fontSize="sm">
+                    <Text color="gray.600">Просмотры:</Text>
+                    <Text fontWeight="medium">{views}</Text>
                   </Flex>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Дата публикации:</Text>
+                  <Flex justify="space-between" fontSize="sm">
+                    <Text color="gray.600">Дата:</Text>
                     <Text fontWeight="medium">{formattedDate}</Text>
                   </Flex>
-                  <Flex justifyContent="space-between">
-                    <Text color="fg.muted">Время чтения:</Text>
+                  <Flex justify="space-between" fontSize="sm">
+                    <Text color="gray.600">Чтение:</Text>
                     <Text fontWeight="medium">{readingTime} мин.</Text>
                   </Flex>
-                  {images.length > 0 && (
-                    <Flex justifyContent="space-between">
-                      <Text color="fg.muted">Фотографий:</Text>
-                      <Text fontWeight="medium">{images.length}</Text>
-                    </Flex>
-                  )}
-                </Stack>
-              </Box>
-
-              {/* Все новости */}
-              <Box>
-                <Button
-                  mt={{ base: 0, md: 2 }}
-                  colorPalette="blue"
-                  size={{ base: 'lg', md: 'sm' }}
-                  w="100%"
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      window.location.href = '/allnews';
-                    }
-                  }}
-                  py={{ base: 6, md: 2 }}
-                >
-                  Все новости →
-                </Button>
-              </Box>
-            </Stack>
-          </Box>
-
-          {/* Отступ для мобильной версии, чтобы контент не перекрывался нижней панелью */}
-          {isMobile && <Box height="120px" />}
-        </GridItem>
-      </Grid>
-    </Box>
+                </Box>
+              </VStack>
+            </Box>
+          </Flex>
+        )}
+      </Box>
+    </>
   );
 };
 
