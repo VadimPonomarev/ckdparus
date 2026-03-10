@@ -12,6 +12,7 @@ import {
   Flex,
   Icon,
   Link,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -22,7 +23,7 @@ import {
   FaTelegram,
   FaImages,
 } from 'react-icons/fa';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toaster } from '@/components/ui/toaster';
 import GallerySlider from '@/components/gallery/galleryslider';
 
@@ -64,6 +65,17 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   tags = [],
 }) => {
   const [showGallery, setShowGallery] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Форматирование дат
   const formattedDate = format(new Date(createdAt), 'dd MMMM yyyy', {
@@ -93,11 +105,17 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   const handleOpenGallery = () => {
     if (images.length > 0) {
       setShowGallery(true);
+      // Блокируем скролл body при открытии галереи на мобильных
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
     }
   };
 
   const handleCloseGallery = () => {
     setShowGallery(false);
+    // Возвращаем скролл
+    document.body.style.overflow = 'unset';
   };
 
   // Время чтения (примерный расчет)
@@ -110,6 +128,22 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
     alt: img.alt || `Фото к новости "${title}"`,
     caption: img.caption,
   }));
+
+  // Адаптивные значения
+  const headingSize = useBreakpointValue({ base: 'xl', md: '2xl' }) as
+    | 'xl'
+    | '2xl';
+  const contentFontSize = useBreakpointValue({ base: '16px', md: '18px' });
+  const imageHeight = useBreakpointValue({
+    base: '250px',
+    sm: '300px',
+    md: '500px',
+  });
+  const sidebarPosition = useBreakpointValue({
+    base: 'static',
+    lg: 'sticky',
+  }) as 'static' | 'sticky';
+  const sidebarTop = useBreakpointValue({ base: '0', lg: '100px' });
 
   return (
     <Box>
@@ -127,11 +161,16 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
         >
           <Button
             position="absolute"
-            top={4}
-            right={4}
+            top={isMobile ? 2 : 4}
+            right={isMobile ? 2 : 4}
             zIndex={10000}
             colorScheme="whiteAlpha"
             onClick={handleCloseGallery}
+            size={isMobile ? 'sm' : 'md'}
+            borderRadius="full"
+            p={isMobile ? 2 : 4}
+            minW="auto"
+            h="auto"
           >
             ✕
           </Button>
@@ -139,62 +178,77 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
         </Box>
       )}
 
-      <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }} gap={8}>
+      <Grid
+        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
+        gap={{ base: 4, md: 6, lg: 8 }}
+        px={{ base: 2, sm: 4, md: 6 }}
+      >
         {/* Левая колонка - основная информация */}
         <GridItem>
-          <Stack>
+          <Stack gap={{ base: 4, md: 6 }}>
             {/* Заголовок и мета-информация */}
             <Box>
               <Badge
                 colorPalette="blue"
-                fontSize="md"
-                px={4}
-                py={2}
+                fontSize={{ base: 'sm', md: 'md' }}
+                px={{ base: 3, md: 4 }}
+                py={{ base: 1, md: 2 }}
                 borderRadius="full"
-                mb={4}
+                mb={{ base: 2, md: 4 }}
               >
                 {category}
               </Badge>
 
               <Heading
                 as="h1"
-                size="2xl"
+                size={headingSize}
                 fontWeight="bold"
                 color="fg.emphasized"
-                mb={4}
+                mb={{ base: 2, md: 4 }}
+                lineHeight="1.3"
               >
                 {title}
               </Heading>
 
               <Flex
-                alignItems="center"
+                alignItems="flex-start"
+                flexDirection={{ base: 'column', sm: 'row' }}
                 flexWrap="wrap"
-                gap={4}
+                gap={{ base: 2, md: 4 }}
                 color="fg.muted"
+                fontSize={{ base: 'sm', md: 'md' }}
               >
                 <Flex alignItems="center" gap={2}>
-                  <Icon as={FaCalendarAlt} boxSize="14px" />
-                  <Text fontSize="md">
+                  <Icon
+                    as={FaCalendarAlt}
+                    boxSize={{ base: '12px', md: '14px' }}
+                  />
+                  <Text>
                     {formattedDate} в {formattedTime}
                   </Text>
                 </Flex>
 
                 <Flex alignItems="center" gap={2}>
-                  <Icon as={FaEye} boxSize="14px" />
-                  <Text fontSize="md">{views} просмотров</Text>
+                  <Icon as={FaEye} boxSize={{ base: '12px', md: '14px' }} />
+                  <Text>{views} просмотров</Text>
                 </Flex>
 
                 {images.length > 0 && (
                   <Flex alignItems="center" gap={2}>
-                    <Icon as={FaImages} boxSize="14px" />
-                    <Text fontSize="md">{images.length} фото</Text>
+                    <Icon
+                      as={FaImages}
+                      boxSize={{ base: '12px', md: '14px' }}
+                    />
+                    <Text>{images.length} фото</Text>
                   </Flex>
                 )}
 
-                <Text fontSize="md">🕑 {readingTime} мин. чтения</Text>
+                <Flex alignItems="center" gap={2}>
+                  <Text>🕑 {readingTime} мин. чтения</Text>
+                </Flex>
 
                 {updatedAt.getTime() !== createdAt.getTime() && (
-                  <Text fontSize="sm" color="fg.subtle" fontStyle="italic">
+                  <Text fontSize="xs" color="fg.subtle" fontStyle="italic">
                     Обновлено: {formattedUpdated}
                   </Text>
                 )}
@@ -205,13 +259,13 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
             {excerpt && (
               <Box
                 bg="bg.subtle"
-                p={6}
+                p={{ base: 4, md: 6 }}
                 borderRadius="lg"
                 borderLeft="4px solid"
                 borderColor="border.emphasized"
               >
                 <Text
-                  fontSize="lg"
+                  fontSize={{ base: 'md', md: 'lg' }}
                   fontWeight="medium"
                   color="fg.emphasized"
                   fontStyle="italic"
@@ -228,7 +282,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 overflow="hidden"
                 boxShadow="lg"
                 position="relative"
-                mb={4}
+                mb={{ base: 2, md: 4 }}
                 cursor={images.length > 0 ? 'pointer' : 'default'}
                 onClick={handleOpenGallery}
               >
@@ -236,21 +290,21 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   src={imageSrc}
                   alt={title}
                   w="100%"
-                  h={{ base: '300px', md: '500px' }}
+                  h={imageHeight}
                   objectFit="cover"
                   loading="eager"
                 />
                 {images.length > 0 && (
                   <Box
                     position="absolute"
-                    bottom={4}
-                    right={4}
+                    bottom={{ base: 2, md: 4 }}
+                    right={{ base: 2, md: 4 }}
                     bg="blackAlpha.700"
                     color="white"
-                    px={3}
-                    py={1}
+                    px={{ base: 2, md: 3 }}
+                    py={{ base: 1, md: 1 }}
                     borderRadius="md"
-                    fontSize="sm"
+                    fontSize={{ base: 'xs', md: 'sm' }}
                     display="flex"
                     alignItems="center"
                     gap={2}
@@ -264,13 +318,30 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
 
             {/* Миниатюры дополнительных изображений */}
             {images.length > 1 && (
-              <Flex gap={2} mb={6} overflowX="auto" py={2}>
+              <Flex
+                gap={2}
+                mb={{ base: 4, md: 6 }}
+                overflowX="auto"
+                py={2}
+                css={{
+                  '::-webkit-scrollbar': {
+                    height: '4px',
+                  },
+                  '::-webkit-scrollbar-track': {
+                    background: '#f1f1f1',
+                  },
+                  '::-webkit-scrollbar-thumb': {
+                    background: '#888',
+                    borderRadius: '2px',
+                  },
+                }}
+              >
                 {images.slice(0, 5).map((img, index) => (
                   <Box
                     key={img.id}
                     flexShrink={0}
-                    w="100px"
-                    h="80px"
+                    w={{ base: '70px', md: '100px' }}
+                    h={{ base: '60px', md: '80px' }}
                     borderRadius="md"
                     overflow="hidden"
                     cursor="pointer"
@@ -292,8 +363,8 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 {images.length > 5 && (
                   <Box
                     flexShrink={0}
-                    w="100px"
-                    h="80px"
+                    w={{ base: '70px', md: '100px' }}
+                    h={{ base: '60px', md: '80px' }}
                     borderRadius="md"
                     bg="blackAlpha.700"
                     color="white"
@@ -302,6 +373,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     justifyContent="center"
                     cursor="pointer"
                     onClick={handleOpenGallery}
+                    fontSize={{ base: 'sm', md: 'md' }}
                   >
                     +{images.length - 5}
                   </Box>
@@ -312,16 +384,17 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
             {/* Содержание */}
             <Box
               bg="bg.surface"
-              p={{ base: 6, md: 8 }}
+              p={{ base: 4, md: 8 }}
               borderRadius="lg"
               boxShadow="sm"
             >
               <div
                 style={{
-                  fontSize: '18px',
+                  fontSize: contentFontSize,
                   lineHeight: '1.8',
                   color: '#374151',
                   whiteSpace: 'pre-line',
+                  wordBreak: 'break-word',
                 }}
                 dangerouslySetInnerHTML={{ __html: content }}
               />
@@ -330,7 +403,12 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
             {/* Теги */}
             {tags.length > 0 && (
               <Box>
-                <Heading as="h3" size="md" mb={4} color="fg.emphasized">
+                <Heading
+                  as="h3"
+                  size={{ base: 'sm', md: 'md' }}
+                  mb={{ base: 2, md: 4 }}
+                  color="fg.emphasized"
+                >
                   Теги
                 </Heading>
                 <Flex flexWrap="wrap" gap={2}>
@@ -342,10 +420,10 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     >
                       <Badge
                         colorPalette="gray"
-                        px={4}
-                        py={2}
+                        px={{ base: 3, md: 4 }}
+                        py={{ base: 1, md: 2 }}
                         borderRadius="full"
-                        fontSize="sm"
+                        fontSize={{ base: 'xs', md: 'sm' }}
                         _hover={{
                           bg: 'bg.subtle',
                           transform: 'translateY(-2px)',
@@ -365,19 +443,37 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
         {/* Правая колонка - боковая панель */}
         <GridItem>
           <Box
-            position="sticky"
-            top="100px"
+            position={sidebarPosition}
+            top={sidebarTop}
             bg="bg.surface"
             borderRadius="xl"
-            boxShadow="lg"
-            p={6}
-            border="1px solid"
-            borderColor="border.subtle"
+            boxShadow={{ base: 'none', lg: 'lg' }}
+            p={{ base: 4, md: 6 }}
+            border={{ base: 'none', lg: '1px solid' }}
+            borderColor={{ lg: 'border.subtle' }}
+            // На мобильных делаем нижнюю панель
+            {...(isMobile && {
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              bg: 'bg.surface',
+              boxShadow: '0 -4px 10px rgba(0,0,0,0.1)',
+              borderRadius: 'xl xl 0 0',
+              maxH: 'auto',
+              overflowY: 'auto',
+            })}
           >
-            <Stack>
+            <Stack gap={{ base: 3, md: 4 }}>
               {/* Действия */}
               <Box>
-                <Heading as="h3" size="md" mb={4} color="fg.emphasized">
+                <Heading
+                  as="h3"
+                  size={{ base: 'sm', md: 'md' }}
+                  mb={{ base: 2, md: 4 }}
+                  color="fg.emphasized"
+                >
                   Действия
                 </Heading>
                 <Stack>
@@ -387,11 +483,16 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                       colorPalette="blue"
                       onClick={handleOpenGallery}
                       w="100%"
-                      justifyContent="flex-start"
+                      justifyContent={{ base: 'center', md: 'flex-start' }}
                       gap={2}
+                      size={{ base: 'sm', md: 'md' }}
                     >
                       <Icon as={FaImages} />
-                      Открыть галерею ({images.length})
+                      <Text display={{ base: 'inline', sm: 'inline' }}>
+                        {isMobile
+                          ? 'Галерея'
+                          : `Открыть галерею (${images.length})`}
+                      </Text>
                     </Button>
                   )}
                 </Stack>
@@ -399,35 +500,48 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
 
               {/* Быстрые ссылки для шаринга */}
               <Box>
-                <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
+                <Heading
+                  as="h3"
+                  size="sm"
+                  mb={{ base: 2, md: 3 }}
+                  color="fg.emphasized"
+                >
                   Поделиться
                 </Heading>
-                <Flex gap={3} justifyContent="center">
+                <Flex
+                  gap={3}
+                  justifyContent={{ base: 'space-around', md: 'center' }}
+                >
                   <Button
                     aria-label="Поделиться ВКонтакте"
                     onClick={() => handleShare('vk')}
                     variant="ghost"
                     colorPalette="blue"
-                    size="sm"
+                    size={{ base: 'md', md: 'sm' }}
                     p={2}
+                    flex={{ base: 1, md: 'none' }}
                   >
-                    <Icon as={FaVk} boxSize="20px" />
+                    <Icon as={FaVk} boxSize={{ base: '24px', md: '20px' }} />
                   </Button>
                   <Button
                     aria-label="Поделиться в Telegram"
                     onClick={() => handleShare('telegram')}
                     variant="ghost"
                     colorPalette="telegram"
-                    size="sm"
+                    size={{ base: 'md', md: 'sm' }}
                     p={2}
+                    flex={{ base: 1, md: 'none' }}
                   >
-                    <Icon as={FaTelegram} boxSize="20px" />
+                    <Icon
+                      as={FaTelegram}
+                      boxSize={{ base: '24px', md: '20px' }}
+                    />
                   </Button>
                 </Flex>
               </Box>
 
               {/* Статистика */}
-              <Box>
+              <Box display={{ base: 'none', md: 'block' }}>
                 <Heading as="h3" size="sm" mb={3} color="fg.emphasized">
                   Статистика
                 </Heading>
@@ -456,21 +570,25 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
               {/* Все новости */}
               <Box>
                 <Button
-                  mt={2}
+                  mt={{ base: 0, md: 2 }}
                   colorPalette="blue"
-                  size="sm"
+                  size={{ base: 'lg', md: 'sm' }}
                   w="100%"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
                       window.location.href = '/allnews';
                     }
                   }}
+                  py={{ base: 6, md: 2 }}
                 >
                   Все новости →
                 </Button>
               </Box>
             </Stack>
           </Box>
+
+          {/* Отступ для мобильной версии, чтобы контент не перекрывался нижней панелью */}
+          {isMobile && <Box height="120px" />}
         </GridItem>
       </Grid>
     </Box>
