@@ -13,6 +13,8 @@ import {
   useBreakpointValue,
   HStack,
   VStack,
+  Grid,
+  GridItem,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -224,226 +226,191 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           Назад
         </Button>
 
-        {/* Заголовок */}
-        <Heading
-          as="h1"
-          size={{ base: 'lg', md: '2xl' }}
-          fontWeight="bold"
-          mb={3}
-          lineHeight="1.3"
-        >
-          {title}
-        </Heading>
+        {/* Используем Grid для десктопной версии */}
+        <Grid templateColumns={{ base: '1fr', md: '3fr 1fr' }} gap={6}>
+          {/* Левая колонка - основной контент */}
+          <GridItem>
+            {/* Заголовок */}
+            <Heading
+              as="h1"
+              size={{ base: 'lg', md: '2xl' }}
+              fontWeight="bold"
+              mb={3}
+              lineHeight="1.3"
+            >
+              {title}
+            </Heading>
 
-        {/* Мета-информация */}
-        <Flex
-          direction={{ base: 'column', sm: 'row' }}
-          wrap="wrap"
-          gap={2}
-          mb={4}
-          fontSize="sm"
-          color="gray.600"
-        >
-          <Flex align="center" gap={1}>
-            <Icon as={FaCalendarAlt} boxSize="12px" />
-            <Text>
-              {formattedDate} в {formattedTime}
-            </Text>
-          </Flex>
-          <Flex align="center" gap={1}>
-            <Icon as={FaEye} boxSize="12px" />
-            <Text>{views} просмотров</Text>
-          </Flex>
-          <Text>🕑 {readingTime} мин. чтения</Text>
-        </Flex>
+            {/* Мета-информация */}
+            <Flex
+              direction={{ base: 'column', sm: 'row' }}
+              wrap="wrap"
+              gap={2}
+              mb={4}
+              fontSize="sm"
+              color="gray.600"
+            >
+              <Flex align="center" gap={1}>
+                <Icon as={FaCalendarAlt} boxSize="12px" />
+                <Text>
+                  {formattedDate} в {formattedTime}
+                </Text>
+              </Flex>
+              <Flex align="center" gap={1}>
+                <Icon as={FaEye} boxSize="12px" />
+                <Text>{views} просмотров</Text>
+              </Flex>
+              <Text>🕑 {readingTime} мин. чтения</Text>
+            </Flex>
 
-        {/* Краткое описание */}
-        {excerpt && (
-          <Box
-            bg="gray.50"
-            p={4}
-            borderRadius="md"
-            borderLeft="4px solid"
-            borderColor="blue.400"
-            mb={4}
-          >
-            <Text fontSize={{ base: 'sm', md: 'md' }} fontStyle="italic">
-              {excerpt}
-            </Text>
-          </Box>
-        )}
-
-        {/* Основное изображение */}
-        {imageUrl && (
-          <Box
-            borderRadius="lg"
-            overflow="hidden"
-            mb={4}
-            position="relative"
-            onClick={images.length > 0 ? handleOpenGallery : undefined}
-            cursor={images.length > 0 ? 'pointer' : 'default'}
-          >
-            <Image
-              src={imageSrc}
-              alt={title}
-              w="100%"
-              h={{ base: '200px', sm: '300px', md: '400px' }}
-              objectFit="cover"
-            />
-            {images.length > 0 && (
-              <HStack
-                position="absolute"
-                bottom={2}
-                right={2}
-                bg="blackAlpha.700"
-                color="white"
-                px={2}
-                py={1}
-                borderRadius="md"
-                fontSize="xs"
-              >
-                <Icon as={FaImages} />
-                <Text>{images.length}</Text>
-              </HStack>
-            )}
-          </Box>
-        )}
-
-        {/* Миниатюры */}
-        {images.length > 1 && (
-          <Flex gap={2} mb={4} overflowX="auto" pb={2}>
-            {images.slice(0, 5).map((img, idx) => (
+            {/* Краткое описание */}
+            {excerpt && (
               <Box
-                key={img.id}
-                flexShrink={0}
-                w="60px"
-                h="60px"
+                bg="gray.50"
+                p={4}
                 borderRadius="md"
+                borderLeft="4px solid"
+                borderColor="blue.400"
+                mb={4}
+              >
+                <Text fontSize={{ base: 'sm', md: 'md' }} fontStyle="italic">
+                  {excerpt}
+                </Text>
+              </Box>
+            )}
+
+            {/* Основное изображение */}
+            {imageUrl && (
+              <Box
+                borderRadius="lg"
                 overflow="hidden"
-                cursor="pointer"
-                onClick={handleOpenGallery}
+                mb={4}
+                position="relative"
+                onClick={images.length > 0 ? handleOpenGallery : undefined}
+                cursor={images.length > 0 ? 'pointer' : 'default'}
               >
                 <Image
-                  src={img.url}
-                  alt={img.alt || ''}
+                  src={imageSrc}
+                  alt={title}
                   w="100%"
-                  h="100%"
+                  h={{ base: '200px', sm: '300px', md: '400px' }}
                   objectFit="cover"
                 />
-              </Box>
-            ))}
-            {images.length > 5 && (
-              <Box
-                flexShrink={0}
-                w="60px"
-                h="60px"
-                borderRadius="md"
-                bg="blackAlpha.700"
-                color="white"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                fontSize="sm"
-                cursor="pointer"
-                onClick={handleOpenGallery}
-              >
-                +{images.length - 5}
-              </Box>
-            )}
-          </Flex>
-        )}
-
-        {/* Контент */}
-        <Box
-          bg="white"
-          p={{ base: 4, md: 6 }}
-          borderRadius="lg"
-          boxShadow="sm"
-          mb={4}
-        >
-          <div
-            style={{
-              fontSize: isMobile ? '16px' : '18px',
-              lineHeight: '1.7',
-              color: '#2D3748',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-            }}
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </Box>
-
-        {/* Теги */}
-        {tags.length > 0 && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2} fontSize="sm">
-              Теги:
-            </Text>
-            <Flex wrap="wrap" gap={2}>
-              {tags.map((tag, idx) => (
-                <Link
-                  key={idx}
-                  href={`/news?tag=${tag}`}
-                  _hover={{ textDecoration: 'none' }}
-                >
-                  <Badge
-                    colorPalette="gray"
-                    px={3}
+                {images.length > 0 && (
+                  <HStack
+                    position="absolute"
+                    bottom={2}
+                    right={2}
+                    bg="blackAlpha.700"
+                    color="white"
+                    px={2}
                     py={1}
-                    borderRadius="full"
+                    borderRadius="md"
                     fontSize="xs"
                   >
-                    #{tag}
-                  </Badge>
-                </Link>
-              ))}
-            </Flex>
-          </Box>
-        )}
+                    <Icon as={FaImages} />
+                    <Text>{images.length}</Text>
+                  </HStack>
+                )}
+              </Box>
+            )}
 
-        {/* Нижняя панель для мобильных */}
-        {isMobile ? (
-          <Box
-            bottom={0}
-            left={0}
-            right={0}
-            bg="white"
-            borderTop="1px solid"
-            borderColor="gray.200"
-            p={3}
-            zIndex={10}
-          >
-            <HStack>
-              {images.length > 0 && (
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  variant="outline"
-                  onClick={handleOpenGallery}
-                  flex={1}
-                >
-                  Фото ({images.length})
-                </Button>
-              )}
-              <Button
-                size="sm"
-                colorScheme="blue"
-                as="a"
-                onClick={() => {
-                  router.push('/allnews');
-                }}
-                flex={1}
-              >
-                Все новости
-              </Button>
-            </HStack>
-          </Box>
-        ) : (
-          /* Десктопная боковая панель */
-          <Flex justify="space-between" align="start" gap={6}>
-            <Box flex="1">{/* Контент уже отображен выше */}</Box>
+            {/* Миниатюры */}
+            {images.length > 1 && (
+              <Flex gap={2} mb={4} overflowX="auto" pb={2}>
+                {images.slice(0, 5).map((img, idx) => (
+                  <Box
+                    key={img.id}
+                    flexShrink={0}
+                    w="60px"
+                    h="60px"
+                    borderRadius="md"
+                    overflow="hidden"
+                    cursor="pointer"
+                    onClick={handleOpenGallery}
+                  >
+                    <Image
+                      src={img.url}
+                      alt={img.alt || ''}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  </Box>
+                ))}
+                {images.length > 5 && (
+                  <Box
+                    flexShrink={0}
+                    w="60px"
+                    h="60px"
+                    borderRadius="md"
+                    bg="blackAlpha.700"
+                    color="white"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    fontSize="sm"
+                    cursor="pointer"
+                    onClick={handleOpenGallery}
+                  >
+                    +{images.length - 5}
+                  </Box>
+                )}
+              </Flex>
+            )}
+
+            {/* Контент */}
             <Box
-              w="300px"
+              bg="white"
+              p={{ base: 4, md: 6 }}
+              borderRadius="lg"
+              boxShadow="sm"
+              mb={4}
+            >
+              <div
+                style={{
+                  fontSize: isMobile ? '16px' : '18px',
+                  lineHeight: '1.7',
+                  color: '#2D3748',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                }}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
+            </Box>
+
+            {/* Теги */}
+            {tags.length > 0 && (
+              <Box mb={4}>
+                <Text fontWeight="bold" mb={2} fontSize="sm">
+                  Теги:
+                </Text>
+                <Flex wrap="wrap" gap={2}>
+                  {tags.map((tag, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/news?tag=${tag}`}
+                      _hover={{ textDecoration: 'none' }}
+                    >
+                      <Badge
+                        colorPalette="gray"
+                        px={3}
+                        py={1}
+                        borderRadius="full"
+                        fontSize="xs"
+                      >
+                        #{tag}
+                      </Badge>
+                    </Link>
+                  ))}
+                </Flex>
+              </Box>
+            )}
+          </GridItem>
+
+          {/* Правая колонка - боковая панель для десктопа */}
+          <GridItem display={{ base: 'none', md: 'block' }}>
+            <Box
               position="sticky"
               top="20px"
               bg="white"
@@ -471,7 +438,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   <Button
                     size="sm"
                     colorScheme="blue"
-                    as="a"
                     onClick={() => {
                       router.push('/allnews');
                     }}
@@ -524,8 +490,50 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 </Box>
               </VStack>
             </Box>
-          </Flex>
+          </GridItem>
+        </Grid>
+
+        {/* Нижняя панель для мобильных */}
+        {isMobile && (
+          <Box
+            position="fixed"
+            bottom={0}
+            left={0}
+            right={0}
+            bg="white"
+            borderTop="1px solid"
+            borderColor="gray.200"
+            p={3}
+            zIndex={10}
+          >
+            <HStack>
+              {images.length > 0 && (
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  variant="outline"
+                  onClick={handleOpenGallery}
+                  flex={1}
+                >
+                  Фото ({images.length})
+                </Button>
+              )}
+              <Button
+                size="sm"
+                colorScheme="blue"
+                onClick={() => {
+                  router.push('/allnews');
+                }}
+                flex={1}
+              >
+                Все новости
+              </Button>
+            </HStack>
+          </Box>
         )}
+
+        {/* Отступ для мобильной версии, чтобы контент не перекрывался нижней панелью */}
+        {isMobile && <Box height="70px" />}
       </Box>
     </>
   );
