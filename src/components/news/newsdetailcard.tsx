@@ -213,7 +213,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
       )}
 
       {/* Основной контент */}
-      <Box maxW="1200px" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
+      <Box w="100%" px={{ base: 2, sm: 4, md: 6 }}>
         {/* Кнопка назад */}
         <Button
           variant="ghost"
@@ -223,18 +223,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
         >
           Назад
         </Button>
-
-        {/* Категория */}
-        <Badge
-          colorPalette="blue"
-          fontSize={{ base: 'xs', md: 'sm' }}
-          px={3}
-          py={1}
-          borderRadius="full"
-          mb={2}
-        >
-          {category}
-        </Badge>
 
         {/* Заголовок */}
         <Heading
