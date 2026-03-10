@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Создание администратора...');
 
-  const adminUsername = 'admin@ckdparus.ru';
-  const adminPassword = '5HTm3w8qa2fQ'; // Поменяйте на свой пароль
+  const adminUsername = 'daryvolro';
+  const adminPassword = 'dasha1198'; // Поменяйте на свой пароль
 
   // Проверяем, существует ли уже администратор
   const existingAdmin = await prisma.admin.findUnique({

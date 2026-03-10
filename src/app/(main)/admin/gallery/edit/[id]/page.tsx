@@ -260,7 +260,7 @@ export default function EditGalleryPage() {
       } catch (error) {
         console.error('Error fetching gallery:', error);
         alert('Ошибка при загрузке данных галереи');
-        router.push('/admin/galleries');
+        router.push('/gallery');
       } finally {
         setIsLoading(false);
       }
