@@ -415,46 +415,41 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
 
         {/* Нижняя панель для мобильных */}
         {isMobile ? (
-          // <Box
-          //   position="sticky"
-          //   bottom={0}
-          //   left={0}
-          //   right={0}
-          //   bg="white"
-          //   borderTop="1px solid"
-          //   borderColor="gray.200"
-          //   p={3}
-          //   zIndex={10}
-          // >
-          //   <HStack>
-          //     {images.length > 0 && (
-          //       <Button
-          //         size="sm"
-          //         colorScheme="blue"
-          //         variant="outline"
-          //         onClick={handleOpenGallery}
-          //         flex={1}
-          //       >
-          //         Фото ({images.length})
-          //       </Button>
-          //     )}
-          //     <Button size="sm" colorScheme="blue" flex={1}>
-          //       Поделиться
-          //     </Button>
-          //     <Button
-          //       size="sm"
-          //       colorScheme="blue"
-          //       as="a"
-          //       onClick={() => {
-          //         router.push('/allnews');
-          //       }}
-          //       flex={1}
-          //     >
-          //       Все новости
-          //     </Button>
-          //   </HStack>
-          // </Box>
-          <></>
+          <Box
+            bottom={0}
+            left={0}
+            right={0}
+            bg="white"
+            borderTop="1px solid"
+            borderColor="gray.200"
+            p={3}
+            zIndex={10}
+          >
+            <HStack>
+              {images.length > 0 && (
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  variant="outline"
+                  onClick={handleOpenGallery}
+                  flex={1}
+                >
+                  Фото ({images.length})
+                </Button>
+              )}
+              <Button
+                size="sm"
+                colorScheme="blue"
+                as="a"
+                onClick={() => {
+                  router.push('/allnews');
+                }}
+                flex={1}
+              >
+                Все новости
+              </Button>
+            </HStack>
+          </Box>
         ) : (
           /* Десктопная боковая панель */
           <Flex justify="space-between" align="start" gap={6}>
