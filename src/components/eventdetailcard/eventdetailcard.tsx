@@ -308,13 +308,13 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
               {/* Основное изображение с возможностью увеличения */}
               <Box
-                borderRadius="xl"
-                overflow="hidden"
-                boxShadow="xl"
-                position="relative"
+                // borderRadius="xl"
+                // overflow="hidden"
+                // boxShadow="xl"
+                // position="relative"
                 cursor="pointer"
                 onClick={openImageDialog}
-                role="group"
+                // role="group"
               >
                 <Image
                   src={imageSrc}
