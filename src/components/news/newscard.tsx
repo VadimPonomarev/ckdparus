@@ -60,7 +60,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
   // Определяем изображение
   const imageSrc = imageUrl || '/images/HeaderPicture.jpg';
 
-  // Обрезаем текст для превью
+  // Обрезаем текст для превью с фиксированной длиной
   const previewText = excerpt || content.substring(0, 150) + '...';
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -113,11 +113,11 @@ const NewsCard: React.FC<NewsCardProps> = ({
           transition: 'all 0.3s ease-in-out',
         }}
         transition="all 0.3s ease"
-        h="100%"
+        h="450px"
         position="relative"
         opacity={isPublished ? 1 : 0.7}
       >
-        <Stack w="100%" h="100%">
+        <Stack w="100%" h="100%" overflow="hidden">
           {/* Статус публикации */}
           {!isPublished && (
             <Badge
@@ -132,8 +132,19 @@ const NewsCard: React.FC<NewsCardProps> = ({
             </Badge>
           )}
 
-          {/* Заголовок */}
-          <Text fontSize="xl" fontWeight="bold" lineHeight="tight" minH="56px">
+          {/* Заголовок с ограничением в 2 строки */}
+          <Text
+            fontSize="xl"
+            fontWeight="bold"
+            lineHeight="tight"
+            css={{
+              display: '-webkit-box',
+              WebkitLineClamp: '2',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              minHeight: '56px',
+            }}
+          >
             {title}
           </Text>
 
@@ -145,41 +156,61 @@ const NewsCard: React.FC<NewsCardProps> = ({
               display="flex"
               alignItems="center"
               gap={1}
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
             >
               📅 {formattedDate} в {formattedTime}
             </Text>
-            <Text fontSize="xs" color="gray.500">
+            <Text
+              fontSize="xs"
+              color="gray.500"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               👁 {views} просмотров
             </Text>
           </Box>
 
-          {/* Изображение */}
+          {/* Изображение фиксированной высоты */}
           <Center>
             <Image
               src={imageSrc}
               alt={alt || title}
               w="100%"
-              h="180px"
+              h="140px"
               objectFit="cover"
               borderRadius="md"
               loading="lazy"
             />
           </Center>
 
-          {/* Краткое описание */}
-          <Text fontSize="sm" color="gray.700" textAlign="justify" flex="1">
+          {/* Краткое описание с ограничением в 4 строки */}
+          <Text
+            fontSize="sm"
+            color="gray.700"
+            textAlign="justify"
+            css={{
+              display: '-webkit-box',
+              WebkitLineClamp: '4',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              flex: '1',
+            }}
+          >
             {previewText}
           </Text>
 
           {/* Кнопки действий для администратора */}
           {isAuthenticated && (
-            <HStack
-              gap={2}
-              mt={2}
-              pt={2}
-              borderTop="1px solid"
-              borderColor="gray.200"
-            >
+            <HStack gap={2} pt={2} borderTop="1px solid" borderColor="gray.200">
               <Button
                 size="sm"
                 colorScheme="blue"
@@ -187,6 +218,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
                 onClick={handleEdit}
                 flex={1}
               >
+                <FiEdit2 style={{ marginRight: '4px' }} />
                 Редактировать
               </Button>
               <Button
@@ -196,6 +228,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
                 onClick={() => setIsDeleteDialogOpen(true)}
                 flex={1}
               >
+                <FiTrash2 style={{ marginRight: '4px' }} />
                 Удалить
               </Button>
             </HStack>
@@ -214,7 +247,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
             }}
             alignSelf="flex-start"
             mt="auto"
-            pt={2}
+            pt={1}
           >
             {linkText} →
           </Link>
@@ -263,6 +296,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
               <Button
                 colorScheme="red"
                 onClick={handleDelete}
+                loading={isDeleting}
                 loadingText="Удаление..."
               >
                 Удалить
