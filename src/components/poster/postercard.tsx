@@ -34,7 +34,7 @@ interface PosterCardProps {
 }
 
 // Функция для получения цветовой схемы по категории
-const getCategoryColorScheme = (category: string): string => {
+const getCategoryColor = (category: string): string => {
   const categoryMap: Record<string, string> = {
     концерт: 'teal.500',
     выставка: 'green.500',
@@ -46,7 +46,7 @@ const getCategoryColorScheme = (category: string): string => {
     другое: 'cyan.500',
   };
 
-  return categoryMap[category.toLowerCase()] || 'gray';
+  return categoryMap[category.toLowerCase()] || 'gray.500';
 };
 
 // Функция для получения русского названия категории
@@ -126,6 +126,12 @@ const PosterCard: React.FC<PosterCardProps> = ({
     }
   };
 
+  // Сокращаем название локации для отображения
+  const displayLocation =
+    location === 'Калининградская область, г. Советск, ул. Победы 34 а'
+      ? 'ЦКД Парус'
+      : location;
+
   return (
     <>
       <Center
@@ -141,29 +147,46 @@ const PosterCard: React.FC<PosterCardProps> = ({
           transition: 'all 0.3s ease-in-out',
         }}
         transition="all 0.3s ease"
-        h="100%"
+        h="500px" // Фиксированная высота
         position="relative"
       >
-        <Stack w="100%" h="100%">
+        <Stack w="100%" h="100%" overflow="hidden">
           {/* Категория */}
           {category && (
             <Badge
-              colorScheme={getCategoryColorScheme(category)}
+              bgColor={getCategoryColor(category)}
               alignSelf="flex-start"
               borderRadius="full"
               px={3}
               py={1}
               textTransform="capitalize"
               fontSize="sm"
-              bgColor={getCategoryColorScheme(category)}
-              color="blackAlpha.800"
+              color="white"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                maxWidth: '100%',
+              }}
             >
               {getCategoryLabel(category)}
             </Badge>
           )}
 
-          {/* Заголовок */}
-          <Text fontSize="xl" fontWeight="bold" lineHeight="tight" minH="56px">
+          {/* Заголовок с ограничением в 2 строки */}
+          <Text
+            fontSize="xl"
+            fontWeight="bold"
+            lineHeight="tight"
+            css={{
+              display: '-webkit-box',
+              WebkitLineClamp: '2',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              minHeight: '56px',
+            }}
+          >
             {title}
           </Text>
 
@@ -174,6 +197,12 @@ const PosterCard: React.FC<PosterCardProps> = ({
               color="gray.600"
               display="flex"
               alignItems="center"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
             >
               📅 {formattedDate}
             </Text>
@@ -182,19 +211,25 @@ const PosterCard: React.FC<PosterCardProps> = ({
               color="gray.600"
               display="flex"
               alignItems="center"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
             >
               🕒 {formattedTime}
             </Text>
           </Box>
 
-          {/* Изображение */}
+          {/* Изображение фиксированной высоты */}
           <Center>
             <Image
               src={imageSrc}
               alt={alt}
               w="100%"
-              h="180px"
-              objectFit="contain"
+              h="160px" // Фиксированная высота изображения
+              objectFit="cover" // Изменено с contain на cover для единообразия
               borderRadius="md"
               loading="lazy"
             />
@@ -207,38 +242,55 @@ const PosterCard: React.FC<PosterCardProps> = ({
               color="gray.600"
               display="flex"
               alignItems="center"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
             >
-              📍{' '}
-              {location ===
-              'Калининградская область, г. Советск, ул. Победы 34 а'
-                ? 'ЦКД Парус'
-                : location}
+              📍 {displayLocation}
             </Text>
           )}
 
-          {/* Краткое описание */}
+          {/* Краткое описание с ограничением в 3 строки */}
           {briefdescription && (
-            <Text fontSize="sm" color="gray.700" textAlign="justify" flex="1">
+            <Text
+              fontSize="sm"
+              color="gray.700"
+              textAlign="justify"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '3',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                flex: '1',
+              }}
+            >
               {briefdescription}
             </Text>
           )}
 
           {/* Цена */}
           {price !== undefined && (
-            <Text fontSize="lg" color="green.600" fontWeight="bold">
+            <Text
+              fontSize="lg"
+              color="green.600"
+              fontWeight="bold"
+              css={{
+                display: '-webkit-box',
+                WebkitLineClamp: '1',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               {price === 0 ? 'Бесплатно' : `${price} ₽`}
             </Text>
           )}
 
-          {/* Кнопки действий для администратора - отдельно в конце */}
+          {/* Кнопки действий для администратора */}
           {isAuthenticated && (
-            <HStack
-              gap={2}
-              mt={2}
-              pt={2}
-              borderTop="1px solid"
-              borderColor="gray.200"
-            >
+            <HStack gap={2} pt={2} borderTop="1px solid" borderColor="gray.200">
               <Button
                 size="sm"
                 colorScheme="blue"
@@ -273,7 +325,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
             }}
             alignSelf="flex-start"
             mt="auto"
-            pt={2}
+            pt={1}
           >
             {linkText} →
           </Link>
@@ -315,10 +367,16 @@ const PosterCard: React.FC<PosterCardProps> = ({
               <Button
                 variant="outline"
                 onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isDeleting}
               >
                 Отмена
               </Button>
-              <Button colorScheme="red" onClick={handleDelete}>
+              <Button
+                colorScheme="red"
+                onClick={handleDelete}
+                loading={isDeleting}
+                loadingText="Удаление..."
+              >
                 Удалить
               </Button>
             </HStack>
