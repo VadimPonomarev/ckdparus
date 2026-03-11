@@ -322,10 +322,10 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                   w="100%"
                   h={{ base: '300px', md: '500px' }}
                   objectFit="contain"
-                  loading="eager"
+                  // loading="eager"
                   transition="transform 0.3s"
                   _groupHover={{ transform: 'scale(1.02)' }}
-                  bg="gray.50"
+                  // bg="gray.50"
                 />
 
                 {/* Индикатор увеличения при наведении */}
