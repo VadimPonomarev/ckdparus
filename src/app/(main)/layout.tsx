@@ -70,7 +70,6 @@ export default function MainLayout({
           </Box>
           <Footer />
 
-          {/* Панель для слабовидящих */}
           <AccessibilityPanel />
         </Box>
       </AccessibilityProvider>

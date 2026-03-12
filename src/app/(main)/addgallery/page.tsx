@@ -454,15 +454,12 @@ export default function AddGalleryPage() {
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Fieldset.Root>
                   <Stack gap="6">
-                    {/* Основная информация */}
                     <Grid
                       templateColumns={{ base: '1fr', lg: '2fr 1fr' }}
                       gap={6}
                     >
-                      {/* Левая колонка - текст */}
                       <GridItem>
                         <Stack gap="5">
-                          {/* Название галереи */}
                           <Field.Root invalid={!!errors.title}>
                             <Field.Label>Название галереи</Field.Label>
                             <Controller
@@ -486,7 +483,6 @@ export default function AddGalleryPage() {
                             )}
                           </Field.Root>
 
-                          {/* Описание */}
                           <Field.Root invalid={!!errors.description}>
                             <Field.Label>Описание</Field.Label>
                             <Controller
@@ -514,7 +510,6 @@ export default function AddGalleryPage() {
                             )}
                           </Field.Root>
 
-                          {/* URL (slug) */}
                           <Field.Root invalid={!!errors.slug}>
                             <Field.Label>URL адрес</Field.Label>
                             <HStack>
@@ -557,7 +552,6 @@ export default function AddGalleryPage() {
                         </Stack>
                       </GridItem>
 
-                      {/* Правая колонка - информация */}
                       <GridItem>
                         <Card.Root variant="outline">
                           <Card.Body>
@@ -588,7 +582,6 @@ export default function AddGalleryPage() {
                       </GridItem>
                     </Grid>
 
-                    {/* Блок загрузки изображений */}
                     <Card.Root variant="outline" mt={4}>
                       <Card.Body>
                         <Stack gap="6">
@@ -618,7 +611,6 @@ export default function AddGalleryPage() {
                             )}
                           </Flex>
 
-                          {/* Скрытый input для выбора файлов */}
                           <input
                             ref={fileInputRef}
                             type="file"
@@ -628,7 +620,6 @@ export default function AddGalleryPage() {
                             style={{ display: 'none' }}
                           />
 
-                          {/* Зона загрузки */}
                           <Box
                             borderWidth={2}
                             borderStyle="dashed"
@@ -669,7 +660,6 @@ export default function AddGalleryPage() {
                             </VStack>
                           </Box>
 
-                          {/* Ошибки загрузки */}
                           {uploadError && (
                             <Alert.Root status="error" mt={4}>
                               <Alert.Indicator />
@@ -677,7 +667,6 @@ export default function AddGalleryPage() {
                             </Alert.Root>
                           )}
 
-                          {/* Список загруженных изображений */}
                           {images.length > 0 && (
                             <VStack gap="4" align="stretch" mt={4}>
                               <Text fontWeight="medium" fontSize="sm">
@@ -696,7 +685,6 @@ export default function AddGalleryPage() {
                                       gap={4}
                                       alignItems="center"
                                     >
-                                      {/* Превью */}
                                       <Box
                                         position="relative"
                                         w="100px"
@@ -734,7 +722,6 @@ export default function AddGalleryPage() {
                                         )}
                                       </Box>
 
-                                      {/* Информация */}
                                       <Stack gap="2">
                                         <Input
                                           placeholder="Alt текст (для SEO)"
@@ -760,7 +747,6 @@ export default function AddGalleryPage() {
                                         />
                                       </Stack>
 
-                                      {/* Действия */}
                                       <HStack gap="1">
                                         <IconButton
                                           aria-label="Сделать обложкой"
@@ -845,7 +831,6 @@ export default function AddGalleryPage() {
                       </Card.Body>
                     </Card.Root>
 
-                    {/* Кнопки */}
                     <Card.Footer justifyContent="flex-end" gap="3">
                       <Button
                         type="button"

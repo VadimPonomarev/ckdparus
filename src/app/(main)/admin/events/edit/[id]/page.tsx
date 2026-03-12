@@ -309,10 +309,8 @@ export default function EditEventPage() {
                 <Fieldset.Root>
                   <Stack gap="6">
                     <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
-                      {/* Левая колонка - те же поля что и в AddEventPage */}
                       <Box flex="2">
                         <Fieldset.Content>
-                          {/* Все поля формы такие же как в AddEventPage */}
                           <Field.Root invalid={!!errors.title}>
                             <Field.Label>Название события</Field.Label>
                             <Controller
@@ -457,14 +455,11 @@ export default function EditEventPage() {
                         </Fieldset.Content>
                       </Box>
 
-                      {/* Правая колонка */}
                       <Box flex="1">
                         <Fieldset.Content>
-                          {/* Загрузка изображения */}
                           <Field.Root>
                             <Field.Label>Изображение события</Field.Label>
                             <VStack gap="4" align="stretch">
-                              {/* Текущее изображение */}
                               {currentImageUrl && !acceptedFile && (
                                 <Box>
                                   <Text
@@ -599,7 +594,6 @@ export default function EditEventPage() {
                             </Field.HelperText>
                           </Field.Root>
 
-                          {/* Цена */}
                           <Field.Root invalid={!!errors.price}>
                             <Field.Label>Цена (₽)</Field.Label>
                             <Controller
@@ -631,7 +625,6 @@ export default function EditEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Категория */}
                           <Field.Root invalid={!!errors.category}>
                             <Field.Label>Категория</Field.Label>
                             <Controller
@@ -685,7 +678,6 @@ export default function EditEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* URL для продажи билетов */}
                           <Field.Root invalid={!!errors.payUrl}>
                             <Field.Label>
                               URL для покупке на Пирамиде
@@ -711,7 +703,6 @@ export default function EditEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Чекбоксы */}
                           <Stack gap="4">
                             <Controller
                               name="isFeatured"
@@ -760,7 +751,6 @@ export default function EditEventPage() {
                             </Box>
                           </Stack>
 
-                          {/* Предпросмотр даты */}
                           <Card.Root variant="outline" mt="4">
                             <Card.Body>
                               <Heading size="sm" mb="3">
@@ -790,7 +780,6 @@ export default function EditEventPage() {
                       </Box>
                     </Stack>
 
-                    {/* Кнопки */}
                     <Card.Footer justifyContent="flex-end" gap="3">
                       <Button
                         type="button"

@@ -347,15 +347,12 @@ export default function AddNewsPage() {
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Fieldset.Root>
                   <Stack gap="6">
-                    {/* Основная информация */}
                     <Grid
                       templateColumns={{ base: '1fr', lg: '2fr 1fr' }}
                       gap={6}
                     >
-                      {/* Левая колонка - текст */}
                       <GridItem>
                         <Stack gap="5">
-                          {/* Заголовок */}
                           <Field.Root invalid={!!errors.title}>
                             <Field.Label>Заголовок новости</Field.Label>
                             <Controller
@@ -379,7 +376,6 @@ export default function AddNewsPage() {
                             )}
                           </Field.Root>
 
-                          {/* Краткое описание */}
                           <Field.Root invalid={!!errors.excerpt}>
                             <Field.Label>Краткое описание (анонс)</Field.Label>
                             <Controller
@@ -407,7 +403,6 @@ export default function AddNewsPage() {
                             )}
                           </Field.Root>
 
-                          {/* Полное содержание */}
                           <Field.Root invalid={!!errors.content}>
                             <Field.Label>Содержание новости</Field.Label>
                             <Controller
@@ -437,14 +432,12 @@ export default function AddNewsPage() {
                         </Stack>
                       </GridItem>
 
-                      {/* Правая колонка - настройки */}
                       <GridItem>
                         <Card.Root variant="outline">
                           <Card.Body>
                             <Stack gap="4">
                               <Heading size="sm">Настройки публикации</Heading>
 
-                              {/* Статус публикации */}
                               <Controller
                                 name="isPublished"
                                 control={control}
@@ -483,7 +476,6 @@ export default function AddNewsPage() {
                       </GridItem>
                     </Grid>
 
-                    {/* Блок загрузки изображений */}
                     <Card.Root variant="outline" mt={4}>
                       <Card.Body>
                         <Stack gap="6">
@@ -513,7 +505,6 @@ export default function AddNewsPage() {
                             )}
                           </Flex>
 
-                          {/* Скрытый input для выбора файлов */}
                           <input
                             ref={fileInputRef}
                             type="file"
@@ -523,7 +514,6 @@ export default function AddNewsPage() {
                             style={{ display: 'none' }}
                           />
 
-                          {/* Зона загрузки */}
                           <Box
                             borderWidth={2}
                             borderStyle="dashed"
@@ -564,7 +554,6 @@ export default function AddNewsPage() {
                             </VStack>
                           </Box>
 
-                          {/* Ошибки загрузки */}
                           {uploadError && (
                             <Alert.Root status="error" mt={4}>
                               <Alert.Indicator />
@@ -572,7 +561,6 @@ export default function AddNewsPage() {
                             </Alert.Root>
                           )}
 
-                          {/* Список загруженных изображений */}
                           {images.length > 0 && (
                             <VStack gap="4" align="stretch" mt={4}>
                               <Text fontWeight="medium" fontSize="sm">
@@ -591,7 +579,6 @@ export default function AddNewsPage() {
                                       gap={4}
                                       alignItems="center"
                                     >
-                                      {/* Превью */}
                                       <Box
                                         position="relative"
                                         w="100px"
@@ -629,7 +616,6 @@ export default function AddNewsPage() {
                                         )}
                                       </Box>
 
-                                      {/* Информация */}
                                       <Stack gap="2">
                                         <Input
                                           placeholder="Alt текст (для SEO)"
@@ -655,7 +641,6 @@ export default function AddNewsPage() {
                                         />
                                       </Stack>
 
-                                      {/* Действия */}
                                       <HStack gap="1">
                                         <IconButton
                                           aria-label="Сделать обложкой"
@@ -740,7 +725,6 @@ export default function AddNewsPage() {
                       </Card.Body>
                     </Card.Root>
 
-                    {/* Кнопки */}
                     <Card.Footer justifyContent="flex-end" gap="3">
                       <Button
                         type="button"

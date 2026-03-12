@@ -232,12 +232,9 @@ export default function AddEventPage() {
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Fieldset.Root>
                   <Stack gap="6">
-                    {/* Основная информация */}
                     <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
-                      {/* Левая колонка */}
                       <Box flex="2">
                         <Fieldset.Content>
-                          {/* Название */}
                           <Field.Root invalid={!!errors.title}>
                             <Field.Label>Название события</Field.Label>
                             <Controller
@@ -261,7 +258,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Краткое описание */}
                           <Field.Root invalid={!!errors.briefdescription}>
                             <Field.Label>Краткое описание</Field.Label>
                             <Controller
@@ -286,7 +282,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Полное описание */}
                           <Field.Root invalid={!!errors.fulldescription}>
                             <Field.Label>
                               Полное описание (необязательно)
@@ -313,7 +308,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Дата и время */}
                           <HStack gap="4">
                             <Field.Root flex="2" invalid={!!errors.date}>
                               <Field.Label>Дата</Field.Label>
@@ -363,7 +357,6 @@ export default function AddEventPage() {
                             </Field.Root>
                           </HStack>
 
-                          {/* Место проведения */}
                           <Field.Root invalid={!!errors.location}>
                             <Field.Label>Место проведения</Field.Label>
                             <Controller
@@ -389,10 +382,8 @@ export default function AddEventPage() {
                         </Fieldset.Content>
                       </Box>
 
-                      {/* Правая колонка */}
                       <Box flex="1">
                         <Fieldset.Content>
-                          {/* Загрузка изображения */}
                           <Field.Root>
                             <Field.Label>Изображение события</Field.Label>
                             <VStack gap="4" align="stretch">
@@ -528,7 +519,6 @@ export default function AddEventPage() {
                             </Field.HelperText>
                           </Field.Root>
 
-                          {/* Цена */}
                           <Field.Root invalid={!!errors.price}>
                             <Field.Label>Цена (₽)</Field.Label>
                             <Controller
@@ -560,7 +550,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Категория */}
                           <Field.Root invalid={!!errors.category}>
                             <Field.Label>Категория</Field.Label>
                             <Controller
@@ -614,7 +603,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* URL для продажи билетов */}
                           <Field.Root invalid={!!errors.payUrl}>
                             <Field.Label>
                               URL для покупке на Пирамиде
@@ -640,7 +628,6 @@ export default function AddEventPage() {
                             )}
                           </Field.Root>
 
-                          {/* Чекбоксы */}
                           <Stack gap="4">
                             <Controller
                               name="isFeatured"
@@ -689,7 +676,6 @@ export default function AddEventPage() {
                             </Box>
                           </Stack>
 
-                          {/* Предпросмотр даты */}
                           <Card.Root variant="outline" mt="4">
                             <Card.Body>
                               <Heading size="sm" mb="3">
@@ -719,7 +705,6 @@ export default function AddEventPage() {
                       </Box>
                     </Stack>
 
-                    {/* Кнопки */}
                     <Card.Footer justifyContent="flex-end" gap="3">
                       <Button
                         type="button"
