@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Provider } from '@/components/ui/provider';
 import './globals.css';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        <script
+        <Script
           async
           src="https://culturaltracking.ru/static/js/spxl.js?pixelId=34857"
           data-pixel-id="34857"

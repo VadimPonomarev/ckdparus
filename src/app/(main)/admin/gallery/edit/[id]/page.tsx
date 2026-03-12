@@ -462,7 +462,7 @@ export default function EditGalleryPage() {
       }
 
       alert('Галерея успешно удалена');
-      router.push('/admin/galleries');
+      router.push('/gallery');
     } catch (error) {
       console.error('Error deleting gallery:', error);
       alert(
@@ -584,7 +584,7 @@ export default function EditGalleryPage() {
       });
 
       alert('Галерея успешно обновлена!');
-      router.push('/admin/galleries');
+      router.push('/gallery');
     } catch (error) {
       console.error('Error updating gallery:', error);
       alert(
@@ -1028,7 +1028,7 @@ export default function EditGalleryPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push('/admin/galleries')}
+                        onClick={() => router.push('/gallery')}
                         px={5}
                       >
                         Отмена
