@@ -46,21 +46,49 @@ export async function PUT(
     const { id } = await context.params;
     const body = await request.json();
 
-    // Обновляем галерею
-    const updatedGallery = await prisma.gallery.update({
-      where: { id },
-      data: {
-        title: body.title,
-        description: body.description,
-        slug: body.slug,
-        coverImage: body.coverImage || null,
-      },
-      include: {
-        images: true,
-      },
+    // Обновляем галерею в транзакции
+    const result = await prisma.$transaction(async prisma => {
+      // 1. Обновляем основную информацию галереи
+      const updatedGallery = await prisma.gallery.update({
+        where: { id },
+        data: {
+          title: body.title,
+          description: body.description,
+          slug: body.slug,
+          coverImage: body.coverImage,
+        },
+      });
+
+      // 2. Удаляем все существующие изображения галереи
+      await prisma.galleryImage.deleteMany({
+        where: { galleryId: id },
+      });
+
+      // 3. Создаем все изображения заново (и старые, и новые)
+      if (body.images && body.images.length > 0) {
+        await prisma.galleryImage.createMany({
+          data: body.images.map((img: any, index: number) => ({
+            galleryId: id,
+            url: img.url,
+            alt: img.alt || null,
+            caption: img.caption || null,
+            order: img.order !== undefined ? img.order : index,
+          })),
+        });
+      }
+
+      // 4. Возвращаем обновленную галерею с изображениями
+      return await prisma.gallery.findUnique({
+        where: { id },
+        include: {
+          images: {
+            orderBy: { order: 'asc' },
+          },
+        },
+      });
     });
 
-    return NextResponse.json(updatedGallery);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error updating gallery:', error);
     return NextResponse.json(
@@ -78,6 +106,7 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
+    // Удаляем галерею (изображения удалятся каскадно благодаря связям в БД)
     await prisma.gallery.delete({
       where: { id },
     });
