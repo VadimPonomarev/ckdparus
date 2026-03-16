@@ -488,16 +488,7 @@ export default function EditGalleryPage() {
       }
 
       // Загружаем новые изображения на сервер
-      const uploadedImages: {
-        id?: string; // для существующих
-        url: string;
-        alt: string;
-        caption: string;
-        order: number;
-        isNew?: boolean;
-      }[] = [];
-
-      let coverImageUrl = null;
+      const uploadedImages = [];
 
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
@@ -526,29 +517,24 @@ export default function EditGalleryPage() {
             url: uploadData.url,
             alt: img.alt || `Изображение ${i + 1} из галереи "${data.title}"`,
             caption: img.caption,
-            order: i,
-            isNew: true,
+            order: i, // Используем текущий индекс как порядковый номер
           });
         } else {
           // Существующее изображение
           uploadedImages.push({
-            id: img.id,
-            url: img.url,
+            url: img.url, // URL уже есть
             alt: img.alt || `Изображение ${i + 1} из галереи "${data.title}"`,
             caption: img.caption,
-            order: i,
-            isNew: false,
+            order: i, // Новый порядок после перемещений
           });
-        }
-
-        // Если это обложка, сохраняем URL
-        if (i === coverImageIndex) {
-          coverImageUrl = uploadedImages[i].url;
         }
       }
 
-      // Если не выбрана обложка, используем первое изображение
-      if (coverImageIndex === -1 && uploadedImages.length > 0) {
+      // Находим URL обложки
+      let coverImageUrl = null;
+      if (coverImageIndex !== -1 && uploadedImages[coverImageIndex]) {
+        coverImageUrl = uploadedImages[coverImageIndex].url;
+      } else if (uploadedImages.length > 0) {
         coverImageUrl = uploadedImages[0].url;
       }
 
@@ -560,7 +546,7 @@ export default function EditGalleryPage() {
         description: data.description || null,
         slug: finalSlug,
         coverImage: coverImageUrl,
-        images: uploadedImages,
+        images: uploadedImages, // Отправляем все изображения с правильным порядком
       };
 
       const response = await fetch(`/api/galleries/${galleryId}`, {
