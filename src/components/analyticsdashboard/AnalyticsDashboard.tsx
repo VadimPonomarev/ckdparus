@@ -163,7 +163,7 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
     return (
       <Box minH="100vh" bg="gray.50">
         <Container maxW="container.xl" py={8}>
-          <Center minH="400px">
+          <Center minH="400p">
             <VStack gap="4">
               <Spinner size="xl" color="blue.500" />
               <Text color="gray.600">Загрузка данных...</Text>
@@ -179,9 +179,9 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
     return (
       <Box minH="100vh" bg="gray.50">
         <Container maxW="container.xl" py={8}>
-          <Center minH="400px">
+          <Center minH="400p">
             <VStack gap="4">
-              <Alert.Root status="error" maxW="500px" borderRadius="lg">
+              <Alert.Root status="error" maxW="500p" borderRadius="lg">
                 <Alert.Indicator />
                 <Alert.Title>{error}</Alert.Title>
               </Alert.Root>
@@ -200,12 +200,11 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
   }
 
   return (
-    <Box minH="100vh" px={10}>
+    <Box minH="100vh" p={10}>
       {/* Шапка */}
       <Box
         as="header"
-        bg="white"
-        borderBottom="1px"
+        borderBottom="1p"
         borderColor="gray.200"
         py={6}
         position="sticky"
@@ -220,13 +219,13 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
 
             <Select.Root
               collection={periodCollection}
-              width="200px"
+              width="200p"
               value={[selectedPeriod]}
               onValueChange={e => setSelectedPeriod(e.value[0])}
             >
               <Select.HiddenSelect />
               <Select.Control>
-                <Select.Trigger bg="white">
+                <Select.Trigger>
                   <Select.ValueText placeholder="Выберите период" />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
@@ -251,7 +250,7 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
       </Box>
 
       {/* Основной контент */}
-      <Container maxW="container.xl" py={8} px={10}>
+      <Container maxW="container.xl" py={8} p={10}>
         <VStack align="stretch">
           {/* Карточки с метриками */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }}>
@@ -282,12 +281,12 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
           </SimpleGrid>
 
           {/* График посещаемости */}
-          <Card.Root variant="outline" bg="white">
+          <Card.Root variant="outline">
             <Card.Body>
               <Heading size="md" color="gray.900" mb={4}>
                 Посещаемость по дням
               </Heading>
-              <Box h="400px">
+              <Box h="400p">
                 {dailyStats.length > 0 ? (
                   <VisitsChart data={dailyStats} />
                 ) : (
@@ -361,7 +360,7 @@ function MetricCard({
   };
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Stat.Root>
           <Stat.Label color="gray.500" fontSize="sm">
@@ -394,7 +393,7 @@ function VisitsChart({ data }: { data: DailyStat[] }) {
               key={index}
               as="button"
               w="100%"
-              maxW="40px"
+              maxW="40p"
               mx={1}
               position="relative"
               _hover={{ opacity: 0.8 }}
@@ -404,7 +403,7 @@ function VisitsChart({ data }: { data: DailyStat[] }) {
                 h={`${height}%`}
                 bg="blue.500"
                 borderRadius="md"
-                minH="4px"
+                minH="4p"
                 transition="height 0.2s"
               />
             </Box>
@@ -417,7 +416,7 @@ function VisitsChart({ data }: { data: DailyStat[] }) {
 function TopPagesTable({ pages }: { pages: PageStat[] }) {
   if (!pages.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Популярные страницы
@@ -429,7 +428,7 @@ function TopPagesTable({ pages }: { pages: PageStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Популярные страницы
@@ -443,7 +442,7 @@ function TopPagesTable({ pages }: { pages: PageStat[] }) {
               <Text flex="1" fontSize="sm" fontWeight="medium" color="gray.700">
                 {page.page}
               </Text>
-              <Badge colorScheme="blue" borderRadius="full" px={2}>
+              <Badge colorScheme="blue" borderRadius="full" p={2}>
                 {page._count.id}
               </Badge>
             </Flex>
@@ -457,7 +456,7 @@ function TopPagesTable({ pages }: { pages: PageStat[] }) {
 function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
   if (!referrers.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Источники трафика
@@ -469,7 +468,7 @@ function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Источники трафика
@@ -498,7 +497,7 @@ function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
                 >
                   {source}
                 </Text>
-                <Badge colorScheme="green" borderRadius="full" px={2}>
+                <Badge colorScheme="green" borderRadius="full" p={2}>
                   {ref._count.id}
                 </Badge>
               </Flex>
@@ -513,7 +512,7 @@ function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
 function DeviceStats({ deviceStats }: { deviceStats: DeviceStat[] }) {
   if (!deviceStats.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Устройства
@@ -527,7 +526,7 @@ function DeviceStats({ deviceStats }: { deviceStats: DeviceStat[] }) {
   const total = deviceStats.reduce((acc, d) => acc + d._count.id, 0);
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Устройства
@@ -572,7 +571,7 @@ function BrowserStats({
 }) {
   if (!browserStats.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             {title}
@@ -586,7 +585,7 @@ function BrowserStats({
   const total = browserStats.reduce((acc, b) => acc + b._count.id, 0);
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           {title}
@@ -621,7 +620,7 @@ function BrowserStats({
 function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
   if (!countryStats.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Страны
@@ -633,7 +632,7 @@ function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Страны
@@ -647,7 +646,7 @@ function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
               <Text flex="1" fontSize="sm" fontWeight="medium" color="gray.700">
                 {country.country || 'Неизвестно'}
               </Text>
-              <Badge colorScheme="orange" borderRadius="full" px={2}>
+              <Badge colorScheme="orange" borderRadius="full" p={2}>
                 {country._count.id}
               </Badge>
             </Flex>
@@ -661,7 +660,7 @@ function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
 function RecentActivity({ activities }: { activities: RecentActivity[] }) {
   if (!activities.length) {
     return (
-      <Card.Root variant="outline" bg="white" px={10}>
+      <Card.Root variant="outline" p={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Последние активности
@@ -673,7 +672,7 @@ function RecentActivity({ activities }: { activities: RecentActivity[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white" px={10}>
+    <Card.Root variant="outline" p={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Последние активности
