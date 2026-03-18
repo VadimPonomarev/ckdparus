@@ -24,8 +24,8 @@ import {
 
 interface DailyStat {
   date: Date;
-  visits: bigint;
-  unique_visitors: bigint;
+  visits: number;
+  unique_visitors: number;
 }
 
 interface PageStat {

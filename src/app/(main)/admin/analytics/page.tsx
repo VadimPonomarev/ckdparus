@@ -1,161 +1,174 @@
-import { prisma } from '@/lib/prisma';
-import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+// app/admin/analytics/page.tsx
+'use client';
 
-// Простая проверка авторизации через переменную окружения
-async function checkAuth() {
-  // В реальном проекте здесь должна быть проверка сессии
-  // Например, через NextAuth.js или middleware
-  return true; // временно разрешаем всем
+import { useEffect, useState } from 'react';
+import AnalyticsDashboard from '@/components/analyticsdashboard/AnalyticsDashboard';
+import AuthGuard from '@/components/auth/AuthGuard';
+import {
+  Center,
+  Spinner,
+  VStack,
+  Text,
+  Alert,
+  Container,
+} from '@chakra-ui/react';
+
+// Интерфейсы для данных аналитики (экспортируем для переиспользования)
+export interface DailyStat {
+  date: Date;
+  visits: number;
+  unique_visitors: number;
 }
 
-export default async function AnalyticsPage() {
-  // Проверяем авторизацию
-  const isAuthorized = await checkAuth();
+export interface PageStat {
+  page: string;
+  _count: {
+    id: number;
+  };
+}
 
-  if (!isAuthorized) {
+export interface ReferrerStat {
+  referrer: string | null;
+  _count: {
+    id: number;
+  };
+}
+
+export interface DeviceStat {
+  deviceType: string | null;
+  _count: {
+    id: number;
+  };
+}
+
+export interface BrowserStat {
+  browser: string | null;
+  _count: {
+    id: number;
+  };
+}
+
+export interface CountryStat {
+  country: string | null;
+  _count: {
+    id: number;
+  };
+}
+
+export interface RecentActivity {
+  page: string;
+  country: string | null;
+  deviceType: string | null;
+  visitedAt: Date;
+}
+
+// Интерфейс для ответа от API
+interface AnalyticsData {
+  totalVisits: number;
+  totalUnique: number;
+  dailyStats: DailyStat[];
+  topPages: PageStat[];
+  topReferrers: ReferrerStat[];
+  deviceStats: DeviceStat[];
+  browserStats: BrowserStat[];
+  osStats: BrowserStat[];
+  countryStats: CountryStat[];
+  recentActivity: RecentActivity[];
+}
+
+export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/analytics?days=30');
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Не авторизован');
+          }
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Ошибка загрузки данных');
+        }
+
+        const analyticsData: AnalyticsData = await response.json();
+        setData(analyticsData);
+      } catch (err) {
+        console.error('Error fetching analytics:', err);
+        setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
+  if (isLoading) {
     return (
-      <div className="p-8 text-center">
-        <h1 className="text-2xl font-bold text-red-600">Доступ запрещен</h1>
-        <p className="mt-2">У вас нет прав для просмотра этой страницы</p>
-      </div>
+      <AuthGuard>
+        <Container maxW="container.xl" py={8}>
+          <Center minH="400px">
+            <VStack gap="4">
+              <Spinner size="xl" color="blue.500" />
+              <Text color="gray.600">Загрузка аналитики...</Text>
+            </VStack>
+          </Center>
+        </Container>
+      </AuthGuard>
     );
   }
 
-  // Получаем данные за последние 30 дней
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  if (error) {
+    return (
+      <AuthGuard>
+        <Container maxW="container.xl" py={8}>
+          <Center minH="400px">
+            <Alert.Root status="error" maxW="500px" borderRadius="lg">
+              <Alert.Indicator />
+              <Alert.Title>{error}</Alert.Title>
+            </Alert.Root>
+          </Center>
+        </Container>
+      </AuthGuard>
+    );
+  }
 
-  // Параллельные запросы для оптимизации
-  const [
-    totalStats,
-    dailyStats,
-    topPages,
-    topReferrers,
-    deviceStats,
-    browserStats,
-    osStats,
-    countryStats,
-    recentActivity,
-  ] = await Promise.all([
-    // Общая статистика
-    prisma.pageView.aggregate({
-      _count: {
-        id: true,
-        sessionId: true,
-      },
-      where: { visitedAt: { gte: thirtyDaysAgo } },
-    }),
-
-    // Статистика по дням
-    prisma.$queryRaw<
-      Array<{
-        date: Date;
-        visits: bigint;
-        unique_visitors: bigint;
-      }>
-    >`
-      SELECT 
-        DATE(visited_at) as date,
-        COUNT(*) as visits,
-        COUNT(DISTINCT session_id) as unique_visitors
-      FROM pageviews
-      WHERE visited_at >= ${thirtyDaysAgo}
-      GROUP BY DATE(visited_at)
-      ORDER BY date DESC
-    `,
-
-    // Топ страниц
-    prisma.pageView.groupBy({
-      by: ['page'],
-      _count: { id: true },
-      where: { visitedAt: { gte: thirtyDaysAgo } },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
-    }),
-
-    // Топ рефереров
-    prisma.pageView.groupBy({
-      by: ['referrer'],
-      _count: { id: true },
-      where: {
-        visitedAt: { gte: thirtyDaysAgo },
-        referrer: { not: null },
-      },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
-    }),
-
-    // Статистика по устройствам
-    prisma.pageView.groupBy({
-      by: ['deviceType'],
-      _count: { id: true },
-      where: {
-        visitedAt: { gte: thirtyDaysAgo },
-        deviceType: { not: null },
-      },
-    }),
-
-    // Статистика по браузерам
-    prisma.pageView.groupBy({
-      by: ['browser'],
-      _count: { id: true },
-      where: {
-        visitedAt: { gte: thirtyDaysAgo },
-        browser: { not: null },
-      },
-      orderBy: { _count: { id: 'desc' } },
-      take: 5,
-    }),
-
-    // Статистика по ОС
-    prisma.pageView.groupBy({
-      by: ['os'],
-      _count: { id: true },
-      where: {
-        visitedAt: { gte: thirtyDaysAgo },
-        os: { not: null },
-      },
-      orderBy: { _count: { id: 'desc' } },
-      take: 5,
-    }),
-
-    // Статистика по странам
-    prisma.pageView.groupBy({
-      by: ['country'],
-      _count: { id: true },
-      where: {
-        visitedAt: { gte: thirtyDaysAgo },
-        country: { not: null },
-      },
-      orderBy: { _count: { id: 'desc' } },
-      take: 5,
-    }),
-
-    // Последние активности
-    prisma.pageView.findMany({
-      take: 10,
-      orderBy: { visitedAt: 'desc' },
-      select: {
-        page: true,
-        country: true,
-        deviceType: true,
-        visitedAt: true,
-      },
-    }),
-  ]);
+  if (!data) {
+    return (
+      <AuthGuard>
+        <Container maxW="container.xl" py={8}>
+          <Center minH="400px">
+            <Alert.Root status="info" maxW="500px" borderRadius="lg">
+              <Alert.Indicator />
+              <Alert.Title>Данные не найдены</Alert.Title>
+            </Alert.Root>
+          </Center>
+        </Container>
+      </AuthGuard>
+    );
+  }
 
   return (
-    <AnalyticsDashboard
-      dailyStats={dailyStats}
-      topPages={topPages}
-      topReferrers={topReferrers}
-      deviceStats={deviceStats}
-      browserStats={browserStats}
-      osStats={osStats}
-      countryStats={countryStats}
-      recentActivity={recentActivity}
-      totalVisits={totalStats._count.id}
-      totalUnique={totalStats._count.sessionId}
-    />
+    <AuthGuard>
+      <AnalyticsDashboard
+        dailyStats={data.dailyStats}
+        topPages={data.topPages}
+        topReferrers={data.topReferrers}
+        deviceStats={data.deviceStats}
+        browserStats={data.browserStats}
+        osStats={data.osStats}
+        countryStats={data.countryStats}
+        recentActivity={data.recentActivity}
+        totalVisits={data.totalVisits}
+        totalUnique={data.totalUnique}
+      />
+    </AuthGuard>
   );
 }
