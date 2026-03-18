@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import { randomUUID } from 'crypto';
-import UAParser from 'ua-parser-js';
+import * as UAParser from 'ua-parser-js';
 
 // Функция для парсинга User-Agent
 function parseUserAgent(userAgent: string) {
