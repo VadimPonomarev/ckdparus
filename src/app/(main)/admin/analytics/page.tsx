@@ -11,6 +11,7 @@ import {
   Text,
   Alert,
   Container,
+  Button,
 } from '@chakra-ui/react';
 
 // Интерфейсы для данных аналитики (экспортируем для переиспользования)
@@ -110,9 +111,10 @@ export default function AnalyticsPage() {
     fetchAnalytics();
   }, []);
 
-  if (isLoading) {
-    return (
-      <AuthGuard>
+  // ВСЕГДА оборачиваем в AuthGuard, включая состояния загрузки и ошибки
+  return (
+    <AuthGuard>
+      {isLoading ? (
         <Container maxW="container.xl" py={8}>
           <Center minH="400px">
             <VStack gap="4">
@@ -121,28 +123,25 @@ export default function AnalyticsPage() {
             </VStack>
           </Center>
         </Container>
-      </AuthGuard>
-    );
-  }
-
-  if (error) {
-    return (
-      <AuthGuard>
+      ) : error ? (
         <Container maxW="container.xl" py={8}>
           <Center minH="400px">
-            <Alert.Root status="error" maxW="500px" borderRadius="lg">
-              <Alert.Indicator />
-              <Alert.Title>{error}</Alert.Title>
-            </Alert.Root>
+            <VStack gap="4">
+              <Alert.Root status="error" maxW="500px" borderRadius="lg">
+                <Alert.Indicator />
+                <Alert.Title>{error}</Alert.Title>
+              </Alert.Root>
+              <Button
+                colorScheme="blue"
+                onClick={() => window.location.reload()}
+                mt={4}
+              >
+                Попробовать снова
+              </Button>
+            </VStack>
           </Center>
         </Container>
-      </AuthGuard>
-    );
-  }
-
-  if (!data) {
-    return (
-      <AuthGuard>
+      ) : !data ? (
         <Container maxW="container.xl" py={8}>
           <Center minH="400px">
             <Alert.Root status="info" maxW="500px" borderRadius="lg">
@@ -151,24 +150,20 @@ export default function AnalyticsPage() {
             </Alert.Root>
           </Center>
         </Container>
-      </AuthGuard>
-    );
-  }
-
-  return (
-    <AuthGuard>
-      <AnalyticsDashboard
-        dailyStats={data.dailyStats}
-        topPages={data.topPages}
-        topReferrers={data.topReferrers}
-        deviceStats={data.deviceStats}
-        browserStats={data.browserStats}
-        osStats={data.osStats}
-        countryStats={data.countryStats}
-        recentActivity={data.recentActivity}
-        totalVisits={data.totalVisits}
-        totalUnique={data.totalUnique}
-      />
+      ) : (
+        <AnalyticsDashboard
+          dailyStats={data.dailyStats}
+          topPages={data.topPages}
+          topReferrers={data.topReferrers}
+          deviceStats={data.deviceStats}
+          browserStats={data.browserStats}
+          osStats={data.osStats}
+          countryStats={data.countryStats}
+          recentActivity={data.recentActivity}
+          totalVisits={data.totalVisits}
+          totalUnique={data.totalUnique}
+        />
+      )}
     </AuthGuard>
   );
 }
