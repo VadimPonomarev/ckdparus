@@ -200,7 +200,7 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" px={10}>
       {/* Шапка */}
       <Box
         as="header"
@@ -251,7 +251,7 @@ export default function AnalyticsDashboard(props: AnalyticsDashboardProps) {
       </Box>
 
       {/* Основной контент */}
-      <Container maxW="container.xl" py={8}>
+      <Container maxW="container.xl" py={8} px={10}>
         <VStack align="stretch">
           {/* Карточки с метриками */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }}>
@@ -361,7 +361,7 @@ function MetricCard({
   };
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Stat.Root>
           <Stat.Label color="gray.500" fontSize="sm">
@@ -417,7 +417,7 @@ function VisitsChart({ data }: { data: DailyStat[] }) {
 function TopPagesTable({ pages }: { pages: PageStat[] }) {
   if (!pages.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Популярные страницы
@@ -429,7 +429,7 @@ function TopPagesTable({ pages }: { pages: PageStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Популярные страницы
@@ -457,7 +457,7 @@ function TopPagesTable({ pages }: { pages: PageStat[] }) {
 function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
   if (!referrers.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Источники трафика
@@ -469,7 +469,7 @@ function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Источники трафика
@@ -513,7 +513,7 @@ function TopReferrersTable({ referrers }: { referrers: ReferrerStat[] }) {
 function DeviceStats({ deviceStats }: { deviceStats: DeviceStat[] }) {
   if (!deviceStats.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Устройства
@@ -527,7 +527,7 @@ function DeviceStats({ deviceStats }: { deviceStats: DeviceStat[] }) {
   const total = deviceStats.reduce((acc, d) => acc + d._count.id, 0);
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Устройства
@@ -572,7 +572,7 @@ function BrowserStats({
 }) {
   if (!browserStats.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             {title}
@@ -586,7 +586,7 @@ function BrowserStats({
   const total = browserStats.reduce((acc, b) => acc + b._count.id, 0);
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           {title}
@@ -621,7 +621,7 @@ function BrowserStats({
 function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
   if (!countryStats.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Страны
@@ -633,7 +633,7 @@ function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Страны
@@ -661,7 +661,7 @@ function CountryStats({ countryStats }: { countryStats: CountryStat[] }) {
 function RecentActivity({ activities }: { activities: RecentActivity[] }) {
   if (!activities.length) {
     return (
-      <Card.Root variant="outline" bg="white">
+      <Card.Root variant="outline" bg="white" px={10}>
         <Card.Body>
           <Heading size="md" color="gray.900" mb={4}>
             Последние активности
@@ -673,7 +673,7 @@ function RecentActivity({ activities }: { activities: RecentActivity[] }) {
   }
 
   return (
-    <Card.Root variant="outline" bg="white">
+    <Card.Root variant="outline" bg="white" px={10}>
       <Card.Body>
         <Heading size="md" color="gray.900" mb={4}>
           Последние активности
