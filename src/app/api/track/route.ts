@@ -2,17 +2,36 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import { randomUUID } from 'crypto';
-import * as UAParser from 'ua-parser-js';
 
-// Функция для парсинга User-Agent
+// Простая функция для определения браузера и ОС без библиотеки
 function parseUserAgent(userAgent: string) {
-  const parser = new UAParser(userAgent);
-  const result = parser.getResult();
+  const ua = userAgent.toLowerCase();
+
+  // Определение браузера
+  let browser = 'Unknown';
+  if (ua.includes('chrome')) browser = 'Chrome';
+  else if (ua.includes('firefox')) browser = 'Firefox';
+  else if (ua.includes('safari')) browser = 'Safari';
+  else if (ua.includes('edge')) browser = 'Edge';
+  else if (ua.includes('opera')) browser = 'Opera';
+
+  // Определение ОС
+  let os = 'Unknown';
+  if (ua.includes('windows')) os = 'Windows';
+  else if (ua.includes('mac')) os = 'macOS';
+  else if (ua.includes('linux')) os = 'Linux';
+  else if (ua.includes('android')) os = 'Android';
+  else if (ua.includes('ios')) os = 'iOS';
+
+  // Определение типа устройства
+  let deviceType = 'desktop';
+  if (ua.includes('mobile')) deviceType = 'mobile';
+  else if (ua.includes('tablet')) deviceType = 'tablet';
 
   return {
-    browser: result.browser.name || 'Unknown',
-    os: result.os.name || 'Unknown',
-    deviceType: result.device.type || 'desktop',
+    browser,
+    os,
+    deviceType,
     ua: userAgent,
   };
 }
@@ -21,25 +40,20 @@ export async function POST(request: Request) {
   try {
     const { page, referrer } = await request.json();
 
-    // headers() нужно использовать с await в Next.js 14+
     const headersList = await headers();
     const userAgent = headersList.get('user-agent') || '';
 
-    // Парсим User-Agent
     const { browser, os, deviceType, ua } = parseUserAgent(userAgent);
 
-    // Получаем или создаем sessionId из cookies
     const cookieHeader = headersList.get('cookie') || '';
     const sessionCookie = cookieHeader
       .split(';')
       .find((c: string) => c.trim().startsWith('session_id='));
     const sessionId = sessionCookie?.split('=')[1] || randomUUID();
 
-    // Получаем геоданные (для Vercel)
     // @ts-ignore - request.geo доступен в Vercel
     const geo = request.geo || {};
 
-    // Создаем запись в базе данных
     const pageView = await prisma.pageView.create({
       data: {
         page,
@@ -55,16 +69,14 @@ export async function POST(request: Request) {
       },
     });
 
-    // Создаем ответ
     const response = NextResponse.json({
       success: true,
       id: pageView.id,
     });
 
-    // Устанавливаем cookie если его не было
     if (!sessionCookie) {
       response.cookies.set('session_id', sessionId, {
-        maxAge: 60 * 60 * 24 * 30, // 30 дней
+        maxAge: 60 * 60 * 24 * 30,
         path: '/',
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
