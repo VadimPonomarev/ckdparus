@@ -555,6 +555,10 @@ const HeaderMenu: React.FC = () => {
       title: 'Добавление галереи',
       href: '/addgallery',
     },
+    {
+      title: 'Статистика посещений ',
+      href: '/admin/analytics',
+    },
   ];
 
   const handleLogout = () => {
