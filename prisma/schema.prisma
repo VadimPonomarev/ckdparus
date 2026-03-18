@@ -146,3 +146,33 @@ model GalleryImage {
   
   @@map("gallery_images")
 }
+
+model PageView {
+  id         String   @id @default(cuid())
+  page       String   
+  referrer   String?  
+  userAgent  String?  
+  
+
+  country    String?  
+  city       String?  
+  
+ 
+  deviceType String?  
+  browser    String?  
+  os         String?  
+  
+
+  visitedAt  DateTime @default(now()) @map("visited_at")
+  createdAt  DateTime @default(now())
+  
+
+  sessionId  String?  
+  
+  @@index([page])
+  @@index([visitedAt])
+  @@index([country])
+  @@map("pageviews")
+  @@index([visitedAt, page])
+  @@index([sessionId, visitedAt])
+}

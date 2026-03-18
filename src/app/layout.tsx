@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { Provider } from '@/components/ui/provider';
 import './globals.css';
 import Script from 'next/script';
+import { PageViewTracker } from '@/components/pageviewtracker/PageViewTracker';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,7 +28,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Provider>{children}</Provider>
+        <Provider>
+          {children}
+          <PageViewTracker />
+        </Provider>
       </body>
     </html>
   );
