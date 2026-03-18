@@ -113,8 +113,7 @@ export default function AnalyticsPage() {
 
   // ВСЕГДА оборачиваем в AuthGuard, включая состояния загрузки и ошибки
   return (
-    // <AuthGuard>
-    <>
+    <AuthGuard>
       {isLoading ? (
         <Container maxW="container.xl" py={8}>
           <Center minH="400px">
@@ -165,7 +164,6 @@ export default function AnalyticsPage() {
           totalUnique={data.totalUnique}
         />
       )}
-    </>
-    // </AuthGuard>
+    </AuthGuard>
   );
 }
