@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 // Вспомогательная функция для создания или обновления одного коллектива
 async function upsertTeam(teamData) {
-  const { id, slug, ...restData } = teamData;
+  const { slug, ...restData } = teamData;
   console.log(`🔄 Обрабатываем коллектив: ${teamData.name} (slug: ${slug})...`);
 
   try {
-    // Проверяем, существует ли коллектив
+    // Проверяем, существует ли коллектив по slug
     const existingTeam = await prisma.team.findUnique({
       where: { slug },
     });
@@ -21,15 +21,17 @@ async function upsertTeam(teamData) {
         where: { slug },
         data: restData,
       });
-      console.log(`   ✅ Успешно обновлен: ${updated.name}`);
+      console.log(
+        `   ✅ Успешно обновлен: ${updated.name} (ID: ${updated.id})`
+      );
       return updated;
     } else {
-      // Создаем новый
+      // Создаем новый - id будет сгенерирован автоматически
       console.log(`   ↳ Коллектив с slug "${slug}" не найден. Создаем...`);
       const created = await prisma.team.create({
-        data: teamData,
+        data: restData,
       });
-      console.log(`   ✅ Успешно создан: ${created.name}`);
+      console.log(`   ✅ Успешно создан: ${created.name} (ID: ${created.id})`);
       return created;
     }
   } catch (error) {
@@ -37,6 +39,9 @@ async function upsertTeam(teamData) {
       `   ❌ Ошибка при обработке коллектива "${teamData.name}":`,
       error.message
     );
+    if (error.meta) {
+      console.error(`   📍 Детали:`, error.meta);
+    }
     throw error;
   }
 }
@@ -46,11 +51,10 @@ async function main() {
   console.log('🚀 ЗАПУСК СКРИПТА ЗАПОЛНЕНИЯ ВОКАЛЬНЫХ КОЛЛЕКТИВОВ');
   console.log('='.repeat(60));
 
-  // Массив с данными всех вокальных коллективов
+  // Массив с данными всех вокальных коллективов (без поля id)
   const teamsData = [
     // 1. Народный хор ветеранов «Вдохновение»
     {
-      id: 'vdohnovenie',
       name: 'Народный хор ветеранов «Вдохновение»',
       slug: 'vdohnovenie',
 
@@ -107,7 +111,6 @@ async function main() {
 
     // 2. Вокальный ансамбль «Веретёнце»
     {
-      id: 'veretenze',
       name: 'Вокальный ансамбль «Веретёнце»',
       slug: 'veretenze',
 
@@ -177,7 +180,6 @@ async function main() {
 
     // 3. Вокальный ансамбль «Звонцы»
     {
-      id: 'zvontsy',
       name: 'Вокальный ансамбль «Звонцы»',
       slug: 'zvontsy',
 
@@ -229,7 +231,6 @@ async function main() {
 
     // 4. Народный ансамбль русской песни «Прялица»
     {
-      id: 'pralitsa',
       name: 'Народный ансамбль русской песни «Прялица»',
       slug: 'pralitsa',
 
@@ -308,7 +309,6 @@ async function main() {
 
     // 5. Народная вокальная студия «Ассорти»
     {
-      id: 'assorti',
       name: 'Народная вокальная студия «Ассорти»',
       slug: 'assorti',
 
@@ -397,7 +397,6 @@ async function main() {
 
     // 6. Народная вокальная студия (Шахов)
     {
-      id: 'vocal-studio',
       name: 'Народная вокальная студия',
       slug: 'vocal-studio',
 
@@ -461,7 +460,6 @@ async function main() {
 
     // 7. Фольклорный ансамбль «Зёрнышки»
     {
-      id: 'zernyshki',
       name: 'Фольклорный ансамбль «Зёрнышки»',
       slug: 'zernyshki',
 
