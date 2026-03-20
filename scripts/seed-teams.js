@@ -26,10 +26,13 @@ async function upsertTeam(teamData) {
       );
       return updated;
     } else {
-      // Создаем новый - id будет сгенерирован автоматически
+      // Создаем новый - id будет сгенерирован автоматически, slug указываем явно
       console.log(`   ↳ Коллектив с slug "${slug}" не найден. Создаем...`);
       const created = await prisma.team.create({
-        data: restData,
+        data: {
+          ...restData,
+          slug, // явно указываем slug при создании
+        },
       });
       console.log(`   ✅ Успешно создан: ${created.name} (ID: ${created.id})`);
       return created;
@@ -51,7 +54,7 @@ async function main() {
   console.log('🚀 ЗАПУСК СКРИПТА ЗАПОЛНЕНИЯ ВОКАЛЬНЫХ КОЛЛЕКТИВОВ');
   console.log('='.repeat(60));
 
-  // Массив с данными всех вокальных коллективов (без поля id)
+  // Массив с данными всех вокальных коллективов (slug обязателен)
   const teamsData = [
     // 1. Народный хор ветеранов «Вдохновение»
     {
