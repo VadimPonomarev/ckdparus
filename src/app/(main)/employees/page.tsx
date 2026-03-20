@@ -213,7 +213,7 @@ export default function Employees() {
           <GridItem>
             <AdminCard
               title="Художественный руководитель"
-              name="Соловьева Кристина Ивановна"
+              name="Гаршина Мария Александровна"
               image="/images/logo.jpg"
               colorScheme="blue"
             />
