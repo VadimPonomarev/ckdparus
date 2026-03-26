@@ -74,8 +74,8 @@ const AdminCard = ({
               boxShadow: '2xl',
               transition: 'box-shadow 0.3s ease-in-out',
             }}
-            height="250px"
-            width="250px"
+            // height="100%"
+            width="100%"
           />
           <Box
             bg="blue.300"
@@ -125,8 +125,8 @@ const LeaderCard = ({
             boxShadow: '2xl',
             transition: 'box-shadow 0.3s ease-in-out',
           }}
-          width="200px"
-          height="200px"
+          width="300px"
+          height="300px"
           flexShrink={0}
         />
         <Stack height="100%" width="100%">
@@ -165,7 +165,7 @@ export default function Employees() {
             <AdminCard
               title="Директор"
               name="Симон Лариса Геннадьевна"
-              image="/images/photo_director.jpg"
+              image="/employees/Лариса.JPG"
               colorScheme="red"
             />
           </GridItem>
@@ -177,7 +177,7 @@ export default function Employees() {
             <AdminCard
               title="Заместитель директора"
               name="Костикова Татьяна Николаевна"
-              image="/images/photo_zam_directora.jpg"
+              image="/employees/Костикова.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -185,7 +185,7 @@ export default function Employees() {
             <AdminCard
               title="Заместитель директора по АХЧ"
               name="Корныхина Светлана Владимировна"
-              image="/images/photo_zam_directora_ahch.jpg"
+              image="/employees/Корныхина.JPG"
               colorScheme="green"
             />
           </GridItem>
@@ -194,7 +194,7 @@ export default function Employees() {
             <AdminCard
               title="Главный Бухгалтер"
               name="Шалунова Анжела Витальевна"
-              image="/images/logo.jpg"
+              image="/employees/Шалунова.JPG"
               colorScheme="purple"
             />
           </GridItem>
@@ -205,7 +205,7 @@ export default function Employees() {
             <AdminCard
               title="Методист"
               name="Дзнеладзе Манана Элдаровна"
-              image="/images/logo.jpg"
+              image="/employees/Дзнеладзе.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -214,7 +214,7 @@ export default function Employees() {
             <AdminCard
               title="Художественный руководитель"
               name="Гаршина Мария Александровна"
-              image="/images/logo.jpg"
+              image="/employees/Гаршина.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -223,7 +223,7 @@ export default function Employees() {
             <AdminCard
               title="Рабочий по ремонту и комплексному обслуживанию здания"
               name="Осокин Владимир Петрович"
-              image="/images/logo.jpg"
+              image="/employees/Осокин.JPG"
               colorScheme="green"
             />
           </GridItem>
@@ -232,7 +232,7 @@ export default function Employees() {
             <AdminCard
               title="Бухгалтер"
               name="Алфимова Ольга Николаевна"
-              image="/images/logo.jpg"
+              image="/employees/Алфимова.JPG"
               colorScheme="purple"
             />
           </GridItem>
@@ -242,7 +242,7 @@ export default function Employees() {
             <AdminCard
               title="Звукорежиссёр"
               name="Гаршин Александр Сергеевич"
-              image="/images/logo.jpg"
+              image="/employees/Гаршин.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -258,7 +258,7 @@ export default function Employees() {
             <AdminCard
               title="Культорганизатор"
               name="Орлова Дарья Олеговна"
-              image="/images/logo.jpg"
+              image="/employees/Орлова.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -266,7 +266,7 @@ export default function Employees() {
             <AdminCard
               title="Светооператор"
               name="Симон Валентин Валерьевич"
-              image="/images/logo.jpg"
+              image="/employees/Вэлл.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -285,7 +285,7 @@ export default function Employees() {
             <AdminCard
               title="Костюмер"
               name="Орлова Дарья Олеговна"
-              image="/images/logo.jpg"
+              image="/employees/Орлова.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -300,7 +300,7 @@ export default function Employees() {
         <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={8}>
           <GridItem>
             <LeaderCard
-              image="/images/samarokovskay.jpg"
+              image="/employees/Sam.jpg"
               name="Самороковская Анна Викторовна"
               colorScheme="gray"
             >
@@ -318,7 +318,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/petrova.jpg"
+              image="/employees/Петрова.JPG"
               name="Петрова Ирина Валерьевна"
               colorScheme="gray"
             >
@@ -335,7 +335,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/hud_ruk.jpg"
+              image="/employees/Сорокина.JPG"
               name="Сорокина Анастасия Андреевна"
               colorScheme="gray"
             >
@@ -348,7 +348,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/salaeva.jpg"
+              image="/employees/Salaeva.jpg"
               name="Салаева Ирина Сергеевна"
               colorScheme="gray"
             >
@@ -364,7 +364,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/kuzmina.jpg"
+              image="/employees/Кузьмина.JPG"
               name="Кузьмина Светлана Андреевна"
               colorScheme="gray"
             >
@@ -380,7 +380,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/mizurin.jpg"
+              image="/employees/Мурзин.JPG"
               name="Мурзин Юрий Игоревич"
               colorScheme="gray"
             >
@@ -397,7 +397,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/shleikova.jpg"
+              image="/employees/Шлейкова.JPG"
               name="Шлейкова Оксана Викторовна"
               colorScheme="gray"
             >
@@ -423,7 +423,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/photo_zam_directora.jpg"
+              image="/employees/Костикова.JPG"
               name="Костикова Татьяна Николаевна"
               colorScheme="gray"
             >
@@ -436,7 +436,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/galdikas.jpg"
+              image="/employees/Галдикайте.JPG"
               name="Галдикайте Александра Валерьевна"
               colorScheme="gray"
             >
