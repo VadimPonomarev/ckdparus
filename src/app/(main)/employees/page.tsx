@@ -113,7 +113,7 @@ const LeaderCard = ({
       height="100%"
       width="100%"
     >
-      <HStack gap={6} align="start" height="100%">
+      <HStack gap={6} align="start" height="100%" hideBelow="md">
         <Image
           src={image}
           alt={name}
@@ -144,6 +144,29 @@ const LeaderCard = ({
           <Box>{children}</Box>
         </Stack>
       </HStack>
+      <Stack height="100%" hideFrom="md">
+        <Image
+          src={image}
+          alt={name}
+          objectFit="cover"
+          borderRadius="20px"
+          boxShadow="xl"
+          borderColor="gray.100"
+          _hover={{
+            boxShadow: '2xl',
+            transition: 'box-shadow 0.3s ease-in-out',
+          }}
+          height="300px"
+          flexShrink={0}
+        />
+
+        <Box bg="blue.300" p={3} borderRadius={10} boxShadow="xl" width="100%">
+          <Text fontWeight="bold" textAlign="center">
+            {name}
+          </Text>
+        </Box>
+        <Box>{children}</Box>
+      </Stack>
     </Box>
   );
 };
@@ -410,7 +433,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/hernyakova.jpg"
+              image="/images/logo.jpg"
               name="Чернякова Луиза Степановна"
               colorScheme="gray"
             >
