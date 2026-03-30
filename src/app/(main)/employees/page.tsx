@@ -126,7 +126,7 @@ const LeaderCard = ({
             transition: 'box-shadow 0.3s ease-in-out',
           }}
           width="300px"
-          height="300px"
+          height="400px"
           flexShrink={0}
         />
         <Stack height="100%" width="100%">
@@ -306,12 +306,39 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Костюмер"
-              name="Орлова Дарья Олеговна"
-              image="/employees/Орлова.JPG"
+              title="Хормейстер"
+              name="Шахов Владислав Витальевич"
+              image="/images/Шахов.JPG"
               colorScheme="blue"
             />
           </GridItem>
+          <GridItem>
+            <AdminCard
+              title="Рабочий сцены"
+              name="Валанчаускис Артур Романович"
+              image="/images/Valanchauskas.jpg"
+              colorScheme="blue"
+            />
+          </GridItem>
+          <GridItem>
+            <AdminCard
+              title="Водитель"
+              name="Галдикас Валерий Юрьевич"
+              image="/images/Галдикас.JPG"
+              colorScheme="blue"
+            />
+          </GridItem>
+        </Grid>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
+          <GridItem>
+            <AdminCard
+              title="Концертмейстер"
+              name="Кушнян Ванда Чеслово"
+              image="/images/logo.jpg"
+              colorScheme="blue"
+            />
+          </GridItem>
+          <GridItem></GridItem>
           <GridItem></GridItem>
           <GridItem></GridItem>
         </Grid>
