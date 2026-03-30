@@ -306,14 +306,6 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Хормейстер"
-              name="Шахов Владислав Витальевич"
-              image="/employees/Шахов.JPG"
-              colorScheme="blue"
-            />
-          </GridItem>
-          <GridItem>
-            <AdminCard
               title="Рабочий сцены"
               name="Валанчаускис Артур Романович"
               image="/employees/Valanchauskas.jpg"
@@ -328,18 +320,6 @@ export default function Employees() {
               colorScheme="blue"
             />
           </GridItem>
-        </Grid>
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
-          <GridItem>
-            <AdminCard
-              title="Концертмейстер"
-              name="Кушнян Ванда Чеслово"
-              image="/images/logo.jpg"
-              colorScheme="blue"
-            />
-          </GridItem>
-          <GridItem></GridItem>
-          <GridItem></GridItem>
           <GridItem></GridItem>
         </Grid>
 
@@ -363,6 +343,9 @@ export default function Employees() {
                 <List.Item>Хореографическая студия «Арлекино»</List.Item>
                 <List.Item>Хореографический коллектив «Забавушки»</List.Item>
               </List.Root>
+              <Text fontWeight="bold" textAlign="center" pt={10}>
+                Заслуженный работник культуры Калининградской области
+              </Text>
             </LeaderCard>
           </GridItem>
 
@@ -427,7 +410,31 @@ export default function Employees() {
               </List.Root>
             </LeaderCard>
           </GridItem>
+          <GridItem>
+            <LeaderCard
+              image="/employees/Шахов.JPG"
+              name="Шахов Владислав Витальевич"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item>Народная вокальная студия</List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
 
+          <GridItem>
+            <LeaderCard
+              image="/images/logo.jpg"
+              name="Каушнян Ванда Чеслово"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item></List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
           <GridItem>
             <LeaderCard
               image="/employees/Мурзин.JPG"
