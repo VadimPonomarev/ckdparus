@@ -308,7 +308,7 @@ export default function Employees() {
             <AdminCard
               title="Хормейстер"
               name="Шахов Владислав Витальевич"
-              image="/images/Шахов.JPG"
+              image="/employees/Шахов.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -316,7 +316,7 @@ export default function Employees() {
             <AdminCard
               title="Рабочий сцены"
               name="Валанчаускис Артур Романович"
-              image="/images/Valanchauskas.jpg"
+              image="/employees/Valanchauskas.jpg"
               colorScheme="blue"
             />
           </GridItem>
@@ -324,7 +324,7 @@ export default function Employees() {
             <AdminCard
               title="Водитель"
               name="Галдикас Валерий Юрьевич"
-              image="/images/Галдикас.JPG"
+              image="/employees/Галдикас.JPG"
               colorScheme="blue"
             />
           </GridItem>
