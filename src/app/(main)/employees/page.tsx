@@ -156,7 +156,7 @@ const LeaderCard = ({
             boxShadow: '2xl',
             transition: 'box-shadow 0.3s ease-in-out',
           }}
-          height="300px"
+          height="400px"
           flexShrink={0}
         />
 
