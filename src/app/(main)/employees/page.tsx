@@ -362,6 +362,7 @@ export default function Employees() {
                 </List.Item>
                 <List.Item>Хореографическая студия «Ириски»</List.Item>
                 <List.Item>Хореографическая студия «Ириски Kids»</List.Item>
+                <List.Item>Образцовая шоу-группа «Дефиле»</List.Item>
               </List.Root>
             </LeaderCard>
           </GridItem>
@@ -391,6 +392,7 @@ export default function Employees() {
                   Народный коллектив самодеятельного художественного творчества
                   молодежный театр «Молодая гвардия»
                 </List.Item>
+                <List.Item>Театральная студия «Волшебная маска»</List.Item>
               </List.Root>
             </LeaderCard>
           </GridItem>
