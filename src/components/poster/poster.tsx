@@ -25,7 +25,8 @@ interface Event {
   fulldescription?: string;
   date: string;
   location?: string;
-  price?: number;
+  priceFrom?: number;
+  priceTo?: number;
   imageUrl?: string;
   category?: string;
   isActive: boolean;
@@ -202,7 +203,8 @@ const Poster: React.FC<PosterProps> = ({
                 imageUrl={event.imageUrl}
                 briefdescription={event.briefdescription}
                 location={event.location}
-                price={event.price}
+                priceFrom={event.priceFrom}
+                priceTo={event.priceTo}
                 category={event.category}
                 linkUrl={`/events/${event.id}`}
               />
