@@ -16,7 +16,8 @@ interface EventData {
   description: string;
   location: string;
   address?: string;
-  price?: number;
+  priceFrom?: number;
+  priceTo?: number;
   category?: string;
   organizer?: string;
   organizerContacts?: string;

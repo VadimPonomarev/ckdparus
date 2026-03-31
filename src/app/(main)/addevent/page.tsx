@@ -79,7 +79,10 @@ const EventSchema = z.object({
     .min(5, 'Место слишком короткое')
     .max(200, 'Место слишком длинное')
     .nonempty('Обязательное поле'),
-  price: z
+  priceFrom: z
+    .number({ error: 'Цена должна быть числом' })
+    .min(0, 'Цена не может быть отрицательной'),
+  priceTo: z
     .number({ error: 'Цена должна быть числом' })
     .min(0, 'Цена не может быть отрицательной'),
   category: z.string().nonempty('Обязательное поле'),
@@ -117,7 +120,8 @@ export default function AddEventPage() {
       date: '',
       time: '19:00',
       location: '',
-      price: 0,
+      priceFrom: 0,
+      priceTo: 0,
       category: '',
       isFeatured: false,
       isActive: true,
@@ -178,7 +182,8 @@ export default function AddEventPage() {
         fulldescription: data.fulldescription || null,
         date: dateTime.toISOString(),
         location: data.location,
-        price: data.price,
+        priceFrom: data.priceFrom,
+        priceTo: data.priceTo,
         imageUrl: imageUrl,
         category: data.category,
         isFeatured: data.isFeatured,
@@ -518,38 +523,68 @@ export default function AddEventPage() {
                               Изображение будет отображаться на карточке события
                             </Field.HelperText>
                           </Field.Root>
-
-                          <Field.Root invalid={!!errors.price}>
-                            <Field.Label>Цена (₽)</Field.Label>
-                            <Controller
-                              name="price"
-                              control={control}
-                              render={({ field }) => (
-                                <NumberInput.Root
-                                  value={field.value.toString()}
-                                  onValueChange={details => {
-                                    const numValue =
-                                      parseInt(details.value as string) || 0;
-                                    field.onChange(numValue);
-                                  }}
-                                  min={0}
-                                  width="full"
-                                >
-                                  <NumberInput.Control />
-                                  <NumberInput.Input />
-                                </NumberInput.Root>
+                          <HStack>
+                            <Field.Root invalid={!!errors.priceFrom}>
+                              <Field.Label>Цена От (₽)</Field.Label>
+                              <Controller
+                                name="priceFrom"
+                                control={control}
+                                render={({ field }) => (
+                                  <NumberInput.Root
+                                    value={field.value.toString()}
+                                    onValueChange={details => {
+                                      const numValue =
+                                        parseInt(details.value as string) || 0;
+                                      field.onChange(numValue);
+                                    }}
+                                    min={0}
+                                    width="full"
+                                  >
+                                    <NumberInput.Control />
+                                    <NumberInput.Input />
+                                  </NumberInput.Root>
+                                )}
+                              />
+                              {errors.priceFrom && (
+                                <Alert.Root status="error" mt="2">
+                                  <Alert.Indicator />
+                                  <Alert.Title>
+                                    {errors.priceFrom.message}
+                                  </Alert.Title>
+                                </Alert.Root>
                               )}
-                            />
-                            {errors.price && (
-                              <Alert.Root status="error" mt="2">
-                                <Alert.Indicator />
-                                <Alert.Title>
-                                  {errors.price.message}
-                                </Alert.Title>
-                              </Alert.Root>
-                            )}
-                          </Field.Root>
-
+                            </Field.Root>
+                            <Field.Root invalid={!!errors.priceTo}>
+                              <Field.Label>До (₽)</Field.Label>
+                              <Controller
+                                name="priceTo"
+                                control={control}
+                                render={({ field }) => (
+                                  <NumberInput.Root
+                                    value={field.value.toString()}
+                                    onValueChange={details => {
+                                      const numValue =
+                                        parseInt(details.value as string) || 0;
+                                      field.onChange(numValue);
+                                    }}
+                                    min={0}
+                                    width="full"
+                                  >
+                                    <NumberInput.Control />
+                                    <NumberInput.Input />
+                                  </NumberInput.Root>
+                                )}
+                              />
+                              {errors.priceTo && (
+                                <Alert.Root status="error" mt="2">
+                                  <Alert.Indicator />
+                                  <Alert.Title>
+                                    {errors.priceTo.message}
+                                  </Alert.Title>
+                                </Alert.Root>
+                              )}
+                            </Field.Root>
+                          </HStack>
                           <Field.Root invalid={!!errors.category}>
                             <Field.Label>Категория</Field.Label>
                             <Controller

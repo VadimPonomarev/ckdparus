@@ -25,7 +25,8 @@ interface PosterCardProps {
   alt?: string;
   briefdescription?: string;
   location?: string;
-  price?: number;
+  priceFrom?: number;
+  priceTo?: number;
   category?: string;
   linkUrl?: string;
   linkText?: string;
@@ -73,7 +74,8 @@ const PosterCard: React.FC<PosterCardProps> = ({
   alt = title,
   briefdescription,
   location,
-  price,
+  priceFrom,
+  priceTo,
   category,
   linkUrl = `/events/${id}`,
   linkText = 'Подробнее',
@@ -273,7 +275,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
           )}
 
           {/* Цена */}
-          {price !== undefined && (
+          {priceTo !== undefined && priceFrom !== undefined ? (
             <Text
               fontSize="lg"
               color="green.600"
@@ -285,8 +287,24 @@ const PosterCard: React.FC<PosterCardProps> = ({
                 overflow: 'hidden',
               }}
             >
-              {price === 0 ? 'Бесплатно' : `${price} ₽`}
+              {`От ${priceFrom} ₽ До ${priceTo} ₽`}
             </Text>
+          ) : (
+            priceFrom !== undefined && (
+              <Text
+                fontSize="lg"
+                color="green.600"
+                fontWeight="bold"
+                css={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: '1',
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {priceFrom === 0 ? 'Бесплатно' : `${priceFrom} ₽`}
+              </Text>
+            )
           )}
 
           {/* Кнопки действий для администратора */}

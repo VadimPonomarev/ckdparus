@@ -25,7 +25,8 @@ model Event {
   date        DateTime
   location    String?
   payUrl      String?
-  price       Int?
+  priceFrom   Int?
+  priceTo     Int?
   imageUrl    String?  @map("image_url")
   category    String?
   isActive    Boolean  @default(true) @map("is_active")

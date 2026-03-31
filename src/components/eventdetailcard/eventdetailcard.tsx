@@ -41,7 +41,8 @@ interface EventDetailCardProps {
   description: string;
   location: string;
   address?: string;
-  price?: number;
+  priceFrom?: number;
+  priceTo?: number;
   category?: string;
   organizer?: string;
   organizerContacts?: string;
@@ -100,7 +101,8 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
   description,
   location,
   address,
-  price,
+  priceFrom,
+  priceTo,
   category,
   organizer,
   organizerContacts,
@@ -514,10 +516,14 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
                 {/* Цена */}
                 <Box textAlign="center">
                   <Heading as="h3" size="xl" color="gray.800" mb={2}>
-                    {price === 0 ? 'Бесплатно' : `${price} ₽`}
+                    {priceTo === 0
+                      ? priceFrom === 0
+                        ? 'Бесплатно'
+                        : `${priceFrom} ₽`
+                      : `От ${priceFrom} ₽ До ${priceTo} ₽ `}
                   </Heading>
                   <Text color="gray.600">
-                    {price === 0 ? 'Вход свободный' : 'Стоимость билета'}
+                    {priceFrom === 0 ? 'Вход свободный' : 'Стоимость билета'}
                   </Text>
                 </Box>
 
