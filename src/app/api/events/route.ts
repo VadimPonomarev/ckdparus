@@ -11,7 +11,8 @@ interface CreateEventRequest {
   fulldescription?: string | null;
   date: string;
   location: string;
-  price: number;
+  priceFrom: number;
+  priceTo: number;
   imageUrl?: string | null;
   category?: string;
   isFeatured?: boolean;
@@ -97,7 +98,12 @@ export async function POST(request: NextRequest) {
     if (!body.date) validationErrors.push('Дата события обязательна');
     if (!body.location?.trim())
       validationErrors.push('Место проведения обязательно');
-    if (body.price === undefined || body.price < 0)
+    if (
+      body.priceFrom === undefined ||
+      body.priceFrom < 0 ||
+      body.priceTo === undefined ||
+      body.priceTo < 0
+    )
       validationErrors.push('Цена должна быть неотрицательной');
 
     if (validationErrors.length > 0) {
@@ -134,7 +140,8 @@ export async function POST(request: NextRequest) {
         fulldescription: body.fulldescription?.trim() || null,
         date: eventDate,
         location: body.location.trim(),
-        price: body.price,
+        priceFrom: body.priceFrom,
+        priceTo: body.priceTo,
         imageUrl: body.imageUrl?.trim() || null,
         category: body.category?.trim() || 'другое',
         isFeatured: body.isFeatured || false,
