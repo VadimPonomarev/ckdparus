@@ -13,10 +13,7 @@ export default function History() {
           <PDFViewer fileUrl="/pdf/Баланс-2021год-2.pdf" title="Баланс 2021" />
           <PDFViewer fileUrl="/pdf/Баланс-2022г.pdf" title="Баланс 2022 " />
           <PDFViewer fileUrl="/pdf/Баланс-2023г1059.pdf" title="Баланс 2023" />
-          <PDFViewer
-            fileUrl="/pdf/2025г.-Баланс-Муниципального-учреждения.pdf"
-            title="Баланс 2025"
-          />
+          <PDFViewer fileUrl="/pdf/Баланс-2025г.pdf" title="Баланс 2025" />
         </Stack>
       </Center>
     </Stack>
