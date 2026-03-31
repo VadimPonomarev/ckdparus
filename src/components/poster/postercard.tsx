@@ -275,7 +275,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
           )}
 
           {/* Цена */}
-          {priceTo !== undefined && priceFrom !== undefined ? (
+          {priceTo !== undefined && priceFrom !== undefined && priceTo !== 0 ? (
             <Text
               fontSize="lg"
               color="green.600"
