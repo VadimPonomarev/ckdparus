@@ -173,7 +173,7 @@ const Poster: React.FC<PosterProps> = ({
         </>
       )}
 
-      <Box width="100%" mt={4}>
+      <Box width="100%" pt={4}>
         <Swiper
           cssMode={true}
           navigation={showNavigation}

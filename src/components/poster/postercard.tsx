@@ -224,15 +224,13 @@ const PosterCard: React.FC<PosterCardProps> = ({
               🕒 {formattedTime}
             </Text>
           </Box>
-
-          {/* Изображение фиксированной высоты */}
           <Center>
             <Image
               src={imageSrc}
               alt={alt}
               w="100%"
-              h="160px" // Фиксированная высота изображения
-              objectFit="cover" // Изменено с contain на cover для единообразия
+              h="250px"
+              objectFit="cover"
               borderRadius="md"
               loading="lazy"
             />

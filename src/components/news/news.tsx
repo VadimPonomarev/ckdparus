@@ -176,7 +176,7 @@ const NewsList: React.FC<NewsListProps> = ({
         </>
       )}
 
-      <Box width="100%" mt={4}>
+      <Box width="100%" pt={4}>
         <Swiper
           cssMode={true}
           navigation={showNavigation} // Условное отображение навигации
