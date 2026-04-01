@@ -150,7 +150,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
           transition: 'all 0.3s ease-in-out',
         }}
         transition="all 0.3s ease"
-        h="500px" // Фиксированная высота
+        h="650px" // Фиксированная высота
         position="relative"
       >
         <Stack w="100%" h="100%" overflow="hidden">

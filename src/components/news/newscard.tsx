@@ -113,7 +113,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
           transition: 'all 0.3s ease-in-out',
         }}
         transition="all 0.3s ease"
-        h="450px"
+        h="650px"
         position="relative"
         opacity={isPublished ? 1 : 0.7}
       >
