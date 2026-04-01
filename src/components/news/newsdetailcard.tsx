@@ -295,7 +295,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   src={imageSrc}
                   alt={title}
                   w="100%"
-                  h={{ base: '200px', sm: '400px', md: '600px' }}
+                  h={{ base: '200px', md: '100%' }}
                   objectFit="cover"
                 />
                 {images.length > 0 && (
