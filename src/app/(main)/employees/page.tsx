@@ -263,6 +263,19 @@ export default function Employees() {
         <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
+              title="Администратор"
+              name="Спрайнис Ольга Витальевна"
+              image="/employees/Спрайнис.JPG"
+              colorScheme="red"
+            />
+          </GridItem>
+          <GridItem></GridItem>
+          <GridItem></GridItem>
+          <GridItem></GridItem>
+        </Grid>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
+          <GridItem>
+            <AdminCard
               title="Звукорежиссёр"
               name="Гаршин Александр Сергеевич"
               image="/employees/Гаршин.JPG"
