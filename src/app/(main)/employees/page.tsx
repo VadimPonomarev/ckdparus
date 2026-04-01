@@ -269,11 +269,6 @@ export default function Employees() {
               colorScheme="red"
             />
           </GridItem>
-          <GridItem></GridItem>
-          <GridItem></GridItem>
-          <GridItem></GridItem>
-        </Grid>
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
               title="Звукорежиссёр"
@@ -298,6 +293,8 @@ export default function Employees() {
               colorScheme="blue"
             />
           </GridItem>
+        </Grid>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
               title="Светооператор"
@@ -306,9 +303,6 @@ export default function Employees() {
               colorScheme="blue"
             />
           </GridItem>
-        </Grid>
-
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
               title="Костюмер"
@@ -333,7 +327,6 @@ export default function Employees() {
               colorScheme="blue"
             />
           </GridItem>
-          <GridItem></GridItem>
         </Grid>
 
         <Text fontSize="xl" textAlign="center" fontWeight="bold">
