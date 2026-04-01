@@ -222,6 +222,8 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           onClick={() => window.history.back()}
           size="sm"
           mb={4}
+          p={5}
+          _hover={{ bg: 'gray.500' }}
         >
           Назад
         </Button>
