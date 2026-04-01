@@ -223,7 +223,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
           size="sm"
           mb={4}
           p={5}
-          _hover={{ bg: 'gray.500' }}
+          _hover={{ bg: 'gray.200' }}
         >
           Назад
         </Button>
@@ -295,7 +295,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                   src={imageSrc}
                   alt={title}
                   w="100%"
-                  h={{ base: '200px', sm: '300px', md: '400px' }}
+                  h={{ base: '200px', sm: '400px', md: '600px' }}
                   objectFit="cover"
                 />
                 {images.length > 0 && (
