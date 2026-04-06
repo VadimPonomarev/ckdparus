@@ -281,7 +281,7 @@ export default function Employees() {
             <AdminCard
               title="Звукорежиссёр"
               name="Петров Валерий Владимирович"
-              image="/images/logo.jpg"
+              image="/employees/Петров.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -307,7 +307,7 @@ export default function Employees() {
             <AdminCard
               title="Костюмер"
               name="Кузнецова Юлия Николаевна"
-              image="/images/logo.jpg"
+              image="/employees/Кузнецова.JPG"
               colorScheme="blue"
             />
           </GridItem>
@@ -433,7 +433,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/logo.jpg"
+              image="/employees/Каушнян.JPG"
               name="Каушнян Ванда Чеслово"
               colorScheme="gray"
             >
@@ -475,7 +475,7 @@ export default function Employees() {
 
           <GridItem>
             <LeaderCard
-              image="/images/logo.jpg"
+              image="/employees/Чернякова.JPG"
               name="Чернякова Луиза Степановна"
               colorScheme="gray"
             >
