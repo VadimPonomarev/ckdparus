@@ -257,7 +257,7 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Администратор"
+              title="Программист"
               name="Пономарев Вадим Александрович"
               image="/images/logo.jpg"
               colorScheme="red"
