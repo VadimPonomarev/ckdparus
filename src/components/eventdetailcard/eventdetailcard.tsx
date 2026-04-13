@@ -575,12 +575,12 @@ const EventDetailCard: React.FC<EventDetailCardProps> = ({
 
                   <Text>
                     <Link
-                      href="tel:+7 902 423 4771"
+                      href="tel:+7 901 963 20 63"
                       fontSize="sm"
                       color="blue.700"
                       fontWeight="medium"
                     >
-                      +7 902 423 4771
+                      +7 901 963 20 63
                     </Link>
                   </Text>
 

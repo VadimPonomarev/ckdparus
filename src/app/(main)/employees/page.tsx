@@ -195,7 +195,15 @@ export default function Employees() {
           <GridItem></GridItem>
         </Grid>
 
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={10}>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
+          <GridItem>
+            <AdminCard
+              title="Заместитель директора по АХЧ"
+              name="Корныхина Светлана Владимировна"
+              image="/employees/Корныхина.JPG"
+              colorScheme="green"
+            />
+          </GridItem>
           <GridItem>
             <AdminCard
               title="Заместитель директора"
@@ -206,13 +214,12 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Заместитель директора по АХЧ"
-              name="Корныхина Светлана Владимировна"
-              image="/employees/Корныхина.JPG"
-              colorScheme="green"
+              title="Художественный руководитель"
+              name="Гаршина Мария Александровна"
+              image="/employees/Гаршина.JPG"
+              colorScheme="blue"
             />
           </GridItem>
-
           <GridItem>
             <AdminCard
               title="Главный Бухгалтер"
@@ -226,41 +233,20 @@ export default function Employees() {
         <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
-              title="Методист"
-              name="Дзнеладзе Манана Элдаровна"
-              image="/employees/Дзнеладзе.JPG"
-              colorScheme="blue"
-            />
-          </GridItem>
-
-          <GridItem>
-            <AdminCard
-              title="Художественный руководитель"
-              name="Гаршина Мария Александровна"
-              image="/employees/Гаршина.JPG"
-              colorScheme="blue"
-            />
-          </GridItem>
-
-          <GridItem>
-            <AdminCard
-              title="Рабочий по ремонту и комплексному обслуживанию здания"
-              name="Осокин Владимир Петрович"
-              image="/employees/Осокин.JPG"
-              colorScheme="green"
-            />
-          </GridItem>
-
-          <GridItem>
-            <AdminCard
               title="Бухгалтер"
               name="Алфимова Ольга Николаевна"
               image="/employees/Алфимова.JPG"
               colorScheme="purple"
             />
           </GridItem>
-        </Grid>
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
+          <GridItem>
+            <AdminCard
+              title="Методист"
+              name="Дзнеладзе Манана Элдаровна"
+              image="/employees/Дзнеладзе.JPG"
+              colorScheme="blue"
+            />
+          </GridItem>
           <GridItem>
             <AdminCard
               title="Администратор"
@@ -269,6 +255,16 @@ export default function Employees() {
               colorScheme="red"
             />
           </GridItem>
+          <GridItem>
+            <AdminCard
+              title="Администратор"
+              name="Пономарев Вадим Александрович"
+              image="/images/logo.jpg"
+              colorScheme="red"
+            />
+          </GridItem>
+        </Grid>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
               title="Звукорежиссёр"
@@ -287,6 +283,14 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
+              title="Светооператор"
+              name="Симон Валентин Валерьевич"
+              image="/employees/Вэлл.JPG"
+              colorScheme="blue"
+            />
+          </GridItem>
+          <GridItem>
+            <AdminCard
               title="Культорганизатор"
               name="Орлова Дарья Олеговна"
               image="/employees/Орлова.JPG"
@@ -297,14 +301,6 @@ export default function Employees() {
         <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={10}>
           <GridItem>
             <AdminCard
-              title="Светооператор"
-              name="Симон Валентин Валерьевич"
-              image="/employees/Вэлл.JPG"
-              colorScheme="blue"
-            />
-          </GridItem>
-          <GridItem>
-            <AdminCard
               title="Костюмер"
               name="Кузнецова Юлия Николаевна"
               image="/employees/Кузнецова.JPG"
@@ -313,17 +309,25 @@ export default function Employees() {
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Рабочий сцены"
-              name="Валанчаускис Артур Романович"
-              image="/employees/Valanchauskas.jpg"
+              title="Водитель"
+              name="Галдикас Валерий Юрьевич"
+              image="/employees/Галдикас.JPG"
               colorScheme="blue"
             />
           </GridItem>
           <GridItem>
             <AdminCard
-              title="Водитель"
-              name="Галдикас Валерий Юрьевич"
-              image="/employees/Галдикас.JPG"
+              title="Рабочий по ремонту и комплексному обслуживанию здания"
+              name="Осокин Владимир Петрович"
+              image="/employees/Осокин.JPG"
+              colorScheme="green"
+            />
+          </GridItem>
+          <GridItem>
+            <AdminCard
+              title="Рабочий сцены"
+              name="Валанчаускис Артур Романович"
+              image="/employees/Valanchauskas.jpg"
               colorScheme="blue"
             />
           </GridItem>
@@ -372,49 +376,15 @@ export default function Employees() {
               </List.Root>
             </LeaderCard>
           </GridItem>
-
           <GridItem>
             <LeaderCard
-              image="/employees/Сорокина.JPG"
-              name="Сорокина Анастасия Андреевна"
+              image="/employees/Шлейкова.JPG"
+              name="Шлейкова Оксана Викторовна"
               colorScheme="gray"
             >
               <Text>Коллективы:</Text>
               <List.Root pl={10}>
-                <List.Item>Театральная студия «Имаго»</List.Item>
-              </List.Root>
-            </LeaderCard>
-          </GridItem>
-
-          <GridItem>
-            <LeaderCard
-              image="/employees/Salaeva.jpg"
-              name="Салаева Ирина Сергеевна"
-              colorScheme="gray"
-            >
-              <Text>Коллективы:</Text>
-              <List.Root pl={10}>
-                <List.Item>
-                  Народный коллектив самодеятельного художественного творчества
-                  молодежный театр «Молодая гвардия»
-                </List.Item>
-                <List.Item>Театральная студия «Волшебная маска»</List.Item>
-              </List.Root>
-            </LeaderCard>
-          </GridItem>
-
-          <GridItem>
-            <LeaderCard
-              image="/employees/Кузьмина.JPG"
-              name="Кузьмина Светлана Андреевна"
-              colorScheme="gray"
-            >
-              <Text>Коллективы:</Text>
-              <List.Root pl={10}>
-                <List.Item>Ансамбль патриотической песни «Наследие»</List.Item>
-                <List.Item>Вокальный ансамбль «Веретёнце»</List.Item>
-                <List.Item>Вокальный ансамбль «Звонцы»</List.Item>
-                <List.Item>Фольклорный ансамбль «Зёрнышки»</List.Item>
+                <List.Item>Народная вокальная студия «Ассорти»</List.Item>
               </List.Root>
             </LeaderCard>
           </GridItem>
@@ -427,19 +397,6 @@ export default function Employees() {
               <Text>Коллективы:</Text>
               <List.Root pl={10}>
                 <List.Item>Народная вокальная студия</List.Item>
-              </List.Root>
-            </LeaderCard>
-          </GridItem>
-
-          <GridItem>
-            <LeaderCard
-              image="/employees/Каушнян.JPG"
-              name="Каушнян Ванда Чеслово"
-              colorScheme="gray"
-            >
-              <Text>Коллективы:</Text>
-              <List.Root pl={10}>
-                <List.Item></List.Item>
               </List.Root>
             </LeaderCard>
           </GridItem>
@@ -459,20 +416,6 @@ export default function Employees() {
               </List.Root>
             </LeaderCard>
           </GridItem>
-
-          <GridItem>
-            <LeaderCard
-              image="/employees/Шлейкова.JPG"
-              name="Шлейкова Оксана Викторовна"
-              colorScheme="gray"
-            >
-              <Text>Коллективы:</Text>
-              <List.Root pl={10}>
-                <List.Item>Народная вокальная студия «Ассорти»</List.Item>
-              </List.Root>
-            </LeaderCard>
-          </GridItem>
-
           <GridItem>
             <LeaderCard
               image="/employees/Чернякова.JPG"
@@ -482,6 +425,64 @@ export default function Employees() {
               <Text>Коллективы:</Text>
               <List.Root pl={10}>
                 <List.Item>Народный хор ветеранов «Вдохновение»</List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
+          <GridItem>
+            <LeaderCard
+              image="/employees/Salaeva.jpg"
+              name="Салаева Ирина Сергеевна"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item>
+                  Народный коллектив самодеятельного художественного творчества
+                  молодежный театр «Молодая гвардия»
+                </List.Item>
+                <List.Item>Театральная студия «Волшебная маска»</List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
+
+          <GridItem>
+            <LeaderCard
+              image="/employees/Сорокина.JPG"
+              name="Сорокина Анастасия Андреевна"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item>Театральная студия «Имаго»</List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
+
+          <GridItem>
+            <LeaderCard
+              image="/employees/Кузьмина.JPG"
+              name="Кузьмина Светлана Андреевна"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item>Ансамбль патриотической песни «Наследие»</List.Item>
+                <List.Item>Вокальный ансамбль «Веретёнце»</List.Item>
+                <List.Item>Вокальный ансамбль «Звонцы»</List.Item>
+                <List.Item>Фольклорный ансамбль «Зёрнышки»</List.Item>
+              </List.Root>
+            </LeaderCard>
+          </GridItem>
+
+          <GridItem>
+            <LeaderCard
+              image="/employees/Каушнян.JPG"
+              name="Каушнян Ванда Чеслово"
+              colorScheme="gray"
+            >
+              <Text>Коллективы:</Text>
+              <List.Root pl={10}>
+                <List.Item></List.Item>
               </List.Root>
             </LeaderCard>
           </GridItem>
