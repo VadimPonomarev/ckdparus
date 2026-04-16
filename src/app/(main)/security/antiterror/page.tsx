@@ -7,6 +7,7 @@ import {
   Link,
   List,
 } from '@chakra-ui/react';
+import PDFViewer from '@/components/pdfviewer/pdfviewer';
 
 export default function History() {
   return (
@@ -14,6 +15,11 @@ export default function History() {
       <Text fontSize="2xl" fontWeight="bold">
         Антитеррор
       </Text>
+      <Separator />
+      <PDFViewer
+        fileUrl="/pdf/презентация_Психологическая_безопасность_1.pdf"
+        title="Психологическая безопасность"
+      />
       <Separator />
       <Box textAlign="center">
         <Text
