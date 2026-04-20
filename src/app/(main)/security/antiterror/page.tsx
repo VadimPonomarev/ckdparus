@@ -21,6 +21,15 @@ export default function History() {
         title="Психологическая безопасность"
       />
       <Separator />
+      <Link
+        href="https://39.mchs.gov.ru/deyatelnost/deyatelnost"
+        color="blue.600"
+        _hover={{ color: 'blue.500', textDecoration: 'underline' }}
+      >
+        Обеспечении пожарной безопасности на территории Советского городского
+        округа
+      </Link>
+      <Separator />
       <Box textAlign="center">
         <Text
           fontSize="lg"
