@@ -127,10 +127,6 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   // Определяем, мобильное ли устройство
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  {
-    console.log('видео Url', videoUrl);
-  }
-
   return (
     <>
       {/* Галерея */}
@@ -427,7 +423,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 mb={4}
               >
                 <AspectRatio maxW="560px" ratio={1}>
-                  <iframe src={videoUrl} allowFullScreen />
+                  {videoUrl}
                 </AspectRatio>
               </Box>
             )}

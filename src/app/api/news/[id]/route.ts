@@ -91,15 +91,6 @@ export async function PATCH(
       );
     }
 
-    // Валидация videoUrl (если указан)
-    if (body.videoUrl !== undefined && body.videoUrl.trim()) {
-      const urlPattern =
-        /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-      if (!urlPattern.test(body.videoUrl.trim())) {
-        validationErrors.push('Некорректный URL видео');
-      }
-    }
-
     if (validationErrors.length > 0) {
       return NextResponse.json(
         { error: validationErrors.join(', ') },
