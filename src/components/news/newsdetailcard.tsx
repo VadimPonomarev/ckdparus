@@ -423,7 +423,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 mb={4}
               >
                 <AspectRatio maxW="560px" ratio={1}>
-                  {videoUrl}
+                  <iframe src={videoUrl} allowFullScreen />
                 </AspectRatio>
               </Box>
             )}
