@@ -127,6 +127,10 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   // Определяем, мобильное ли устройство
   const isMobile = useBreakpointValue({ base: true, md: false });
 
+  {
+    console.log('видео Url', videoUrl);
+  }
+
   return (
     <>
       {/* Галерея */}
@@ -413,7 +417,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
             )}
 
             {/* Видео */}
-            {videoUrl && (
+            {videoUrl && videoUrl != ' ' && (
               <Box
                 bg="gray.50"
                 p={4}
