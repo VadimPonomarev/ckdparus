@@ -422,8 +422,13 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                 borderColor="blue.400"
                 mb={4}
               >
-                <AspectRatio maxW="560px" ratio={1}>
-                  <iframe src={videoUrl} allowFullScreen />
+                <AspectRatio maxW="560px" ratio={1} justifyContent="center">
+                  <iframe
+                    src={videoUrl}
+                    allowFullScreen
+                    width={640}
+                    height={360}
+                  />
                 </AspectRatio>
               </Box>
             )}
