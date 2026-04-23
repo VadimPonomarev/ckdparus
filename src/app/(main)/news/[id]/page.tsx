@@ -182,7 +182,7 @@ const NewsPage = () => {
   const formattedNewsData = {
     ...newsData,
     excerpt: newsData.excerpt || undefined,
-    videoUrl: newsData.excerpt || undefined,
+    videoUrl: newsData.videoUrl || undefined,
     imageUrl: newsData.imageUrl || undefined,
     images: newsData.images?.map(img => ({
       ...img,
