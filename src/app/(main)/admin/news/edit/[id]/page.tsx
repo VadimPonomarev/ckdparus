@@ -47,6 +47,7 @@ const NewsSchema = z.object({
     .max(300, 'Краткое описание не должно превышать 300 символов')
     .optional()
     .or(z.literal('')),
+  videoUrl: z.string().optional().or(z.literal('')),
   imageUrl: z.string().optional().or(z.literal('')),
   isPublished: z.boolean(),
   images: z.array(
@@ -90,6 +91,7 @@ export default function EditNewsPage() {
       title: '',
       content: '',
       excerpt: '',
+      videoUrl: '',
       imageUrl: '',
       isPublished: true,
       images: [],
@@ -126,6 +128,7 @@ export default function EditNewsPage() {
           title: news.title,
           content: news.content,
           excerpt: news.excerpt || '',
+          videoUrl: news.videoUrl || '',
           imageUrl: news.imageUrl || '',
           isPublished: news.isPublished ?? true,
           images: news.images || [],
@@ -184,6 +187,7 @@ export default function EditNewsPage() {
         title: data.title,
         content: data.content,
         excerpt: data.excerpt || null,
+        videoUrl: data.videoUrl || null,
         imageUrl: imageUrl,
         isPublished: data.isPublished,
         images: data.images.map((img, index) => ({
@@ -345,6 +349,30 @@ export default function EditNewsPage() {
                             <Field.ErrorText>
                               {errors.content.message}
                             </Field.ErrorText>
+                          )}
+                        </Field.Root>
+
+                        {/* Видео */}
+                        <Field.Root invalid={!!errors.videoUrl}>
+                          <Field.Label>Ссылка на видео</Field.Label>
+                          <Controller
+                            name="videoUrl"
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                placeholder="Ссылка на видео"
+                                onBlur={field.onBlur}
+                              />
+                            )}
+                          />
+                          {errors.videoUrl && (
+                            <Alert.Root status="error" mt="2">
+                              <Alert.Indicator />
+                              <Alert.Title>
+                                {errors.videoUrl.message}
+                              </Alert.Title>
+                            </Alert.Root>
                           )}
                         </Field.Root>
 

@@ -15,6 +15,7 @@ import {
   VStack,
   Grid,
   GridItem,
+  AspectRatio,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -45,6 +46,7 @@ interface NewsDetailCardProps {
   title: string;
   content: string;
   excerpt?: string | null;
+  videoUrl?: string | null;
   imageUrl?: string | null;
   images?: NewsImage[];
   isPublished: boolean;
@@ -60,6 +62,7 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
   title,
   content,
   excerpt,
+  videoUrl,
   imageUrl,
   images = [],
   views,
@@ -406,6 +409,22 @@ const NewsDetailCard: React.FC<NewsDetailCardProps> = ({
                     </Link>
                   ))}
                 </Flex>
+              </Box>
+            )}
+
+            {/* Видео */}
+            {videoUrl && (
+              <Box
+                bg="gray.50"
+                p={4}
+                borderRadius="md"
+                borderLeft="4px solid"
+                borderColor="blue.400"
+                mb={4}
+              >
+                <AspectRatio maxW="560px" ratio={1}>
+                  <iframe src={videoUrl} allowFullScreen />
+                </AspectRatio>
               </Box>
             )}
           </GridItem>

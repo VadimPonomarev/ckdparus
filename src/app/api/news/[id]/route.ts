@@ -91,6 +91,15 @@ export async function PATCH(
       );
     }
 
+    // Валидация videoUrl (если указан)
+    if (body.videoUrl !== undefined && body.videoUrl.trim()) {
+      const urlPattern =
+        /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+      if (!urlPattern.test(body.videoUrl.trim())) {
+        validationErrors.push('Некорректный URL видео');
+      }
+    }
+
     if (validationErrors.length > 0) {
       return NextResponse.json(
         { error: validationErrors.join(', ') },
@@ -98,20 +107,24 @@ export async function PATCH(
       );
     }
 
-    // Обновляем новость
+    // Обновляем новость с добавлением videoUrl
     const updatedNews = await prisma.news.update({
       where: { id },
       data: {
         title: body.title?.trim(),
         content: body.content?.trim(),
-        excerpt: body.excerpt?.trim(),
-        imageUrl: body.imageUrl?.trim(),
-        isPublished: body.isPublished,
+        excerpt: body.excerpt?.trim() ?? existingNews.excerpt,
+        videoUrl: body.videoUrl?.trim() ?? existingNews.videoUrl, // Добавлено поле videoUrl
+        imageUrl: body.imageUrl?.trim() ?? existingNews.imageUrl,
+        isPublished:
+          body.isPublished !== undefined
+            ? body.isPublished
+            : existingNews.isPublished,
       },
     });
 
     // Обновляем изображения, если они есть
-    if (body.images) {
+    if (body.images !== undefined) {
       // Удаляем старые изображения
       await prisma.newsImage.deleteMany({
         where: { newsId: id },

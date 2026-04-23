@@ -49,6 +49,7 @@ const NewsSchema = z.object({
     .min(50, 'Содержание слишком короткое')
     .max(10000, 'Содержание слишком длинное')
     .nonempty('Обязательное поле'),
+  videoUrl: z.string().optional().or(z.literal('')),
   isPublished: z.boolean(),
 });
 
@@ -86,6 +87,7 @@ export default function AddNewsPage() {
       title: '',
       excerpt: '',
       content: '',
+      videoUrl: '',
       isPublished: true,
     },
     mode: 'onBlur',
@@ -257,7 +259,6 @@ export default function AddNewsPage() {
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
 
-        // Создаем FormData для загрузки файла
         const uploadFormData = new FormData();
         uploadFormData.append('file', img.file);
         uploadFormData.append('entityType', 'news');
@@ -285,13 +286,11 @@ export default function AddNewsPage() {
 
         uploadedImages.push(imageData);
 
-        // Если это обложка, сохраняем URL
         if (i === mainImageIndex) {
           mainImageUrl = uploadData.url;
         }
       }
 
-      // Если не выбрана обложка, используем первое изображение
       if (mainImageIndex === -1 && uploadedImages.length > 0) {
         mainImageUrl = uploadedImages[0].url;
       }
@@ -300,6 +299,7 @@ export default function AddNewsPage() {
         title: data.title,
         excerpt: data.excerpt || null,
         content: data.content,
+        videoUrl: data.videoUrl || null,
         imageUrl: mainImageUrl,
         images: uploadedImages,
         isPublished: data.isPublished,
@@ -318,7 +318,6 @@ export default function AddNewsPage() {
         throw new Error(errorData.error || 'Ошибка при сохранении новости');
       }
 
-      // Освобождаем память от preview URL
       clearAllImages();
 
       alert('Новость успешно создана!');
@@ -425,6 +424,28 @@ export default function AddNewsPage() {
                                 <Alert.Indicator />
                                 <Alert.Title>
                                   {errors.content.message}
+                                </Alert.Title>
+                              </Alert.Root>
+                            )}
+                          </Field.Root>
+                          <Field.Root invalid={!!errors.videoUrl}>
+                            <Field.Label>Ссылка на видео</Field.Label>
+                            <Controller
+                              name="videoUrl"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="Ссылка на видео"
+                                  onBlur={field.onBlur}
+                                />
+                              )}
+                            />
+                            {errors.videoUrl && (
+                              <Alert.Root status="error" mt="2">
+                                <Alert.Indicator />
+                                <Alert.Title>
+                                  {errors.videoUrl.message}
                                 </Alert.Title>
                               </Alert.Root>
                             )}

@@ -31,6 +31,7 @@ interface NewsData {
   title: string;
   content: string;
   excerpt?: string | null;
+  videoUrl?: string | null;
   imageUrl?: string | null;
   isPublished: boolean;
   views: number;
@@ -181,6 +182,7 @@ const NewsPage = () => {
   const formattedNewsData = {
     ...newsData,
     excerpt: newsData.excerpt || undefined,
+    videoUrl: newsData.excerpt || undefined,
     imageUrl: newsData.imageUrl || undefined,
     images: newsData.images?.map(img => ({
       ...img,
@@ -196,6 +198,7 @@ const NewsPage = () => {
       title={formattedNewsData.title}
       content={formattedNewsData.content}
       excerpt={formattedNewsData.excerpt}
+      videoUrl={formattedNewsData.videoUrl}
       imageUrl={formattedNewsData.imageUrl}
       isPublished={formattedNewsData.isPublished}
       views={formattedNewsData.views}

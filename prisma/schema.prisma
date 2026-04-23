@@ -46,6 +46,7 @@ model News {
   excerpt     String?
   imageUrl    String?  @map("image_url") // Главное изображение (обложка)
   images      NewsImage[] // Галерея изображений
+  videoUrl    String?
   isPublished Boolean  @default(true) @map("is_published")
   views       Int      @default(0)
   
