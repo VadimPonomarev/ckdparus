@@ -26,7 +26,7 @@ const Development = () => {
           Политика обработки персональных данных
         </Text>
       </Link>
-      <Link href="mailto:vadim_i4@mail.ru">Место для вашей рекламмы </Link>
+      <Link href="mailto:vadim_i4@mail.ru">Место для вашей рекламы </Link>
       <Stack>
         <Link href="/">
           <Text>Development ( Vadim Ponomarev )</Text>

@@ -1,4 +1,5 @@
 import {
+  Box,
   Grid,
   GridItem,
   HStack,
@@ -176,11 +177,9 @@ const Links = () => {
         </Link>
 
         <Link href="https://39советск.рф" justifyContent="center">
-          <Image
-            src="/images/sovetsk.jpg"
-            alt="Советский городской округ"
-            objectFit="contain"
+          <Box
             borderRadius="20px"
+            p={3}
             boxShadow="xl"
             borderColor="gray.100"
             _hover={{
@@ -188,7 +187,14 @@ const Links = () => {
               transition: 'box-shadow 0.3s ease-in-out',
             }}
             h="150px"
-          />
+          >
+            <Image
+              src="/images/sovetsk.jpg"
+              alt="Советский городской округ"
+              objectFit="contain"
+              h="130px"
+            />
+          </Box>
         </Link>
         <Link href="https://zhit-vmeste.ru">
           <Image
