@@ -1,4 +1,5 @@
 import { Separator, Stack, Text, Link, Box, Image } from '@chakra-ui/react';
+import PDFViewer from '@/components/pdfviewer/pdfviewer';
 
 export default function QualityAssessment() {
   return (
@@ -54,6 +55,11 @@ export default function QualityAssessment() {
           Опрос могут проходить только граждане, достигшие 18-летнего возраста.
         </Text>
       </Box>
+      <Separator />
+      <PDFViewer
+        fileUrl="/pdf/__Аналитический_отчет_НОК_КО_2023г.pdf"
+        title="Аналитический отчет НОК КО 2023 г."
+      />
     </Stack>
   );
 }
