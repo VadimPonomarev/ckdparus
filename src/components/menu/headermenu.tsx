@@ -531,6 +531,10 @@ const HeaderMenu: React.FC = () => {
       title: 'Галерея',
       href: '/gallery',
     },
+    {
+      title: 'Независимая оценка качества',
+      href: '/qualityassessment',
+    },
     // {
     //   title: 'Афиша',
     //   href: '/events',

@@ -114,6 +114,7 @@ const MobMenu: React.FC = () => {
     STATIC_MENUS.security as NavItem,
     STATIC_MENUS.contact as NavItem,
     { title: 'Галерея', href: '/gallery' },
+    { title: 'Независимая оценка качества', href: '/qualityassessment' },
   ];
 
   // Админские пункты
