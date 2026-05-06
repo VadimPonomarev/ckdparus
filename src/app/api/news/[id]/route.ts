@@ -56,7 +56,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await params; // ✅ Здесь всё правильно
     const body = await request.json();
 
     // Проверяем существование новости
@@ -85,7 +85,7 @@ export async function PATCH(
       validationErrors.push('Содержание не может быть пустым');
     }
 
-    if (body.excerpt !== undefined && body.excerpt.length > 300) {
+    if (body.excerpt !== undefined && body.excerpt?.length > 300) {
       validationErrors.push(
         'Краткое описание не должно превышать 300 символов'
       );
@@ -98,14 +98,14 @@ export async function PATCH(
       );
     }
 
-    // Обновляем новость с добавлением videoUrl
+    // Обновляем новость
     const updatedNews = await prisma.news.update({
       where: { id },
       data: {
         title: body.title?.trim(),
         content: body.content?.trim(),
         excerpt: body.excerpt?.trim() ?? existingNews.excerpt,
-        videoUrl: body.videoUrl?.trim() ?? existingNews.videoUrl, // Добавлено поле videoUrl
+        videoUrl: body.videoUrl?.trim() ?? existingNews.videoUrl,
         imageUrl: body.imageUrl?.trim() ?? existingNews.imageUrl,
         isPublished:
           body.isPublished !== undefined
@@ -155,7 +155,12 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating news:', error);
 
+    // 🔍 Добавьте детальную диагностику ошибки
     if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+
       if (error.message.includes('Unique constraint failed')) {
         return NextResponse.json(
           { error: 'Новость с таким заголовком уже существует' },
@@ -165,7 +170,10 @@ export async function PATCH(
     }
 
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      {
+        error:
+          error instanceof Error ? error.message : 'Внутренняя ошибка сервера',
+      },
       { status: 500 }
     );
   }
