@@ -417,10 +417,14 @@ export default function NokSurvey() {
       </form>
 
       {/* Диалоговое окно для уведомлений */}
-      <Dialog.Root open={dialogOpen} onOpenChange={e => setDialogOpen(e.open)}>
+      <Dialog.Root
+        open={dialogOpen}
+        onOpenChange={e => setDialogOpen(e.open)}
+        placement="center"
+      >
         <Portal>
           <Dialog.Backdrop />
-          <Dialog.Positioner>
+          <Dialog.Positioner p={2}>
             <Dialog.Content>
               <Dialog.Header>
                 <Dialog.Title
