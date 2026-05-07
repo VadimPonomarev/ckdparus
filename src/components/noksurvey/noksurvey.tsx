@@ -207,7 +207,7 @@ export default function NokSurvey() {
     options: { value: string; label: string }[];
   }) => (
     <Card.Root>
-      <CardHeader>
+      <CardHeader p={2}>
         <HStack>
           <Box
             bg="teal.500"
@@ -224,7 +224,7 @@ export default function NokSurvey() {
           <Heading size="sm">{title}</Heading>
         </HStack>
       </CardHeader>
-      <CardBody>
+      <CardBody p={2}>
         <Fieldset.Root invalid={!!errors[name]}>
           <Controller
             name={name}

@@ -1,9 +1,10 @@
+// app/api/nok/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Валидация возрастных групп
+// Валидация возрастных групп - исправлено на русские значения
 const validAges = ['18-30', '31-45', '46-55', 'Старше 55 лет'];
 
 // Общие варианты ответов для валидации
@@ -66,8 +67,12 @@ export async function POST(request: NextRequest) {
 
     // Валидация возраста
     if (!validAges.includes(body.q15_age)) {
+      console.error('Invalid age:', body.q15_age);
+      console.error('Valid ages:', validAges);
       return NextResponse.json(
-        { error: 'Некорректная возрастная группа' },
+        {
+          error: `Некорректная возрастная группа. Допустимые значения: ${validAges.join(', ')}`,
+        },
         { status: 400 }
       );
     }
