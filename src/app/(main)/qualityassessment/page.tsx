@@ -1,5 +1,6 @@
 import { Separator, Stack, Text, Link, Box, Image } from '@chakra-ui/react';
 import PDFViewer from '@/components/pdfviewer/pdfviewer';
+import NokSurvey from '@/components/noksurvey/noksurvey';
 
 export default function QualityAssessment() {
   return (
@@ -60,6 +61,8 @@ export default function QualityAssessment() {
         fileUrl="/pdf/__Аналитический_отчет_НОК_КО_2023г.pdf"
         title="Аналитический отчет НОК КО 2023 г."
       />
+      <Separator />
+      <NokSurvey />
     </Stack>
   );
 }

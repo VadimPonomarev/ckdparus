@@ -178,3 +178,27 @@ model PageView {
   @@index([visitedAt, page])
   @@index([sessionId, visitedAt])
 }
+
+
+model NokResponse {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  q1_comfort  String  
+  q2_kindness String
+  q3_schedule String 
+  q4_infoStands String
+  q5_websiteInfo String
+  q6_electronicServices String
+  q7_additionalServices String
+  q8_printMaterials String
+  q9_timeViolation String
+  q10_workDiscipline String
+  q11_competence String
+  q12_materialTech String
+  q13_satisfaction String
+  q14_recommend String
+  q15_age String
+
+  @@map("nok_responses")
+}

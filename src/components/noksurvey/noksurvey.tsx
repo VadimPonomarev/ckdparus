@@ -17,8 +17,6 @@ import {
   Fieldset,
   RadioGroup,
   Box,
-  Center,
-  Spinner,
 } from '@chakra-ui/react';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { Controller, useForm } from 'react-hook-form';
@@ -28,27 +26,21 @@ import { useState } from 'react';
 
 // Схема валидации для всех вопросов
 const formSchema = z.object({
-  q1_comfort: z.string({ message: 'Пожалуйста, ответьте на вопрос 1' }),
-  q2_kindness: z.string({ message: 'Пожалуйста, ответьте на вопрос 2' }),
-  q3_schedule: z.string({ message: 'Пожалуйста, ответьте на вопрос 3' }),
-  q4_infoStands: z.string({ message: 'Пожалуйста, ответьте на вопрос 4' }),
-  q5_websiteInfo: z.string({ message: 'Пожалуйста, ответьте на вопрос 5' }),
-  q6_electronicServices: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 6',
-  }),
-  q7_additionalServices: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 7',
-  }),
-  q8_printMaterials: z.string({ message: 'Пожалуйста, ответьте на вопрос 8' }),
-  q9_timeViolation: z.string({ message: 'Пожалуйста, ответьте на вопрос 9' }),
-  q10_workDiscipline: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 10',
-  }),
-  q11_competence: z.string({ message: 'Пожалуйста, ответьте на вопрос 11' }),
-  q12_materialTech: z.string({ message: 'Пожалуйста, ответьте на вопрос 12' }),
-  q13_satisfaction: z.string({ message: 'Пожалуйста, ответьте на вопрос 13' }),
-  q14_recommend: z.string({ message: 'Пожалуйста, ответьте на вопрос 14' }),
-  q15_age: z.string({ message: 'Пожалуйста, укажите ваш возраст' }),
+  q1_comfort: z.string({ message: 'Ответьте на вопрос 1' }),
+  q2_kindness: z.string({ message: 'Ответьте на вопрос 2' }),
+  q3_schedule: z.string({ message: 'Ответьте на вопрос 3' }),
+  q4_infoStands: z.string({ message: 'Ответьте на вопрос 4' }),
+  q5_websiteInfo: z.string({ message: 'Ответьте на вопрос 5' }),
+  q6_electronicServices: z.string({ message: 'Ответьте на вопрос 6' }),
+  q7_additionalServices: z.string({ message: 'Ответьте на вопрос 7' }),
+  q8_printMaterials: z.string({ message: 'Ответьте на вопрос 8' }),
+  q9_timeViolation: z.string({ message: 'Ответьте на вопрос 9' }),
+  q10_workDiscipline: z.string({ message: 'Ответьте на вопрос 10' }),
+  q11_competence: z.string({ message: 'Ответьте на вопрос 11' }),
+  q12_materialTech: z.string({ message: 'Ответьте на вопрос 12' }),
+  q13_satisfaction: z.string({ message: 'Ответьте на вопрос 13' }),
+  q14_recommend: z.string({ message: 'Ответьте на вопрос 14' }),
+  q15_age: z.string({ message: 'Укажите ваш возраст' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -177,18 +169,16 @@ export default function NokSurvey() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка при отправке опроса');
+        throw new Error(result.error || 'Ошибка при отправке');
       }
 
-      // Успешная отправка
       toaster.create({
         title: 'Спасибо за участие!',
         description: 'Ваше мнение очень важно для нас',
         type: 'success',
       });
 
-      // Сбрасываем форму
-      reset();
+      reset(); // Сбрасываем форму после успешной отправки
     } catch (error) {
       console.error('Ошибка отправки опроса:', error);
 

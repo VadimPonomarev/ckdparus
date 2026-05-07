@@ -563,6 +563,10 @@ const HeaderMenu: React.FC = () => {
       title: 'Статистика посещений ',
       href: '/admin/analytics',
     },
+    {
+      title: 'Статистика опроса ',
+      href: '/admin/nokstats',
+    },
   ];
 
   const handleLogout = () => {
