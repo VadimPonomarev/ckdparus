@@ -424,8 +424,8 @@ export default function NokSurvey() {
       >
         <Portal>
           <Dialog.Backdrop />
-          <Dialog.Positioner p={2}>
-            <Dialog.Content>
+          <Dialog.Positioner>
+            <Dialog.Content gap="5px">
               <Dialog.Header>
                 <Dialog.Title
                   color={dialogType === 'success' ? 'green.500' : 'red.500'}
