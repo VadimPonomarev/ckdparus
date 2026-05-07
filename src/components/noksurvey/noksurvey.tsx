@@ -172,6 +172,8 @@ export default function NokSurvey() {
         throw new Error(result.error || 'Ошибка при отправке');
       }
 
+      console.log('успешная отправка');
+
       toaster.create({
         title: 'Спасибо за участие!',
         description: 'Ваше мнение очень важно для нас',
