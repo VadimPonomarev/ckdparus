@@ -17,11 +17,13 @@ import {
   Fieldset,
   RadioGroup,
   Box,
+  Dialog,
+  Portal,
+  CloseButton,
 } from '@chakra-ui/react';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { toaster } from '@/components/ui/toaster';
 import { useState } from 'react';
 
 // Схема валидации для всех вопросов
@@ -129,6 +131,12 @@ const ageOptions = [
 
 export default function NokSurvey() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<'success' | 'error'>('success');
+  const [dialogMessage, setDialogMessage] = useState({
+    title: '',
+    description: '',
+  });
 
   const {
     control,
@@ -172,26 +180,27 @@ export default function NokSurvey() {
         throw new Error(result.error || 'Ошибка при отправке');
       }
 
-      console.log('успешная отправка');
-
-      toaster.create({
+      // Показываем диалог успеха
+      setDialogType('success');
+      setDialogMessage({
         title: 'Спасибо за участие!',
         description: 'Ваше мнение очень важно для нас',
-        type: 'success',
       });
-
+      setDialogOpen(true);
       reset(); // Сбрасываем форму после успешной отправки
     } catch (error) {
       console.error('Ошибка отправки опроса:', error);
 
-      toaster.create({
+      // Показываем диалог ошибки
+      setDialogType('error');
+      setDialogMessage({
         title: 'Ошибка',
         description:
           error instanceof Error
             ? error.message
             : 'Не удалось отправить опрос. Попробуйте позже.',
-        type: 'error',
       });
+      setDialogOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -406,6 +415,40 @@ export default function NokSurvey() {
           </Text>
         </VStack>
       </form>
+
+      {/* Диалоговое окно для уведомлений */}
+      <Dialog.Root open={dialogOpen} onOpenChange={e => setDialogOpen(e.open)}>
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title
+                  color={dialogType === 'success' ? 'green.500' : 'red.500'}
+                >
+                  {dialogMessage.title}
+                </Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text>{dialogMessage.description}</Text>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    Закрыть
+                  </Button>
+                </Dialog.ActionTrigger>
+              </Dialog.Footer>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </Container>
   );
 }
