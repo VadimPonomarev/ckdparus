@@ -421,11 +421,12 @@ export default function NokSurvey() {
         open={dialogOpen}
         onOpenChange={e => setDialogOpen(e.open)}
         placement="center"
+        size="sm"
       >
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
-            <Dialog.Content gap="5px">
+            <Dialog.Content padding="20px">
               <Dialog.Header>
                 <Dialog.Title
                   color={dialogType === 'success' ? 'green.500' : 'red.500'}
