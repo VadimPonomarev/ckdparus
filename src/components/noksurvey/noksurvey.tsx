@@ -442,6 +442,7 @@ export default function NokSurvey() {
                   <Button
                     variant="outline"
                     onClick={() => setDialogOpen(false)}
+                    px={5}
                   >
                     Закрыть
                   </Button>
