@@ -1,419 +1,210 @@
-// app/nok/page.tsx
+// src/app/(main)/events/[id]/page.tsx
 'use client';
 
-import {
-  Button,
-  Container,
-  Heading,
-  Stack,
-  Text,
-  VStack,
-  HStack,
-  Separator,
-  Card,
-  CardBody,
-  CardHeader,
-  Alert,
-  Fieldset,
-  RadioGroup,
-  Box,
-  Center,
-  Spinner,
-} from '@chakra-ui/react';
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import { Controller, useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import EventDetailCard from '@/components/eventdetailcard/eventdetailcard';
+import { Spinner, Center, Box } from '@chakra-ui/react';
 import { toaster } from '@/components/ui/toaster';
-import { useState } from 'react';
 
-// Схема валидации для всех вопросов
-const formSchema = z.object({
-  q1_comfort: z.string({ message: 'Пожалуйста, ответьте на вопрос 1' }),
-  q2_kindness: z.string({ message: 'Пожалуйста, ответьте на вопрос 2' }),
-  q3_schedule: z.string({ message: 'Пожалуйста, ответьте на вопрос 3' }),
-  q4_infoStands: z.string({ message: 'Пожалуйста, ответьте на вопрос 4' }),
-  q5_websiteInfo: z.string({ message: 'Пожалуйста, ответьте на вопрос 5' }),
-  q6_electronicServices: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 6',
-  }),
-  q7_additionalServices: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 7',
-  }),
-  q8_printMaterials: z.string({ message: 'Пожалуйста, ответьте на вопрос 8' }),
-  q9_timeViolation: z.string({ message: 'Пожалуйста, ответьте на вопрос 9' }),
-  q10_workDiscipline: z.string({
-    message: 'Пожалуйста, ответьте на вопрос 10',
-  }),
-  q11_competence: z.string({ message: 'Пожалуйста, ответьте на вопрос 11' }),
-  q12_materialTech: z.string({ message: 'Пожалуйста, ответьте на вопрос 12' }),
-  q13_satisfaction: z.string({ message: 'Пожалуйста, ответьте на вопрос 13' }),
-  q14_recommend: z.string({ message: 'Пожалуйста, ответьте на вопрос 14' }),
-  q15_age: z.string({ message: 'Пожалуйста, укажите ваш возраст' }),
-});
+// Тип для данных события
+interface EventData {
+  id: string;
+  title: string;
+  date: Date;
+  imageUrl?: string;
+  description: string;
+  location: string;
+  address?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  category?: string;
+  organizer?: string;
+  organizerContacts?: string;
+  maxParticipants?: number;
+  currentParticipants?: number;
+  tags?: string[];
+  socialLinks?: {
+    instagram?: string;
+    vk?: string;
+    telegram?: string;
+  };
+}
 
-type FormValues = z.infer<typeof formSchema>;
+const EventPage = () => {
+  const params = useParams();
+  const id = params.id as string;
 
-// Варианты ответов
-const ratingOptions = [
-  { value: 'Отлично, все устраивает', label: 'Отлично, все устраивает' },
-  { value: 'В целом хорошо', label: 'В целом хорошо' },
-  {
-    value: 'Удовлетворительно, незначительные недостатки',
-    label: 'Удовлетворительно, незначительные недостатки',
-  },
-  { value: 'Плохо, много недостатков', label: 'Плохо, много недостатков' },
-  {
-    value: 'Неудовлетворительно, совершенно не устраивает',
-    label: 'Неудовлетворительно, совершенно не устраивает',
-  },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+  const [eventData, setEventData] = useState<EventData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const kindnessOptions = [
-  { value: 'Отлично, все устраивает', label: 'Отлично, все устраивает' },
-  { value: 'В целом хорошо', label: 'В целом хорошо' },
-  { value: 'Удовлетворительно', label: 'Удовлетворительно' },
-  { value: 'Плохо', label: 'Плохо' },
-  { value: 'Неудовлетворительно', label: 'Неудовлетворительно' },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+  // Загрузка данных события по ID
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!id) return;
 
-const scheduleOptions = [
-  { value: 'Отлично, очень удобно', label: 'Отлично, очень удобно' },
-  { value: 'В целом хорошо', label: 'В целом хорошо' },
-  {
-    value: 'Удовлетворительно, незначительные недостатки',
-    label: 'Удовлетворительно, незначительные недостатки',
-  },
-  { value: 'Плохо, много недостатков', label: 'Плохо, много недостатков' },
-  { value: 'Совершенно не удобно', label: 'Совершенно не удобно' },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+      try {
+        setLoading(true);
+        setError(null);
 
-const frequencyOptions = [
-  { value: 'Никогда не сталкивался', label: 'Никогда не сталкивался' },
-  {
-    value: 'Сталкивался, но не более одного раза',
-    label: 'Сталкивался, но не более одного раза',
-  },
-  {
-    value: 'Сталкиваюсь, но очень редко',
-    label: 'Сталкиваюсь, но очень редко',
-  },
-  {
-    value: 'Сталкиваюсь время от времени',
-    label: 'Сталкиваюсь время от времени',
-  },
-  { value: 'Сталкиваюсь регулярно', label: 'Сталкиваюсь регулярно' },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+        // Вызов вашего API для получения события по ID
+        const response = await fetch(`/api/events/${id}`);
 
-const satisfactionOptions = [
-  { value: 'Полностью удовлетворен', label: 'Полностью удовлетворен' },
-  { value: 'Скорее удовлетворен', label: 'Скорее удовлетворен' },
-  {
-    value: 'В чем-то удовлетворен, в чем-то нет',
-    label: 'В чем-то удовлетворен, в чем-то нет',
-  },
-  { value: 'Скорее не удовлетворен', label: 'Скорее не удовлетворен' },
-  { value: 'Совершенно не удовлетворен', label: 'Совершенно не удовлетворен' },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Ошибка ${response.status}`);
+        }
 
-const recommendOptions = [
-  { value: 'Точно порекомендую', label: 'Точно порекомендую' },
-  { value: 'Скорее порекомендую', label: 'Скорее порекомендую' },
-  { value: 'Скорее не порекомендую', label: 'Скорее не порекомендую' },
-  { value: 'Точно не порекомендую', label: 'Точно не порекомендую' },
-  { value: 'Затрудняюсь ответить', label: 'Затрудняюсь ответить' },
-];
+        const data = await response.json();
 
-const ageOptions = [
-  { value: '18-30', label: '18-30' },
-  { value: '31-45', label: '31-45' },
-  { value: '46-55', label: '46-55' },
-  { value: 'Старше 55 лет', label: 'Старше 55 лет' },
-];
+        // Преобразуем данные, если нужно
+        setEventData({
+          ...data,
+          date: new Date(data.date), // Преобразуем строку в Date объект
+        });
+      } catch (err) {
+        console.error('Ошибка загрузки события:', err);
+        setError(
+          err instanceof Error ? err.message : 'Не удалось загрузить событие'
+        );
 
-export default function NokSurvey() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+        toaster.create({
+          title: 'Ошибка',
+          description: 'Не удалось загрузить данные события',
+          type: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
-    defaultValues: {
-      q1_comfort: '',
-      q2_kindness: '',
-      q3_schedule: '',
-      q4_infoStands: '',
-      q5_websiteInfo: '',
-      q6_electronicServices: '',
-      q7_additionalServices: '',
-      q8_printMaterials: '',
-      q9_timeViolation: '',
-      q10_workDiscipline: '',
-      q11_competence: '',
-      q12_materialTech: '',
-      q13_satisfaction: '',
-      q14_recommend: '',
-      q15_age: '',
-    },
-  });
+    fetchEvent();
+  }, [id]);
 
-  const onSubmit = handleSubmit(async data => {
-    setIsSubmitting(true);
-
+  // Обработчик регистрации
+  const handleRegister = async () => {
     try {
-      const response = await fetch('/api/nok', {
+      // Вызов API для регистрации на событие
+      const response = await fetch(`/api/events/${id}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // body: JSON.stringify({ userId: 'current-user-id' }) // если нужно
       });
+
+      if (!response.ok) {
+        throw new Error('Ошибка регистрации');
+      }
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Ошибка при отправке опроса');
-      }
-
-      // Успешная отправка
       toaster.create({
-        title: 'Спасибо за участие!',
-        description: 'Ваше мнение очень важно для нас',
+        title: 'Успешно!',
+        description:
+          result.message || 'Вы успешно зарегистрировались на мероприятие',
         type: 'success',
       });
 
-      // Сбрасываем форму
-      reset();
-    } catch (error) {
-      console.error('Ошибка отправки опроса:', error);
-
+      // Обновляем данные о текущих участниках
+      if (eventData && eventData.currentParticipants !== undefined) {
+        setEventData({
+          ...eventData,
+          currentParticipants: eventData.currentParticipants + 1,
+        });
+      }
+    } catch (err) {
       toaster.create({
         title: 'Ошибка',
         description:
-          error instanceof Error
-            ? error.message
-            : 'Не удалось отправить опрос. Попробуйте позже.',
+          err instanceof Error ? err.message : 'Не удалось зарегистрироваться',
         type: 'error',
       });
-    } finally {
-      setIsSubmitting(false);
     }
-  });
+  };
 
-  const QuestionCard = ({
-    number,
-    title,
-    name,
-    options,
-  }: {
-    number: number;
-    title: string;
-    name: keyof FormValues;
-    options: { value: string; label: string }[];
-  }) => (
-    <Card.Root>
-      <CardHeader>
-        <HStack>
-          <Box
-            bg="teal.500"
-            color="white"
-            borderRadius="full"
-            width="30px"
-            height="30px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text fontWeight="bold">{number}</Text>
-          </Box>
-          <Heading size="sm">{title}</Heading>
-        </HStack>
-      </CardHeader>
-      <CardBody>
-        <Fieldset.Root invalid={!!errors[name]}>
-          <Controller
-            name={name}
-            control={control}
-            render={({ field }) => (
-              <RadioGroup.Root
-                name={field.name}
-                value={field.value}
-                onValueChange={({ value }) => {
-                  field.onChange(value);
-                }}
-              >
-                <Stack gap={2}>
-                  {options.map(option => (
-                    <RadioGroup.Item key={option.value} value={option.value}>
-                      <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
-                      <RadioGroup.ItemIndicator />
-                      <RadioGroup.ItemText>{option.label}</RadioGroup.ItemText>
-                    </RadioGroup.Item>
-                  ))}
-                </Stack>
-              </RadioGroup.Root>
-            )}
-          />
-          {errors[name] && (
-            <Fieldset.ErrorText>{errors[name]?.message}</Fieldset.ErrorText>
-          )}
-        </Fieldset.Root>
-      </CardBody>
-    </Card.Root>
-  );
+  // Обработчик добавления в избранное
+  const handleBookmark = async () => {
+    try {
+      // Вызов API для добавления в избранное
+      const response = await fetch(`/api/events/${id}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // body: JSON.stringify({ userId: 'current-user-id' })
+      });
 
+      if (!response.ok) {
+        throw new Error('Ошибка добавления в избранное');
+      }
+
+      const result = await response.json();
+
+      toaster.create({
+        title: 'Успешно!',
+        description: result.message || 'Событие добавлено в избранное',
+        type: 'success',
+      });
+    } catch (err) {
+      toaster.create({
+        title: 'Ошибка',
+        description:
+          err instanceof Error
+            ? err.message
+            : 'Не удалось добавить в избранное',
+        type: 'error',
+      });
+    }
+  };
+
+  // Состояние загрузки
+  if (loading) {
+    return (
+      <Center minH="60vh">
+        <Box textAlign="center">
+          <Spinner size="xl" color="blue.500" mb={4} />
+          <Text color="gray.600">Загрузка события...</Text>
+        </Box>
+      </Center>
+    );
+  }
+
+  // Состояние ошибки
+  if (error) {
+    return (
+      <Center minH="60vh" p={4}>
+        <Heading size="md" mb={2}>
+          Ошибка загрузки
+        </Heading>
+      </Center>
+    );
+  }
+
+  // Событие не найдено
+  if (!eventData) {
+    return (
+      <Center minH="60vh" p={4}>
+        <Heading size="md" mb={2}>
+          Событие не найдено
+        </Heading>
+        <Text>Запрошенное событие не существует или было удалено</Text>
+      </Center>
+    );
+  }
+
+  // Успешная загрузка - отображаем компонент
   return (
-    <Container maxW="container.lg" py={8}>
-      <form onSubmit={onSubmit}>
-        <VStack gap={6} align="stretch">
-          <Box textAlign="center">
-            <Heading size="xl" mb={2}>
-              Независимая оценка качества
-            </Heading>
-            <Text color="gray.600">
-              Уважаемые посетители, просим вас оценить качество работы нашей
-              организации
-            </Text>
-          </Box>
-
-          <Separator />
-
-          <Alert.Root status="info" mb={4}>
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Внимание!</Alert.Title>
-              <Alert.Description>
-                Опрос могут проходить только граждане, достигшие 18-летнего
-                возраста. Пожалуйста, ответьте на все вопросы.
-              </Alert.Description>
-            </Alert.Content>
-          </Alert.Root>
-
-          <QuestionCard
-            number={1}
-            title="Оцените комфортность условий пребывания в организации"
-            name="q1_comfort"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={2}
-            title="Как вы оцениваете доброжелательность и вежливость персонала организации?"
-            name="q2_kindness"
-            options={kindnessOptions}
-          />
-
-          <QuestionCard
-            number={3}
-            title="Насколько вас в целом устраивает график работы организации?"
-            name="q3_schedule"
-            options={scheduleOptions}
-          />
-
-          <QuestionCard
-            number={4}
-            title="Оцените доступность и актуальность информации о деятельности организации, размещенной на стендах, вывесках"
-            name="q4_infoStands"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={5}
-            title="Оцените качество и полноту информации об организации, размещенной на официальном сайте"
-            name="q5_websiteInfo"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={6}
-            title="Оцените удобство пользования электронными сервисами, предоставляемыми организацией"
-            name="q6_electronicServices"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={7}
-            title="Как вы оцениваете дополнительные услуги, предоставляемые организацией и доступность их получения?"
-            name="q7_additionalServices"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={8}
-            title="Оцените качество и содержание полиграфических материалов организации"
-            name="q8_printMaterials"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={9}
-            title="Сталкивались ли вы с несоблюдением установленного (заявленного) времени предоставления услуг (проведения мероприятий)?"
-            name="q9_timeViolation"
-            options={frequencyOptions}
-          />
-
-          <QuestionCard
-            number={10}
-            title="Приходилось ли вам сталкиваться с тем, что сотрудники организации нарушали режим работы?"
-            name="q10_workDiscipline"
-            options={frequencyOptions}
-          />
-
-          <QuestionCard
-            number={11}
-            title="Как вы оцениваете компетентность персонала организации культуры?"
-            name="q11_competence"
-            options={kindnessOptions}
-          />
-
-          <QuestionCard
-            number={12}
-            title="Оцените материально-техническое обеспечение организации"
-            name="q12_materialTech"
-            options={ratingOptions}
-          />
-
-          <QuestionCard
-            number={13}
-            title="Насколько в целом вы удовлетворены условиями оказания услуг?"
-            name="q13_satisfaction"
-            options={satisfactionOptions}
-          />
-
-          <QuestionCard
-            number={14}
-            title="Посоветуете ли вы своим знакомым, друзьям посетить наше учреждение?"
-            name="q14_recommend"
-            options={recommendOptions}
-          />
-
-          <QuestionCard
-            number={15}
-            title="Укажите пожалуйста ваш возраст"
-            name="q15_age"
-            options={ageOptions}
-          />
-
-          <Button
-            type="submit"
-            loading={isSubmitting}
-            loadingText="Отправка..."
-            size="lg"
-            colorScheme="teal"
-          >
-            Отправить опрос
-          </Button>
-
-          <Text fontSize="sm" color="gray.500" textAlign="center">
-            Спасибо за ваше участие! Ваше мнение поможет нам стать лучше.
-          </Text>
-        </VStack>
-      </form>
-    </Container>
+    <EventDetailCard
+      {...eventData}
+      onRegister={handleRegister}
+      onBookmark={handleBookmark}
+    />
   );
-}
+};
+
+// Добавляем импорт Heading если нужно
+import { Heading, Text, Button } from '@chakra-ui/react';
+
+export default EventPage;
