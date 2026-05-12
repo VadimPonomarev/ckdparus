@@ -6,7 +6,7 @@ export default function QualityAssessment() {
   return (
     <Stack gap={6}>
       <Text fontSize="2xl" fontWeight="bold">
-        Независимая оценка качества
+        Независимая оценка качества на сайте bus.gov.ru
       </Text>
       <Separator />
 
@@ -17,6 +17,9 @@ export default function QualityAssessment() {
         h="350px"
       />
       <Separator />
+      <Text fontSize="2xl" fontWeight="bold">
+        Независимая оценка качества
+      </Text>
       <Image
         src="/images/qualityassessment.png"
         alt="QR код независимая оценка качества"
