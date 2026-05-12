@@ -11,6 +11,13 @@ export default function QualityAssessment() {
       <Separator />
 
       <Image
+        src="/qr/qrcode.png"
+        alt="QR код независимая оценка качества на сайте bus.gov.ru"
+        objectFit="contain"
+        h="350px"
+      />
+      <Separator />
+      <Image
         src="/images/qualityassessment.png"
         alt="QR код независимая оценка качества"
         objectFit="contain"
