@@ -11,8 +11,8 @@ export default function History() {
       <Center>
         <Stack>
           <PDFViewer
-            fileUrl="/pdf/ilovepdf_merged.pdf"
-            title="Оказание платных услуг"
+            fileUrl="/pdf/Калькуляция.pdf"
+            title="Перечень оказываемых платных услуг, цены (тарифы) на услуги"
           />
         </Stack>
       </Center>
