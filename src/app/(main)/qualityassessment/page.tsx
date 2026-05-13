@@ -72,6 +72,11 @@ export default function QualityAssessment() {
         title="Аналитический отчет НОК КО 2023 г."
       />
       <Separator />
+      <PDFViewer
+        fileUrl="/pdf/IMG_20260513_0001.pdf"
+        title="План по улучшению качества работы организации и устранению недостатков, выявленных по итогам нок"
+      />
+      <Separator />
       <NokSurvey />
     </Stack>
   );
