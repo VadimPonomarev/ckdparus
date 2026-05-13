@@ -202,6 +202,10 @@ export const STATIC_MENUS = {
         href: '/documents/regulations',
       },
       { title: 'Расписание клубных формирований', href: '/documents/schedule' },
+      {
+        title: 'Положение о порядке реализации билетов',
+        href: '/documents/ticketrelease',
+      },
     ],
   },
   security: {

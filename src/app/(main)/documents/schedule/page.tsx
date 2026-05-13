@@ -11,7 +11,7 @@ export default function History() {
         <Stack>
           <Image
             src="/images/raspisanie/0.jpg"
-            alt="Распbсание"
+            alt="Расписание"
             objectFit="contain"
             borderRadius="20px"
             boxShadow="xl"
@@ -24,7 +24,7 @@ export default function History() {
           />
           <Image
             src="/images/raspisanie/1.jpg"
-            alt="Распbсание"
+            alt="Расписание"
             objectFit="contain"
             borderRadius="20px"
             boxShadow="xl"

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Text, VStack, HStack, Link, Container } from '@chakra-ui/react';
+import { Box, Text, VStack, HStack, Link } from '@chakra-ui/react';
 import {
   FaPhone,
   FaEnvelope,
@@ -97,6 +97,35 @@ export default function Page() {
                   <Text>
                     <strong>ОКВЭД:</strong> 90.04.3
                   </Text>
+                </VStack>
+              </Box>
+              <Box width="100%">
+                <Text fontWeight="bold" fontSize="lg" color="blue.700">
+                  Информация об учредителе:
+                </Text>
+                <VStack align="start">
+                  <Text>
+                    <strong>Адрес:</strong> Калининградская область, г.Советск,
+                    ул.Театральная,3
+                  </Text>
+                  <Text>
+                    <strong>Телефон:</strong> 8 401 61 400 25
+                  </Text>
+                  <Text>
+                    <strong>Руководство::</strong> И.О. начальника управления
+                    образования, культуры, спорта и молодежной политики Никишова
+                    Мария Владимировна
+                  </Text>
+                  <Link
+                    href="https://39советск.рф/upravlenie-obrazovaniya.html"
+                    color="teal.500"
+                    fontWeight="medium"
+                    _hover={{ color: 'teal.600', textDecoration: 'underline' }}
+                    wordBreak="break-all"
+                  >
+                    Управление образования, культуры, спорта и молодежной
+                    политики г. Своетска
+                  </Link>
                 </VStack>
               </Box>
               <Box width="100%">
