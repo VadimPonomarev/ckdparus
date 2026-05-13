@@ -124,7 +124,7 @@ export default function Page() {
                     wordBreak="break-all"
                   >
                     Управление образования, культуры, спорта и молодежной
-                    политики г. Своетска
+                    политики г. Советска
                   </Link>
                 </VStack>
               </Box>
