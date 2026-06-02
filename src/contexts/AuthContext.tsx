@@ -1,3 +1,4 @@
+// contexts/AuthContext.tsx
 'use client';
 
 import React, {
@@ -7,15 +8,17 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  user: { id: string; username: string } | null;
   login: (
     username: string,
     password: string
   ) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
 }
 
@@ -34,41 +37,45 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<{ id: string; username: string } | null>(null);
 
   // Проверяем аутентификацию при загрузке
   useEffect(() => {
     const checkInitialAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        const valid = await verifyToken(token);
-        if (valid) {
-          setIsAuthenticated(true);
-        } else {
-          localStorage.removeItem('auth_token');
-        }
-      }
+      await checkAuth();
       setIsLoading(false);
     };
 
     checkInitialAuth();
   }, []);
 
-  const verifyToken = async (token: string): Promise<boolean> => {
+  const checkAuth = async (): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token: 'check' }), // Токен автоматически отправляется с cookies
       });
 
-      const data = await response.json();
-      return data.valid === true;
+      if (response.ok) {
+        const data = await response.json();
+        setIsAuthenticated(true);
+        setUser(data.user);
+        return true;
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+        return false;
+      }
     } catch (error) {
-      console.error('Token verification error:', error);
+      console.error('Auth check error:', error);
+      setIsAuthenticated(false);
+      setUser(null);
       return false;
     }
   };
@@ -95,9 +102,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
       }
 
-      // Сохраняем токен
-      localStorage.setItem('auth_token', data.token);
       setIsAuthenticated(true);
+
+      // Получаем информацию о пользователе
+      await checkAuth();
 
       return {
         success: true,
@@ -112,30 +120,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setIsAuthenticated(false);
+  const logout = async (): Promise<void> => {
+    try {
+      // Вызываем API для выхода (очистки cookie)
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      router.push('/');
+      router.refresh();
+    }
   };
 
-  const checkAuth = async (): Promise<boolean> => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setIsAuthenticated(false);
-      return false;
-    }
-
-    const valid = await verifyToken(token);
-    if (!valid) {
-      localStorage.removeItem('auth_token');
-      setIsAuthenticated(false);
-      return false;
-    }
-
-    setIsAuthenticated(true);
-    return true;
-  };
-
-  // Периодическая проверка токена
+  // Периодическая проверка токена (каждые 5 минут)
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -144,7 +145,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         checkAuth();
       },
       5 * 60 * 1000
-    ); // Проверяем каждые 5 минут
+    );
 
     return () => clearInterval(interval);
   }, [isAuthenticated]);
@@ -154,6 +155,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         isAuthenticated,
         isLoading,
+        user,
         login,
         logout,
         checkAuth,
