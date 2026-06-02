@@ -1,7 +1,6 @@
-// app/admin/news/edit/[id]/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -16,18 +15,22 @@ import {
   Heading,
   HStack,
   Image,
-  FileUpload,
   VStack,
   Text,
-  useFileUpload,
   Spinner,
   Center,
   Alert,
+  IconButton,
+  Grid,
+  GridItem,
+  Badge,
+  Flex,
 } from '@chakra-ui/react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { HiX } from 'react-icons/hi';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 // Схема валидации для новости
@@ -48,20 +51,29 @@ const NewsSchema = z.object({
     .optional()
     .or(z.literal('')),
   videoUrl: z.string().optional().or(z.literal('')),
-  imageUrl: z.string().optional().or(z.literal('')),
   isPublished: z.boolean(),
-  images: z.array(
-    z.object({
-      id: z.string().optional(),
-      url: z.string().min(1, 'URL изображения обязателен'),
-      alt: z.string().optional(),
-      caption: z.string().optional(),
-      order: z.number(),
-    })
-  ),
 });
 
 type NewsFormValues = z.infer<typeof NewsSchema>;
+
+// Интерфейс для существующего изображения из БД
+interface ExistingImage {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+  order: number;
+}
+
+// Интерфейс для нового загружаемого файла
+interface NewImageFile {
+  id: string;
+  file: File;
+  preview: string;
+  alt: string;
+  caption: string;
+  order: number;
+}
 
 export default function EditNewsPage() {
   const router = useRouter();
@@ -71,14 +83,19 @@ export default function EditNewsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const fileUpload = useFileUpload({
-    maxFiles: 1,
-    maxFileSize: 5 * 1024 * 1024,
-    accept: 'image/*',
-  });
+  // Состояния для изображений
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
+  const [newImages, setNewImages] = useState<NewImageFile[]>([]);
+  const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
+  const [mainImageIndex, setMainImageIndex] = useState<number>(-1);
+  const [existingMainImageUrl, setExistingMainImageUrl] = useState<string | null>(null);
+  const [newMainImageFile, setNewMainImageFile] = useState<File | null>(null);
+  const [newMainImagePreview, setNewMainImagePreview] = useState<string | null>(null);
+
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
 
   const {
     control,
@@ -92,20 +109,10 @@ export default function EditNewsPage() {
       content: '',
       excerpt: '',
       videoUrl: '',
-      imageUrl: '',
       isPublished: true,
-      images: [],
     },
     mode: 'onBlur',
   });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'images',
-  });
-
-  const acceptedFile = fileUpload.acceptedFiles[0];
-  const previewUrl = acceptedFile ? URL.createObjectURL(acceptedFile) : null;
 
   // Загрузка данных новости
   useEffect(() => {
@@ -129,12 +136,37 @@ export default function EditNewsPage() {
           content: news.content,
           excerpt: news.excerpt || '',
           videoUrl: news.videoUrl || '',
-          imageUrl: news.imageUrl || '',
           isPublished: news.isPublished ?? true,
-          images: news.images || [],
         });
 
-        setCurrentImageUrl(news.imageUrl);
+        // Загружаем существующие изображения
+        if (news.images && news.images.length > 0) {
+          const loadedImages = news.images.map((img: any, idx: number) => ({
+            id: img.id || `existing-${idx}`,
+            url: img.url,
+            alt: img.alt || '',
+            caption: img.caption || '',
+            order: img.order !== undefined ? img.order : idx,
+          }));
+
+          // Сортируем по order
+          loadedImages.sort((a: ExistingImage, b: ExistingImage) => a.order - b.order);
+          setExistingImages(loadedImages);
+
+          // Находим индекс главного изображения
+          if (news.imageUrl) {
+            setExistingMainImageUrl(news.imageUrl);
+            const mainImgIndex = loadedImages.findIndex((img: ExistingImage) => img.url === news.imageUrl);
+            setMainImageIndex(mainImgIndex !== -1 ? mainImgIndex : -1);
+          } else {
+            setExistingMainImageUrl(null);
+            setMainImageIndex(-1);
+          }
+        } else if (news.imageUrl) {
+          // Если есть только главное изображение без галереи
+          setExistingMainImageUrl(news.imageUrl);
+          setMainImageIndex(-1);
+        }
       } catch (err) {
         console.error('Error fetching news:', err);
         setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
@@ -148,52 +180,307 @@ export default function EditNewsPage() {
     }
   }, [id, reset]);
 
-  const handleRemoveFile = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+  // Очистка превью при размонтировании
+  useEffect(() => {
+    return () => {
+      newImages.forEach(img => URL.revokeObjectURL(img.preview));
+      if (newMainImagePreview) URL.revokeObjectURL(newMainImagePreview);
+    };
+  }, [newImages, newMainImagePreview]);
+
+  // Обработка выбора главного изображения
+  const handleMainImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Проверка размера файла (до 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Файл слишком большой. Максимум 5MB');
+      return;
     }
-    fileUpload.clearFiles();
+
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Пожалуйста, выберите изображение');
+      return;
+    }
+
+    if (newMainImagePreview) {
+      URL.revokeObjectURL(newMainImagePreview);
+    }
+
+    setNewMainImageFile(file);
+    setNewMainImagePreview(URL.createObjectURL(file));
     setUploadError(null);
+  };
+
+  // Удаление главного изображения
+  const handleRemoveMainImage = () => {
+    if (newMainImagePreview) {
+      URL.revokeObjectURL(newMainImagePreview);
+      setNewMainImageFile(null);
+      setNewMainImagePreview(null);
+    } else {
+      setExistingMainImageUrl(null);
+      setMainImageIndex(-1);
+    }
+  };
+
+  // Обработка выбора файлов для галереи
+  const handleGalleryFilesSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const newImageFiles: NewImageFile[] = Array.from(files).map((file, index) => ({
+      id: `new-${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+      file,
+      preview: URL.createObjectURL(file),
+      alt: '',
+      caption: '',
+      order: existingImages.length + newImages.length + index,
+    }));
+
+    setNewImages(prev => [...prev, ...newImageFiles]);
+    setUploadError(null);
+    event.target.value = '';
+  };
+
+  // Drag & drop для галереи
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const files = event.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    const newImageFiles: NewImageFile[] = Array.from(files).map((file, index) => ({
+      id: `new-${Date.now()}-${index}-${Math.random().toString(36).substring(7)}`,
+      file,
+      preview: URL.createObjectURL(file),
+      alt: '',
+      caption: '',
+      order: existingImages.length + newImages.length + index,
+    }));
+
+    setNewImages(prev => [...prev, ...newImageFiles]);
+    setUploadError(null);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  // Удаление существующего изображения
+  const handleRemoveExistingImage = (image: ExistingImage) => {
+    setDeletedImageIds(prev => [...prev, image.id]);
+    setExistingImages(prev => prev.filter(img => img.id !== image.id));
+
+    // Корректируем индекс обложки
+    const currentIndex = existingImages.findIndex(img => img.id === image.id);
+    if (mainImageIndex === currentIndex) {
+      setMainImageIndex(-1);
+    } else if (mainImageIndex > currentIndex) {
+      setMainImageIndex(mainImageIndex - 1);
+    }
+  };
+
+  // Удаление нового изображения
+  const handleRemoveNewImage = (index: number) => {
+    const imageToRemove = newImages[index];
+    URL.revokeObjectURL(imageToRemove.preview);
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Обновление alt текста существующего изображения
+  const handleExistingImageAltChange = (imageId: string, value: string) => {
+    setExistingImages(prev =>
+      prev.map(img =>
+        img.id === imageId ? { ...img, alt: value } : img
+      )
+    );
+  };
+
+  // Обновление подписи существующего изображения
+  const handleExistingImageCaptionChange = (imageId: string, value: string) => {
+    setExistingImages(prev =>
+      prev.map(img =>
+        img.id === imageId ? { ...img, caption: value } : img
+      )
+    );
+  };
+
+  // Обновление alt текста нового изображения
+  const handleNewImageAltChange = (index: number, value: string) => {
+    setNewImages(prev =>
+      prev.map((img, i) =>
+        i === index ? { ...img, alt: value } : img
+      )
+    );
+  };
+
+  // Обновление подписи нового изображения
+  const handleNewImageCaptionChange = (index: number, value: string) => {
+    setNewImages(prev =>
+      prev.map((img, i) =>
+        i === index ? { ...img, caption: value } : img
+      )
+    );
+  };
+
+  // Перемещение существующего изображения вверх
+  const handleMoveExistingUp = (index: number) => {
+    if (index === 0) return;
+    const newImages = [...existingImages];
+    [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+    setExistingImages(newImages);
+
+    if (mainImageIndex === index) {
+      setMainImageIndex(index - 1);
+    } else if (mainImageIndex === index - 1) {
+      setMainImageIndex(index);
+    }
+  };
+
+  // Перемещение существующего изображения вниз
+  const handleMoveExistingDown = (index: number) => {
+    if (index === existingImages.length - 1) return;
+    const newImages = [...existingImages];
+    [newImages[index + 1], newImages[index]] = [newImages[index], newImages[index + 1]];
+    setExistingImages(newImages);
+
+    if (mainImageIndex === index) {
+      setMainImageIndex(index + 1);
+    } else if (mainImageIndex === index + 1) {
+      setMainImageIndex(index);
+    }
+  };
+
+  // Перемещение нового изображения вверх
+  const handleMoveNewUp = (index: number) => {
+    if (index === 0) return;
+    const newImagesList = [...newImages];
+    [newImagesList[index - 1], newImagesList[index]] = [newImagesList[index], newImagesList[index - 1]];
+    setNewImages(newImagesList);
+  };
+
+  // Перемещение нового изображения вниз
+  const handleMoveNewDown = (index: number) => {
+    if (index === newImages.length - 1) return;
+    const newImagesList = [...newImages];
+    [newImagesList[index + 1], newImagesList[index]] = [newImagesList[index], newImagesList[index + 1]];
+    setNewImages(newImagesList);
+  };
+
+  // Установка обложки из существующих изображений
+  const handleSetMainFromExisting = (index: number) => {
+    setMainImageIndex(index);
+    // Если есть новое главное изображение, удаляем его
+    if (newMainImageFile) {
+      if (newMainImagePreview) URL.revokeObjectURL(newMainImagePreview);
+      setNewMainImageFile(null);
+      setNewMainImagePreview(null);
+    }
+  };
+
+  // Очистка всех изображений
+  const clearAllImages = () => {
+    newImages.forEach(img => URL.revokeObjectURL(img.preview));
+    setNewImages([]);
+    setExistingImages([]);
+    setDeletedImageIds([]);
+    setMainImageIndex(-1);
+    if (newMainImagePreview) URL.revokeObjectURL(newMainImagePreview);
+    setNewMainImageFile(null);
+    setNewMainImagePreview(null);
+    setExistingMainImageUrl(null);
   };
 
   const onSubmit = async (data: NewsFormValues) => {
     try {
       setIsSubmitting(true);
       setError(null);
+      setUploadError(null);
 
-      let imageUrl = currentImageUrl;
+      let finalMainImageUrl: string | null = null;
 
-      // Если загружен новый файл
-      if (acceptedFile) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', acceptedFile);
-        uploadFormData.append('entityType', 'news');
+      // 1. Загружаем новое главное изображение, если есть
+      if (newMainImageFile) {
+        const formData = new FormData();
+        formData.append('file', newMainImageFile);
+        formData.append('entityType', 'news');
 
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
-          body: uploadFormData,
+          body: formData,
         });
 
         if (!uploadResponse.ok) {
           const errorData = await uploadResponse.json();
-          throw new Error(errorData.error || 'Ошибка загрузки изображения');
+          throw new Error(errorData.error || 'Ошибка загрузки главного изображения');
         }
 
         const uploadData = await uploadResponse.json();
-        imageUrl = uploadData.url;
+        finalMainImageUrl = uploadData.url;
       }
+      // 2. Используем существующее главное изображение из галереи
+      else if (mainImageIndex !== -1 && existingImages[mainImageIndex]) {
+        finalMainImageUrl = existingImages[mainImageIndex].url;
+      }
+      // 3. Используем существующее отдельное главное изображение
+      else if (existingMainImageUrl) {
+        finalMainImageUrl = existingMainImageUrl;
+      }
+
+      // Загружаем новые изображения для галереи
+      const uploadedNewImages = [];
+      for (let i = 0; i < newImages.length; i++) {
+        const img = newImages[i];
+        const formData = new FormData();
+        formData.append('file', img.file);
+        formData.append('entityType', 'news');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || `Ошибка загрузки изображения ${i + 1}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+
+        uploadedNewImages.push({
+          url: uploadData.url,
+          alt: img.alt || `Изображение к новости "${data.title}"`,
+          caption: img.caption,
+          order: existingImages.length + i,
+        });
+      }
+
+      // Формируем финальный список изображений
+      const allImages = [
+        ...existingImages.map((img, idx) => ({
+          id: img.id,
+          url: img.url,
+          alt: img.alt,
+          caption: img.caption,
+          order: idx,
+        })),
+        ...uploadedNewImages,
+      ];
 
       const newsData = {
         title: data.title,
         content: data.content,
         excerpt: data.excerpt || null,
         videoUrl: data.videoUrl || null,
-        imageUrl: imageUrl,
+        imageUrl: finalMainImageUrl,
+        images: allImages,
         isPublished: data.isPublished,
-        images: data.images.map((img, index) => ({
-          ...img,
-          order: index,
-        })),
+        deletedImageIds: deletedImageIds.length > 0 ? deletedImageIds : undefined,
       };
 
       const response = await fetch(`/api/news/${id}`, {
@@ -209,9 +496,8 @@ export default function EditNewsPage() {
         throw new Error(errorData.error || 'Ошибка при обновлении новости');
       }
 
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      // Очистка
+      clearAllImages();
 
       router.push(`/news/${id}`);
     } catch (error) {
@@ -250,7 +536,6 @@ export default function EditNewsPage() {
               <Alert.Indicator />
               <Alert.Title>{error}</Alert.Title>
             </Alert.Root>
-
             <Center mt={4}>
               <Button onClick={() => router.push('/admin/news')}>
                 Вернуться к списку
@@ -277,12 +562,19 @@ export default function EditNewsPage() {
                 </Alert.Root>
               )}
 
+              {uploadError && (
+                <Alert.Root status="error">
+                  <Alert.Indicator />
+                  <Alert.Title>{uploadError}</Alert.Title>
+                </Alert.Root>
+              )}
+
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Stack gap="6">
-                  <Stack direction={{ base: 'column', lg: 'row' }} gap="6">
+                  <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6}>
                     {/* Левая колонка - основные поля */}
-                    <Box flex="2">
-                      <Stack gap="4">
+                    <GridItem>
+                      <Stack gap="5">
                         {/* Заголовок */}
                         <Field.Root invalid={!!errors.title}>
                           <Field.Label>Заголовок</Field.Label>
@@ -298,9 +590,7 @@ export default function EditNewsPage() {
                             )}
                           />
                           {errors.title && (
-                            <Field.ErrorText>
-                              {errors.title.message}
-                            </Field.ErrorText>
+                            <Field.ErrorText>{errors.title.message}</Field.ErrorText>
                           )}
                         </Field.Root>
 
@@ -324,9 +614,7 @@ export default function EditNewsPage() {
                             Будет отображаться в превью новости
                           </Field.HelperText>
                           {errors.excerpt && (
-                            <Field.ErrorText>
-                              {errors.excerpt.message}
-                            </Field.ErrorText>
+                            <Field.ErrorText>{errors.excerpt.message}</Field.ErrorText>
                           )}
                         </Field.Root>
 
@@ -346,9 +634,7 @@ export default function EditNewsPage() {
                             )}
                           />
                           {errors.content && (
-                            <Field.ErrorText>
-                              {errors.content.message}
-                            </Field.ErrorText>
+                            <Field.ErrorText>{errors.content.message}</Field.ErrorText>
                           )}
                         </Field.Root>
 
@@ -367,273 +653,19 @@ export default function EditNewsPage() {
                             )}
                           />
                           {errors.videoUrl && (
-                            <Alert.Root status="error" mt="2">
-                              <Alert.Indicator />
-                              <Alert.Title>
-                                {errors.videoUrl.message}
-                              </Alert.Title>
-                            </Alert.Root>
+                            <Field.ErrorText>{errors.videoUrl.message}</Field.ErrorText>
                           )}
                         </Field.Root>
-
-                        {/* Дополнительные изображения */}
-                        <Box>
-                          <HStack justify="space-between" mb={4}>
-                            <Text fontWeight="medium">
-                              Дополнительные изображения
-                            </Text>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                append({
-                                  url: '',
-                                  alt: '',
-                                  caption: '',
-                                  order: fields.length,
-                                })
-                              }
-                              colorScheme="blue"
-                              variant="outline"
-                            >
-                              Добавить
-                            </Button>
-                          </HStack>
-
-                          {fields.length > 0 ? (
-                            <VStack align="stretch">
-                              {fields.map((field, index) => (
-                                <Box
-                                  key={field.id}
-                                  p={4}
-                                  border="1px solid"
-                                  borderColor="gray.200"
-                                  borderRadius="md"
-                                >
-                                  <HStack justify="space-between" mb={3}>
-                                    <Text fontWeight="bold">
-                                      Изображение {index + 1}
-                                    </Text>
-                                    <Button
-                                      size="sm"
-                                      colorScheme="red"
-                                      variant="ghost"
-                                      onClick={() => remove(index)}
-                                    >
-                                      <FaTrash />
-                                    </Button>
-                                  </HStack>
-
-                                  <VStack>
-                                    <Field.Root
-                                      invalid={!!errors.images?.[index]?.url}
-                                    >
-                                      <Controller
-                                        name={`images.${index}.url`}
-                                        control={control}
-                                        render={({ field }) => (
-                                          <Input
-                                            {...field}
-                                            placeholder="URL изображения"
-                                          />
-                                        )}
-                                      />
-                                      {errors.images?.[index]?.url && (
-                                        <Field.ErrorText>
-                                          {errors.images[index]?.url?.message}
-                                        </Field.ErrorText>
-                                      )}
-                                    </Field.Root>
-
-                                    <Field.Root>
-                                      <Controller
-                                        name={`images.${index}.alt`}
-                                        control={control}
-                                        render={({ field }) => (
-                                          <Input
-                                            {...field}
-                                            placeholder="Alt текст (опционально)"
-                                          />
-                                        )}
-                                      />
-                                    </Field.Root>
-
-                                    <Field.Root>
-                                      <Controller
-                                        name={`images.${index}.caption`}
-                                        control={control}
-                                        render={({ field }) => (
-                                          <Input
-                                            {...field}
-                                            placeholder="Подпись (опционально)"
-                                          />
-                                        )}
-                                      />
-                                    </Field.Root>
-                                  </VStack>
-
-                                  {field.url && (
-                                    <Box mt={3}>
-                                      <Image
-                                        src={field.url}
-                                        alt={field.alt || 'Preview'}
-                                        maxH="100px"
-                                        objectFit="cover"
-                                        borderRadius="md"
-                                      />
-                                    </Box>
-                                  )}
-                                </Box>
-                              ))}
-                            </VStack>
-                          ) : (
-                            <Text color="gray.500" textAlign="center" py={4}>
-                              Нет дополнительных изображений
-                            </Text>
-                          )}
-                        </Box>
                       </Stack>
-                    </Box>
+                    </GridItem>
 
-                    {/* Правая колонка */}
-                    <Box flex="1">
-                      <Stack gap="4">
-                        {/* Загрузка главного изображения */}
-                        <Field.Root>
-                          <Field.Label>Главное изображение</Field.Label>
-                          <VStack gap="4" align="stretch">
-                            {/* Текущее изображение */}
-                            {currentImageUrl && !acceptedFile && (
-                              <Box>
-                                <Text fontSize="sm" fontWeight="medium" mb="2">
-                                  Текущее изображение:
-                                </Text>
-                                <Image
-                                  src={currentImageUrl}
-                                  alt="Текущее изображение"
-                                  borderRadius="md"
-                                  maxH="200px"
-                                  objectFit="cover"
-                                  width="full"
-                                />
-                                <Button
-                                  size="xs"
-                                  variant="ghost"
-                                  colorPalette="red"
-                                  mt={2}
-                                  onClick={() => setCurrentImageUrl(null)}
-                                >
-                                  Удалить изображение
-                                </Button>
-                              </Box>
-                            )}
+                    {/* Правая колонка - настройки */}
+                    <GridItem>
+                      <Card.Root variant="outline">
+                        <Card.Body>
+                          <Stack gap="4">
+                            <Heading size="sm">Настройки публикации</Heading>
 
-                            <FileUpload.RootProvider value={fileUpload}>
-                              <FileUpload.HiddenInput />
-
-                              {!acceptedFile && !currentImageUrl ? (
-                                <FileUpload.Dropzone>
-                                  <FileUpload.DropzoneContent>
-                                    <VStack gap="3" py="6">
-                                      <Text textAlign="center">
-                                        Перетащите сюда изображение
-                                        <br />
-                                        <Text
-                                          as="span"
-                                          fontSize="sm"
-                                          color="gray.500"
-                                        >
-                                          или
-                                        </Text>
-                                      </Text>
-                                      <FileUpload.Trigger asChild>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          px={10}
-                                        >
-                                          Выберите файл
-                                        </Button>
-                                      </FileUpload.Trigger>
-                                      <Text
-                                        fontSize="xs"
-                                        color="gray.500"
-                                        textAlign="center"
-                                      >
-                                        JPG, PNG, WebP до 5MB
-                                      </Text>
-                                    </VStack>
-                                  </FileUpload.DropzoneContent>
-                                </FileUpload.Dropzone>
-                              ) : (
-                                acceptedFile && (
-                                  <FileUpload.ItemGroup>
-                                    <FileUpload.Item file={acceptedFile}>
-                                      <FileUpload.ItemPreview>
-                                        {acceptedFile.type.startsWith(
-                                          'image/'
-                                        ) &&
-                                          previewUrl && (
-                                            <FileUpload.ItemPreviewImage
-                                              src={previewUrl}
-                                              alt="Предпросмотр"
-                                            />
-                                          )}
-                                      </FileUpload.ItemPreview>
-                                      <FileUpload.ItemContent>
-                                        <FileUpload.ItemName />
-                                        <FileUpload.ItemSizeText />
-                                      </FileUpload.ItemContent>
-                                      <FileUpload.ItemDeleteTrigger
-                                        asChild
-                                        onClick={handleRemoveFile}
-                                      >
-                                        <Button
-                                          size="xs"
-                                          variant="ghost"
-                                          colorPalette="red"
-                                        >
-                                          ✕
-                                        </Button>
-                                      </FileUpload.ItemDeleteTrigger>
-                                    </FileUpload.Item>
-                                  </FileUpload.ItemGroup>
-                                )
-                              )}
-                            </FileUpload.RootProvider>
-
-                            {fileUpload.rejectedFiles.length > 0 && (
-                              <Alert.Root status="error">
-                                <Alert.Indicator />
-                                <Alert.Title>
-                                  {fileUpload.rejectedFiles[0].errors
-                                    .map(error =>
-                                      error === 'TOO_LARGE'
-                                        ? 'Файл слишком большой. Максимум 5MB'
-                                        : error === 'INVALID_TYPE'
-                                          ? 'Недопустимый тип файла'
-                                          : 'Ошибка загрузки файла'
-                                    )
-                                    .join(', ')}
-                                </Alert.Title>
-                              </Alert.Root>
-                            )}
-
-                            {uploadError && (
-                              <Alert.Root status="error">
-                                <Alert.Indicator />
-                                <Alert.Title>{uploadError}</Alert.Title>
-                              </Alert.Root>
-                            )}
-                          </VStack>
-                          <Field.HelperText>
-                            Изображение будет отображаться в карточке новости
-                          </Field.HelperText>
-                        </Field.Root>
-
-                        {/* Чекбокс публикации */}
-                        <Field.Root>
-                          <HStack justify="space-between" width="full">
-                            <Field.Label>Опубликовано</Field.Label>
                             <Controller
                               name="isPublished"
                               control={control}
@@ -647,18 +679,378 @@ export default function EditNewsPage() {
                                 >
                                   <Checkbox.HiddenInput />
                                   <Checkbox.Control cursor="pointer" />
+                                  <Checkbox.Label>Опубликовано</Checkbox.Label>
                                 </Checkbox.Root>
                               )}
                             />
-                          </HStack>
-                          <Field.HelperText>
-                            Если снять галочку, новость будет видна только
-                            администраторам
-                          </Field.HelperText>
-                        </Field.Root>
+                            <Box fontSize="sm" color="gray.500" ml="7">
+                              Если снять галочку, новость будет видна только
+                              администраторам
+                            </Box>
+
+                            <Box borderTopWidth={1} pt={4}>
+                              <Text fontSize="sm" color="gray.500">
+                                • Изменения сохранятся после нажатия кнопки
+                              </Text>
+                              <Text fontSize="sm" color="gray.500">
+                                • Можно изменить порядок изображений
+                              </Text>
+                            </Box>
+                          </Stack>
+                        </Card.Body>
+                      </Card.Root>
+                    </GridItem>
+                  </Grid>
+
+                  {/* Главное изображение */}
+                  <Card.Root variant="outline">
+                    <Card.Body>
+                      <Stack gap="4">
+                        <Heading size="md">Главное изображение</Heading>
+
+                        <input
+                          ref={mainImageInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleMainImageSelect}
+                          style={{ display: 'none' }}
+                        />
+
+                        {(existingMainImageUrl || newMainImagePreview) ? (
+                          <Box position="relative" display="inline-block">
+                            <Image
+                              src={newMainImagePreview || existingMainImageUrl || ''}
+                              alt="Главное изображение"
+                              borderRadius="md"
+                              maxH="200px"
+                              objectFit="cover"
+                            />
+                            <Button
+                              size="xs"
+                              colorPalette="red"
+                              position="absolute"
+                              top={2}
+                              right={2}
+                              onClick={handleRemoveMainImage}
+                            >
+                              <HiX />
+                            </Button>
+                          </Box>
+                        ) : (
+                          <Box
+                            borderWidth={2}
+                            borderStyle="dashed"
+                            borderRadius="lg"
+                            bg="gray.50"
+                            _dark={{ bg: 'gray.800' }}
+                            p={8}
+                            textAlign="center"
+                            cursor="pointer"
+                            onClick={() => mainImageInputRef.current?.click()}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            _hover={{
+                              bg: 'gray.100',
+                              _dark: { bg: 'gray.700' },
+                            }}
+                          >
+                            <VStack gap="3">
+                              <Text textAlign="center" fontWeight="medium">
+                                Нажмите для выбора или перетащите изображение
+                              </Text>
+                              <Text fontSize="sm" color="gray.500">
+                                JPG, PNG, WebP до 5MB
+                              </Text>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  mainImageInputRef.current?.click();
+                                }}
+                              >
+                                Выберите файл
+                              </Button>
+                            </VStack>
+                          </Box>
+                        )}
+                        <Field.HelperText>
+                          Изображение будет отображаться в карточке новости и в шапке
+                        </Field.HelperText>
                       </Stack>
-                    </Box>
-                  </Stack>
+                    </Card.Body>
+                  </Card.Root>
+
+                  {/* Галерея изображений */}
+                  <Card.Root variant="outline">
+                    <Card.Body>
+                      <Stack gap="6">
+                        <Flex justifyContent="space-between" alignItems="center">
+                          <HStack>
+                            <Heading size="md">Галерея изображений</Heading>
+                            {(existingImages.length + newImages.length) > 0 && (
+                              <Badge colorPalette="blue" size="lg">
+                                {existingImages.length + newImages.length}{' '}
+                                {(existingImages.length + newImages.length) === 1 ? 'фото' : 'фото'}
+                              </Badge>
+                            )}
+                          </HStack>
+                          {(existingImages.length > 0 || newImages.length > 0) && (
+                            <Button
+                              variant="ghost"
+                              colorPalette="red"
+                              size="sm"
+                              onClick={clearAllImages}
+                            >
+                              Очистить все
+                            </Button>
+                          )}
+                        </Flex>
+
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleGalleryFilesSelect}
+                          style={{ display: 'none' }}
+                        />
+
+                        <Box
+                          borderWidth={2}
+                          borderStyle="dashed"
+                          borderRadius="lg"
+                          bg="gray.50"
+                          _dark={{ bg: 'gray.800' }}
+                          p={8}
+                          textAlign="center"
+                          cursor="pointer"
+                          onClick={() => fileInputRef.current?.click()}
+                          onDrop={handleDrop}
+                          onDragOver={handleDragOver}
+                          _hover={{
+                            bg: 'gray.100',
+                            _dark: { bg: 'gray.700' },
+                          }}
+                        >
+                          <VStack gap="3">
+                            <Text textAlign="center" fontWeight="medium">
+                              Нажмите для выбора или перетащите сюда изображения
+                            </Text>
+                            <Text fontSize="sm" color="gray.500">
+                              JPG, PNG, WebP до 10MB. Можно выбрать несколько файлов
+                            </Text>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={e => {
+                                e.stopPropagation();
+                                fileInputRef.current?.click();
+                              }}
+                            >
+                              Выберите файлы
+                            </Button>
+                          </VStack>
+                        </Box>
+
+                        {/* Существующие изображения */}
+                        {existingImages.length > 0 && (
+                          <VStack gap="4" align="stretch">
+                            <Text fontWeight="medium" fontSize="sm">
+                              Текущие изображения ({existingImages.length}):
+                            </Text>
+                            {existingImages.map((image, index) => (
+                              <Card.Root key={image.id} variant="outline" size="sm">
+                                <Card.Body>
+                                  <Grid templateColumns="auto 1fr auto" gap={4} alignItems="center">
+                                    <Box
+                                      position="relative"
+                                      w="100px"
+                                      h="80px"
+                                      borderRadius="md"
+                                      overflow="hidden"
+                                      border={mainImageIndex === index ? '3px solid' : '1px solid'}
+                                      borderColor={mainImageIndex === index ? 'blue.500' : 'gray.200'}
+                                      cursor="pointer"
+                                      onClick={() => handleSetMainFromExisting(index)}
+                                    >
+                                      <Image
+                                        src={image.url}
+                                        alt={image.alt || 'Превью'}
+                                        w="100%"
+                                        h="100%"
+                                        objectFit="cover"
+                                      />
+                                      {mainImageIndex === index && (
+                                        <Badge
+                                          position="absolute"
+                                          top={1}
+                                          left={1}
+                                          colorPalette="blue"
+                                          size="sm"
+                                        >
+                                          Обложка
+                                        </Badge>
+                                      )}
+                                    </Box>
+
+                                    <Stack gap="2">
+                                      <Input
+                                        placeholder="Alt текст (для SEO)"
+                                        size="sm"
+                                        value={image.alt}
+                                        onChange={e =>
+                                          handleExistingImageAltChange(image.id, e.target.value)
+                                        }
+                                      />
+                                      <Input
+                                        placeholder="Подпись к фото"
+                                        size="sm"
+                                        value={image.caption}
+                                        onChange={e =>
+                                          handleExistingImageCaptionChange(image.id, e.target.value)
+                                        }
+                                      />
+                                    </Stack>
+
+                                    <HStack gap="1">
+                                      <IconButton
+                                        aria-label="Сделать обложкой"
+                                        size="sm"
+                                        variant={mainImageIndex === index ? 'solid' : 'ghost'}
+                                        colorPalette={mainImageIndex === index ? 'blue' : 'gray'}
+                                        onClick={() => handleSetMainFromExisting(index)}
+                                        title="Сделать обложкой"
+                                      >
+                                        ⭐
+                                      </IconButton>
+                                      <IconButton
+                                        aria-label="Переместить вверх"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleMoveExistingUp(index)}
+                                        disabled={index === 0}
+                                      >
+                                        <FaArrowUp />
+                                      </IconButton>
+                                      <IconButton
+                                        aria-label="Переместить вниз"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleMoveExistingDown(index)}
+                                        disabled={index === existingImages.length - 1}
+                                      >
+                                        <FaArrowDown />
+                                      </IconButton>
+                                      <IconButton
+                                        aria-label="Удалить"
+                                        size="sm"
+                                        colorPalette="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveExistingImage(image)}
+                                      >
+                                        <HiX />
+                                      </IconButton>
+                                    </HStack>
+                                  </Grid>
+                                </Card.Body>
+                              </Card.Root>
+                            ))}
+                          </VStack>
+                        )}
+
+                        {/* Новые изображения */}
+                        {newImages.length > 0 && (
+                          <VStack gap="4" align="stretch">
+                            <Text fontWeight="medium" fontSize="sm">
+                              Новые изображения ({newImages.length}):
+                            </Text>
+                            {newImages.map((image, index) => (
+                              <Card.Root key={image.id} variant="outline" size="sm">
+                                <Card.Body>
+                                  <Grid templateColumns="auto 1fr auto" gap={4} alignItems="center">
+                                    <Box w="100px" h="80px" borderRadius="md" overflow="hidden">
+                                      <Image
+                                        src={image.preview}
+                                        alt={image.alt || 'Превью'}
+                                        w="100%"
+                                        h="100%"
+                                        objectFit="cover"
+                                      />
+                                    </Box>
+
+                                    <Stack gap="2">
+                                      <Input
+                                        placeholder="Alt текст (для SEO)"
+                                        size="sm"
+                                        value={image.alt}
+                                        onChange={e =>
+                                          handleNewImageAltChange(index, e.target.value)
+                                        }
+                                      />
+                                      <Input
+                                        placeholder="Подпись к фото"
+                                        size="sm"
+                                        value={image.caption}
+                                        onChange={e =>
+                                          handleNewImageCaptionChange(index, e.target.value)
+                                        }
+                                      />
+                                    </Stack>
+
+                                    <HStack gap="1">
+                                      <IconButton
+                                        aria-label="Переместить вверх"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleMoveNewUp(index)}
+                                        disabled={index === 0}
+                                      >
+                                        <FaArrowUp />
+                                      </IconButton>
+                                      <IconButton
+                                        aria-label="Переместить вниз"
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleMoveNewDown(index)}
+                                        disabled={index === newImages.length - 1}
+                                      >
+                                        <FaArrowDown />
+                                      </IconButton>
+                                      <IconButton
+                                        aria-label="Удалить"
+                                        size="sm"
+                                        colorPalette="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveNewImage(index)}
+                                      >
+                                        <HiX />
+                                      </IconButton>
+                                    </HStack>
+                                  </Grid>
+                                </Card.Body>
+                              </Card.Root>
+                            ))}
+                          </VStack>
+                        )}
+
+                        {(existingImages.length === 0 && newImages.length === 0) && (
+                          <Box
+                            p={8}
+                            borderWidth={1}
+                            borderRadius="lg"
+                            textAlign="center"
+                            bg="gray.50"
+                            _dark={{ bg: 'gray.800' }}
+                          >
+                            <Text color="gray.500">
+                              Изображения не загружены. Загрузите фотографии для галереи новости.
+                            </Text>
+                          </Box>
+                        )}
+                      </Stack>
+                    </Card.Body>
+                  </Card.Root>
 
                   {/* Кнопки */}
                   <HStack justifyContent="flex-end" gap="3">
