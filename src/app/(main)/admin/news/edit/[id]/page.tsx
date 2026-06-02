@@ -665,7 +665,7 @@ export default function EditNewsPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => router.push('/news')}
+                      onClick={() => router.push('/allnews')}
                       px={5}
                     >
                       Отмена

@@ -92,7 +92,7 @@ const NewsPage = () => {
 
   // Обработчик удаления
   const handleDelete = () => {
-    router.push('/news');
+    router.push('/allnews');
   };
 
   // Состояние загрузки
@@ -119,7 +119,7 @@ const NewsPage = () => {
               {error}
             </Heading>
             <Button
-              onClick={() => router.push('/news')}
+              onClick={() => router.push('allnews')}
               colorScheme="blue"
               size="lg"
             >
@@ -142,7 +142,7 @@ const NewsPage = () => {
               Запрошенная новость не существует или была удалена
             </Text>
             <Button
-              onClick={() => router.push('/news')}
+              onClick={() => router.push('allnews')}
               colorScheme="blue"
               size="lg"
             >
@@ -166,7 +166,7 @@ const NewsPage = () => {
               администраторам
             </Text>
             <Button
-              onClick={() => router.push('/news')}
+              onClick={() => router.push('allnews')}
               colorScheme="blue"
               size="lg"
             >
