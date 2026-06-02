@@ -1,3 +1,4 @@
+// app/admin/news/edit/[id]/page.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -193,13 +194,11 @@ export default function EditNewsPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Проверка размера файла (до 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setUploadError('Файл слишком большой. Максимум 5MB');
       return;
     }
 
-    // Проверка типа файла
     if (!file.type.startsWith('image/')) {
       setUploadError('Пожалуйста, выберите изображение');
       return;
@@ -276,7 +275,6 @@ export default function EditNewsPage() {
     setDeletedImageIds(prev => [...prev, image.id]);
     setExistingImages(prev => prev.filter(img => img.id !== image.id));
 
-    // Корректируем индекс обложки
     const currentIndex = existingImages.findIndex(img => img.id === image.id);
     if (mainImageIndex === currentIndex) {
       setMainImageIndex(-1);
@@ -331,9 +329,9 @@ export default function EditNewsPage() {
   // Перемещение существующего изображения вверх
   const handleMoveExistingUp = (index: number) => {
     if (index === 0) return;
-    const newImages = [...existingImages];
-    [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
-    setExistingImages(newImages);
+    const newImagesList = [...existingImages];
+    [newImagesList[index - 1], newImagesList[index]] = [newImagesList[index], newImagesList[index - 1]];
+    setExistingImages(newImagesList);
 
     if (mainImageIndex === index) {
       setMainImageIndex(index - 1);
@@ -345,9 +343,9 @@ export default function EditNewsPage() {
   // Перемещение существующего изображения вниз
   const handleMoveExistingDown = (index: number) => {
     if (index === existingImages.length - 1) return;
-    const newImages = [...existingImages];
-    [newImages[index + 1], newImages[index]] = [newImages[index], newImages[index + 1]];
-    setExistingImages(newImages);
+    const newImagesList = [...existingImages];
+    [newImagesList[index + 1], newImagesList[index]] = [newImagesList[index], newImagesList[index + 1]];
+    setExistingImages(newImagesList);
 
     if (mainImageIndex === index) {
       setMainImageIndex(index + 1);
@@ -375,7 +373,6 @@ export default function EditNewsPage() {
   // Установка обложки из существующих изображений
   const handleSetMainFromExisting = (index: number) => {
     setMainImageIndex(index);
-    // Если есть новое главное изображение, удаляем его
     if (newMainImageFile) {
       if (newMainImagePreview) URL.revokeObjectURL(newMainImagePreview);
       setNewMainImageFile(null);
@@ -404,7 +401,6 @@ export default function EditNewsPage() {
 
       let finalMainImageUrl: string | null = null;
 
-      // 1. Загружаем новое главное изображение, если есть
       if (newMainImageFile) {
         const formData = new FormData();
         formData.append('file', newMainImageFile);
@@ -422,17 +418,12 @@ export default function EditNewsPage() {
 
         const uploadData = await uploadResponse.json();
         finalMainImageUrl = uploadData.url;
-      }
-      // 2. Используем существующее главное изображение из галереи
-      else if (mainImageIndex !== -1 && existingImages[mainImageIndex]) {
+      } else if (mainImageIndex !== -1 && existingImages[mainImageIndex]) {
         finalMainImageUrl = existingImages[mainImageIndex].url;
-      }
-      // 3. Используем существующее отдельное главное изображение
-      else if (existingMainImageUrl) {
+      } else if (existingMainImageUrl) {
         finalMainImageUrl = existingMainImageUrl;
       }
 
-      // Загружаем новые изображения для галереи
       const uploadedNewImages = [];
       for (let i = 0; i < newImages.length; i++) {
         const img = newImages[i];
@@ -460,7 +451,6 @@ export default function EditNewsPage() {
         });
       }
 
-      // Формируем финальный список изображений
       const allImages = [
         ...existingImages.map((img, idx) => ({
           id: img.id,
@@ -496,9 +486,7 @@ export default function EditNewsPage() {
         throw new Error(errorData.error || 'Ошибка при обновлении новости');
       }
 
-      // Очистка
       clearAllImages();
-
       router.push(`/news/${id}`);
     } catch (error) {
       console.error('Error updating news:', error);
@@ -666,36 +654,28 @@ export default function EditNewsPage() {
                           <Stack gap="4">
                             <Heading size="sm">Настройки публикации</Heading>
 
-                            <Controller
-                              name="isPublished"
-                              control={control}
-                              render={({ field }) => (
-                                <Checkbox.Root
-                                  checked={field.value}
-                                  onCheckedChange={({ checked }) =>
-                                    field.onChange(checked)
-                                  }
-                                  cursor="pointer"
-                                >
-                                  <Checkbox.HiddenInput />
-                                  <Checkbox.Control cursor="pointer" />
-                                  <Checkbox.Label>Опубликовано</Checkbox.Label>
-                                </Checkbox.Root>
-                              )}
-                            />
-                            <Box fontSize="sm" color="gray.500" ml="7">
-                              Если снять галочку, новость будет видна только
-                              администраторам
-                            </Box>
-
-                            <Box borderTopWidth={1} pt={4}>
-                              <Text fontSize="sm" color="gray.500">
-                                • Изменения сохранятся после нажатия кнопки
-                              </Text>
-                              <Text fontSize="sm" color="gray.500">
-                                • Можно изменить порядок изображений
-                              </Text>
-                            </Box>
+                            <Field.Root>
+                              <Controller
+                                name="isPublished"
+                                control={control}
+                                render={({ field }) => (
+                                  <Checkbox.Root
+                                    checked={field.value}
+                                    onCheckedChange={({ checked }) =>
+                                      field.onChange(checked)
+                                    }
+                                    cursor="pointer"
+                                  >
+                                    <Checkbox.HiddenInput />
+                                    <Checkbox.Control cursor="pointer" />
+                                    <Checkbox.Label>Опубликовано</Checkbox.Label>
+                                  </Checkbox.Root>
+                                )}
+                              />
+                              <Field.HelperText>
+                                Если снять галочку, новость будет видна только администраторам
+                              </Field.HelperText>
+                            </Field.Root>
                           </Stack>
                         </Card.Body>
                       </Card.Root>
@@ -705,8 +685,8 @@ export default function EditNewsPage() {
                   {/* Главное изображение */}
                   <Card.Root variant="outline">
                     <Card.Body>
-                      <Stack gap="4">
-                        <Heading size="md">Главное изображение</Heading>
+                      <Field.Root>
+                        <Field.Label>Главное изображение</Field.Label>
 
                         <input
                           ref={mainImageInputRef}
@@ -777,7 +757,7 @@ export default function EditNewsPage() {
                         <Field.HelperText>
                           Изображение будет отображаться в карточке новости и в шапке
                         </Field.HelperText>
-                      </Stack>
+                      </Field.Root>
                     </Card.Body>
                   </Card.Root>
 
