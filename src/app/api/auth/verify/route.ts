@@ -1,3 +1,4 @@
+// app/api/auth/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
@@ -13,8 +14,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { token } = body;
+    // Сначала пытаемся получить токен из cookies
+    let token = request.cookies.get('token')?.value;
+
+    // Если нет в cookies, пробуем из тела запроса (для обратной совместимости)
+    if (!token) {
+      const body = await request.json();
+      token = body.token;
+    }
 
     if (!token) {
       return NextResponse.json(
@@ -31,7 +38,6 @@ export async function POST(request: NextRequest) {
         user: decoded,
       });
     } catch (error) {
-      // Более детальная обработка ошибок JWT
       if (error instanceof jwt.TokenExpiredError) {
         return NextResponse.json(
           { valid: false, error: 'Токен просрочен' },
