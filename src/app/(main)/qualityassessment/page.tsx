@@ -77,6 +77,11 @@ export default function QualityAssessment() {
         title="План по улучшению качества работы организации и устранению недостатков, выявленных по итогам нок"
       />
       <Separator />
+      <PDFViewer
+        fileUrl="/pdf/dogovor_o_sotr.pdf"
+        title="Договор о сотрудничестве и совместной деятельности"
+      />
+      <Separator />
       <NokSurvey />
     </Stack>
   );
